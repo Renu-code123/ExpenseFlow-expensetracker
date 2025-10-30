@@ -1,5 +1,3 @@
-# ExpenseFlow-expensetracker
-
 # 💸 ExpenseFlow – Smart Expense Tracker  
 
 **ExpenseFlow** is a modern and responsive **expense tracking web application** designed to help users manage their finances efficiently.  
