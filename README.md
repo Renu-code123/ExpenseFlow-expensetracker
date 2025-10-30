@@ -63,16 +63,13 @@ The app emphasizes:
 
 ExpenseFlow-expensetracker/
 │
-├── expenseTracker.html # Main HTML layout
-├── expenseTracker.css # Styling and UI components
-├── trackerScript.js # Core JavaScript functionality
-├── manifest.json # Manifest file for PWA
-├── sw.js # Service Worker for offline caching
-├── LICENSE # MIT License
-└── README.md # Documentation
-
-yaml
-Copy code
+├── expenseTracker.html # Main HTML layout <hr>
+├── expenseTracker.css # Styling and UI components<hr>
+├── trackerScript.js # Core JavaScript functionality<hr>
+├── manifest.json # Manifest file for PWA<hr>
+├── sw.js # Service Worker for offline caching<hr>
+├── LICENSE # MIT License<hr>
+└── README.md # Documentation<hr>
 
 ---
 
@@ -83,7 +80,7 @@ Follow these simple steps to set up and view the project on your local machine �
 ### 1️⃣ Clone the Repository
 ```bash
 git clone https://github.com/Renu-code123/ExpenseFlow-expensetracker.git
-2️⃣ Navigate into the Project Folder
+### 2️⃣ Navigate into the Project Folder
 bash
 Copy code
 cd ExpenseFlow-expensetracker
