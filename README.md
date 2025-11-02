@@ -60,14 +60,14 @@ The app emphasizes:
 ## 📂 Folder Structure
 
 ExpenseFlow-expensetracker/
-│
+│<br>
 ├── expenseTracker.html # Main HTML layout <br>
-├── expenseTracker.css # Styling and UI components
-├── trackerScript.js # Core JavaScript functionality
-├── manifest.json # Manifest file for PWA
-├── sw.js # Service Worker for offline caching
-├── LICENSE # MIT License
-└── README.md # Documentation
+├── expenseTracker.css # Styling and UI components<br>
+├── trackerScript.js # Core JavaScript functionality<br>
+├── manifest.json # Manifest file for PWA<br>
+├── sw.js # Service Worker for offline caching<br>
+├── LICENSE # MIT License<br>
+└── README.md # Documentation<br>
 ---
 
 ## 🚀 How to Run Locally
