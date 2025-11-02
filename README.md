@@ -61,7 +61,7 @@ The app emphasizes:
 
 ExpenseFlow-expensetracker/
 │
-├── expenseTracker.html # Main HTML layout
+├── expenseTracker.html # Main HTML layout <br>
 ├── expenseTracker.css # Styling and UI components
 ├── trackerScript.js # Core JavaScript functionality
 ├── manifest.json # Manifest file for PWA
