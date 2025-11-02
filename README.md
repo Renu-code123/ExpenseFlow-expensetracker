@@ -61,14 +61,13 @@ The app emphasizes:
 
 ExpenseFlow-expensetracker/
 │
-├── expenseTracker.html # Main HTML layout <hr>
-├── expenseTracker.css # Styling and UI components<hr>
-├── trackerScript.js # Core JavaScript functionality<hr>
-├── manifest.json # Manifest file for PWA<hr>
-├── sw.js # Service Worker for offline caching<hr>
-├── LICENSE # MIT License<hr>
-└── README.md # Documentation<hr>
-
+├── expenseTracker.html # Main HTML layout
+├── expenseTracker.css # Styling and UI components
+├── trackerScript.js # Core JavaScript functionality
+├── manifest.json # Manifest file for PWA
+├── sw.js # Service Worker for offline caching
+├── LICENSE # MIT License
+└── README.md # Documentation
 ---
 
 ## 🚀 How to Run Locally
@@ -79,87 +78,86 @@ Follow these simple steps to set up and view the project on your local machine �
 ```bash
 git clone https://github.com/Renu-code123/ExpenseFlow-expensetracker.git
 ### 2️⃣ Navigate into the Project Folder
-bash
-Copy code
+
 cd ExpenseFlow-expensetracker
-3️⃣ Open the HTML File
+
+#3️⃣ Open the HTML File
 Simply open the expenseTracker.html file in your browser.
+
 or run a live development server using:
 
 bash
 Copy code
 npx live-server
-📸 Screenshots
-🏠 Dashboard Preview
 
-Smart Money Management – Take control of your finances with our intuitive expense tracker.
+## 📸 Screenshots
 
-🧩 Future Enhancements
-🔗 Add backend for real-time data persistence (Firebase or Node.js)
+### 🏠 Dashboard Preview  
+**Smart Money Management – Take control of your finances with our intuitive expense tracker.**
 
-📊 Integrate charting tools like Chart.js for expense visualization
+---
 
-🧾 Introduce login/authentication system
+## 🧩 Future Enhancements
 
-💡 Add category filters for detailed analysis
+- 🔗 Add backend for real-time data persistence (Firebase or Node.js)  
+- 📊 Integrate charting tools like Chart.js for expense visualization  
+- 🧾 Introduce login/authentication system  
+- 💡 Add category filters for detailed analysis  
+- 📱 Improve PWA support for full offline functionality  
 
-📱 Improve PWA support for full offline functionality
+---
 
-🎯 Learning Outcomes
+## 🎯 Learning Outcomes
+
 By building this project, you’ll learn:
 
-Responsive UI design using CSS
+- 🎨 Responsive UI design using CSS  
+- 🧠 DOM manipulation using vanilla JavaScript  
+- 📂 Managing and displaying dynamic user data  
+- ⚙️ Working with manifests and service workers  
+- 🏗️ Structuring a scalable frontend project  
 
-DOM manipulation using vanilla JavaScript
+---
 
-Managing and displaying dynamic user data
+## 🤝 Contributing
 
-Working with manifests and service workers
+Contributions are always welcome!  
+If you’d like to improve **ExpenseFlow**, follow these steps 👇
 
-Structuring a scalable frontend project
-
-🤝 Contributing
-Contributions are always welcome!
-If you’d like to improve ExpenseFlow, follow these steps 👇
-
-Fork the repository
-
-Create a new branch
-
-bash
-Copy code
-git checkout -b feature-name
-Commit your changes
-
-bash
-Copy code
+1. **Fork the repository**  
+2. **Create a new branch**
+   ```bash
+   git checkout -b feature-name
+3. **Commit your changes**
 git commit -m "Added a new feature"
-Push to your branch
 
-bash
-Copy code
+4. **Push to your branch**
 git push origin feature-name
-Open a Pull Request
 
-🧾 License
-This project is licensed under the MIT License – see the LICENSE file for details.
+5. **Open a Pull Request**
 
-👩‍💻 Author
-Renu Kumari Prajapati
-🎓 Information Technology Student | Frontend Developer | Open Source Enthusiast
+## 🧾 License  
+This project is licensed under the **MIT License** – see the [LICENSE](./LICENSE) file for details.  
 
-📫 Connect with me:
+---
 
-GitHub: @Renu-code123
+## 👩‍💻 Author  
+**Renu Kumari Prajapati**  
+🎓 Information Technology Student | 💻 Frontend Developer | 🌍 Open Source Enthusiast  
 
-LinkedIn: [Your LinkedIn Profile Link Here]
+📫 **Connect with me:**  
+- **GitHub:** [@Renu-code123](https://github.com/Renu-code123)  
+- **LinkedIn:** [Your LinkedIn Profile Link Here]  
 
-💬 Quote
-“Smart money management begins with awareness — track it, plan it, and grow it with ExpenseFlow.”
+---
 
-🌟 Show Some Love
-If you found this project useful, don’t forget to ⭐ Star the repository!
+## 💬 Quote  
+> “Smart money management begins with awareness — track it, plan it, and grow it with **ExpenseFlow**.”  
+
+---
+
+## 🌟 Show Some Love  
+If you found this project useful, don’t forget to ⭐ **Star** the repository!  
 Let’s build smarter tools for financial awareness together 💜
-
 
 
