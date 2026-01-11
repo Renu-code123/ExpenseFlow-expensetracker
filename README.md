@@ -62,12 +62,12 @@ The app emphasizes:
 ExpenseFlow-expensetracker/
 │<br>
 ├── expenseTracker.html # Main HTML layout <br>
-├── expenseTracker.css # Styling and UI components<br>
-├── trackerScript.js # Core JavaScript functionality<br>
-├── manifest.json # Manifest file for PWA<br>
-├── sw.js # Service Worker for offline caching<br>
-├── LICENSE # MIT License<br>
-└── README.md # Documentation<br>
+├── <br>expenseTracker.css # Styling and UI components<br>
+├──<br> trackerScript.js # Core JavaScript functionality<br>
+├── <br>manifest.json # Manifest file for PWA<br>
+├── <br>sw.js # Service Worker for offline caching<br>
+├── <br>LICENSE # MIT License<br>
+└── <br>README.md # Documentation<br>
 ---
 
 ## 🚀 How to Run Locally
