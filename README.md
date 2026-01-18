@@ -146,9 +146,7 @@ This project is licensed under the **MIT License** – see the [LICENSE](./LICEN
 🎓 Information Technology Student | 💻 Frontend Developer | 🌍 Open Source Enthusiast  
 
 📫 **Connect with me:**  
-- **GitHub:** [@Renu-code123](https://github.com/Renu-code123)  
-- **LinkedIn:** [Your LinkedIn Profile Link Here]  
-
+- **GitHub:** [@Renu-code123](https://github.com/Renu-code123)
 ---
 
 ## 💬 Quote  
