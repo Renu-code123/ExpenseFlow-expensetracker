@@ -3,12 +3,12 @@
   "short_name": "ExpenseFlow",
   "description": "Take control of your finances with our intuitive expense tracker",
   "version": "1.0.0",
-  "start_url": "/expensetracker.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0f0f23",
   "theme_color": "#64ffda",
   "orientation": "portrait-primary",
-  "scope": "/",
+  "scope": "./",
   "lang": "en-US",
   "dir": "ltr",
   "categories": ["finance", "productivity", "utilities"],
@@ -45,7 +45,7 @@
       "name": "Add Transaction",
       "short_name": "Add",
       "description": "Quickly add a new transaction",
-      "url": "/expensetracker.html#form",
+      "url": "./index.html#dashboard",
       "icons": [
         {
           "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA5NiA5NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNDgiIGN5PSI0OCIgcj0iNDgiIGZpbGw9IiM2NGZmZGEiLz4KPHBhdGggZD0iTTQ4IDI0VjcyTTI0IDQ4SDcyIiBzdHJva2U9IiMwZjBmMjMiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+Cjwvc3ZnPgo=",

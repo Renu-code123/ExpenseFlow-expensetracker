@@ -1,9 +1,10 @@
 const CACHE_NAME = 'expenseflow-v1.0.0';
 const urlsToCache = [
-  '/expensetracker.html',
-  '/expensetracker.css',
-  '/trackerscript.js',
-  '/manifest.json',
+  './',
+  './index.html',
+  './expensetracker.css',
+  './trackerscript.js',
+  './manifest.json',
   'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
 ];
@@ -80,7 +81,7 @@ self.addEventListener('fetch', (event) => {
           
           // Return a custom offline page or response for HTML requests
           if (event.request.destination === 'document') {
-            return caches.match('/expensetracker.html');
+            return caches.match('./index.html') || caches.match('./');
           }
           
           // For other resources, you might want to return a default response
@@ -139,7 +140,7 @@ self.addEventListener('notificationclick', (event) => {
   if (event.action === 'explore') {
     // Open the app
     event.waitUntil(
-      clients.openWindow('/expensetracker.html')
+      clients.openWindow('./index.html')
     );
   } else if (event.action === 'close') {
     // Just close the notification
@@ -147,7 +148,7 @@ self.addEventListener('notificationclick', (event) => {
   } else {
     // Default action - open the app
     event.waitUntil(
-      clients.openWindow('/expensetracker.html')
+      clients.openWindow('./index.html')
     );
   }
 });

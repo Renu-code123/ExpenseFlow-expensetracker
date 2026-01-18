@@ -26,7 +26,7 @@
     <link rel="stylesheet" href="expensetracker.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   </head>
   <body>
@@ -65,6 +65,8 @@
       </div>
 
       <div class="container">
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="app-section active">
         <!-- Balance Card -->
         <div class="balance-card">
           <div class="balance-header">
@@ -239,6 +241,293 @@
             </button>
           </form>
         </div>
+        </section>
+
+        <!-- Analytics Section -->
+        <section id="analytics" class="app-section">
+          <div class="section-header">
+            <h2><i class="fas fa-chart-bar"></i> Analytics Dashboard</h2>
+            <p class="section-description">Visualize your spending patterns and financial insights</p>
+          </div>
+          
+          <div class="analytics-grid">
+            <div class="analytics-card">
+              <div class="analytics-card-header">
+                <i class="fas fa-chart-pie"></i>
+                <h3>Spending by Category</h3>
+              </div>
+              <div class="analytics-content" id="category-chart">
+                <div class="chart-placeholder">
+                  <i class="fas fa-chart-pie fa-3x"></i>
+                  <p>Category breakdown will appear here</p>
+                  <small>Add transactions to see analytics</small>
+                </div>
+              </div>
+            </div>
+
+            <div class="analytics-card">
+              <div class="analytics-card-header">
+                <i class="fas fa-calendar-alt"></i>
+                <h3>Monthly Overview</h3>
+              </div>
+              <div class="analytics-content" id="monthly-chart">
+                <div class="chart-placeholder">
+                  <i class="fas fa-chart-line fa-3x"></i>
+                  <p>Monthly trends will appear here</p>
+                  <small>Track your spending over time</small>
+                </div>
+              </div>
+            </div>
+
+            <div class="analytics-card">
+              <div class="analytics-card-header">
+                <i class="fas fa-tags"></i>
+                <h3>Top Categories</h3>
+              </div>
+              <div class="analytics-content" id="top-categories">
+                <div class="category-list" id="category-list">
+                  <p class="empty-message">No category data available</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="analytics-card">
+              <div class="analytics-card-header">
+                <i class="fas fa-trending-up"></i>
+                <h3>Spending Trends</h3>
+              </div>
+              <div class="analytics-content" id="trends-chart">
+                <div class="chart-placeholder">
+                  <i class="fas fa-chart-area fa-3x"></i>
+                  <p>Spending trends will appear here</p>
+                  <small>Analyze your financial patterns</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="analytics-summary">
+            <div class="summary-card">
+              <h4><i class="fas fa-info-circle"></i> Quick Stats</h4>
+              <div class="stats-grid" id="analytics-stats">
+                <div class="stat-item">
+                  <span class="stat-label">Total Transactions</span>
+                  <span class="stat-value" id="total-transactions">0</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Average Expense</span>
+                  <span class="stat-value" id="avg-expense">₹0.00</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Average Income</span>
+                  <span class="stat-value" id="avg-income">₹0.00</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Savings Rate</span>
+                  <span class="stat-value" id="savings-rate">0%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Goals Section -->
+        <section id="goals" class="app-section">
+          <div class="section-header">
+            <h2><i class="fas fa-bullseye"></i> Financial Goals</h2>
+            <p class="section-description">Set and track your financial objectives</p>
+          </div>
+
+          <div class="goals-container">
+            <div class="goals-header-actions">
+              <button class="btn-primary" id="add-goal-btn">
+                <i class="fas fa-plus"></i> Add New Goal
+              </button>
+            </div>
+
+            <div class="goals-grid" id="goals-grid">
+              <div class="empty-goals">
+                <i class="fas fa-bullseye fa-4x"></i>
+                <h3>No Goals Set Yet</h3>
+                <p>Start by creating your first financial goal</p>
+                <button class="btn-primary" onclick="document.getElementById('add-goal-btn').click()">
+                  <i class="fas fa-plus"></i> Create Goal
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Add Goal Modal -->
+          <div id="goal-modal" class="modal">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h3><i class="fas fa-bullseye"></i> Create New Goal</h3>
+                <button class="modal-close" id="close-goal-modal">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              <form id="goal-form" class="goal-form">
+                <div class="form-group">
+                  <label for="goal-title">Goal Title</label>
+                  <input type="text" id="goal-title" placeholder="e.g., Emergency Fund" required>
+                </div>
+                <div class="form-group">
+                  <label for="goal-amount">Target Amount</label>
+                  <input type="number" id="goal-amount" placeholder="Enter target amount" step="0.01" required>
+                </div>
+                <div class="form-group">
+                  <label for="goal-current">Current Amount</label>
+                  <input type="number" id="goal-current" placeholder="Current saved amount" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                  <label for="goal-deadline">Target Date</label>
+                  <input type="date" id="goal-deadline" required>
+                </div>
+                <div class="form-group">
+                  <label for="goal-description">Description (Optional)</label>
+                  <textarea id="goal-description" placeholder="Add notes about this goal..." rows="3"></textarea>
+                </div>
+                <div class="modal-actions">
+                  <button type="button" class="btn-secondary" id="cancel-goal">Cancel</button>
+                  <button type="submit" class="btn-primary">Create Goal</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- Settings Section -->
+        <section id="settings" class="app-section">
+          <div class="section-header">
+            <h2><i class="fas fa-cog"></i> Settings</h2>
+            <p class="section-description">Customize your ExpenseFlow experience</p>
+          </div>
+
+          <div class="settings-container">
+            <div class="settings-section">
+              <h3><i class="fas fa-user"></i> Profile Settings</h3>
+              <div class="settings-card">
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <label>Display Name</label>
+                    <p>Change your display name</p>
+                  </div>
+                  <input type="text" id="display-name" class="setting-input" placeholder="Enter your name" value="John Doe">
+                </div>
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <label>Currency</label>
+                    <p>Select your preferred currency</p>
+                  </div>
+                  <select id="currency-select" class="setting-select">
+                    <option value="INR" selected>₹ Indian Rupee (INR)</option>
+                    <option value="USD">$ US Dollar (USD)</option>
+                    <option value="EUR">€ Euro (EUR)</option>
+                    <option value="GBP">£ British Pound (GBP)</option>
+                    <option value="JPY">¥ Japanese Yen (JPY)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <h3><i class="fas fa-palette"></i> Appearance</h3>
+              <div class="settings-card">
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <label>Theme</label>
+                    <p>Choose your preferred theme</p>
+                  </div>
+                  <div class="theme-options">
+                    <button class="theme-btn active" data-theme="dark">
+                      <i class="fas fa-moon"></i> Dark
+                    </button>
+                    <button class="theme-btn" data-theme="light">
+                      <i class="fas fa-sun"></i> Light
+                    </button>
+                  </div>
+                </div>
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <label>Accent Color</label>
+                    <p>Customize accent color</p>
+                  </div>
+                  <div class="color-options">
+                    <input type="color" id="accent-color" value="#64ffda" class="color-picker">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <h3><i class="fas fa-bell"></i> Notifications</h3>
+              <div class="settings-card">
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <label>Enable Notifications</label>
+                    <p>Receive notifications for important updates</p>
+                  </div>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="notifications-enabled" checked>
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <label>Budget Alerts</label>
+                    <p>Get notified when approaching budget limits</p>
+                  </div>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="budget-alerts" checked>
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <h3><i class="fas fa-database"></i> Data Management</h3>
+              <div class="settings-card">
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <label>Export All Data</label>
+                    <p>Download a backup of all your data</p>
+                  </div>
+                  <button class="btn-secondary" id="export-all-data">
+                    <i class="fas fa-download"></i> Export
+                  </button>
+                </div>
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <label>Clear All Data</label>
+                    <p>Permanently delete all transactions and settings</p>
+                  </div>
+                  <button class="btn-danger" id="clear-all-data">
+                    <i class="fas fa-trash"></i> Clear All
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <h3><i class="fas fa-info-circle"></i> About</h3>
+              <div class="settings-card">
+                <div class="about-info">
+                  <p><strong>ExpenseFlow</strong> v1.0.0</p>
+                  <p>Smart money management made simple</p>
+                  <div class="about-links">
+                    <a href="https://github.com/Renu-code123/ExpenseFlow-expensetracker" target="_blank">
+                      <i class="fab fa-github"></i> GitHub
+                    </a>
+                    <a href="#" id="view-license">
+                      <i class="fas fa-file-alt"></i> License
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
     </main>
 
@@ -262,30 +551,30 @@
         <div class="footer-section">
           <h4>Features</h4>
           <ul class="footer-links">
-            <li><a href="#">Expense Tracking</a></li>
-            <li><a href="#">Budget Planning</a></li>
-            <li><a href="#">Analytics Dashboard</a></li>
-            <li><a href="#">Goal Setting</a></li>
+            <li><a href="#dashboard" class="footer-link">Expense Tracking</a></li>
+            <li><a href="#analytics" class="footer-link">Analytics Dashboard</a></li>
+            <li><a href="#goals" class="footer-link">Goal Setting</a></li>
+            <li><a href="#settings" class="footer-link">Settings</a></li>
           </ul>
         </div>
         
         <div class="footer-section">
           <h4>Resources</h4>
           <ul class="footer-links">
-            <li><a href="#">Help Center</a></li>
-            <li><a href="#">Financial Tips</a></li>
-            <li><a href="#">Video Tutorials</a></li>
-            <li><a href="#">Community</a></li>
+            <li><a href="https://github.com/Renu-code123/ExpenseFlow-expensetracker" target="_blank" class="footer-link">GitHub Repository</a></li>
+            <li><a href="README.md" target="_blank" class="footer-link">Documentation</a></li>
+            <li><a href="CONTRIBUTING.md" target="_blank" class="footer-link">Contributing</a></li>
+            <li><a href="#settings" class="footer-link">Help & Support</a></li>
           </ul>
         </div>
         
         <div class="footer-section">
-          <h4>Company</h4>
+          <h4>Quick Links</h4>
           <ul class="footer-links">
-            <li><a href="#">About Us</a></li>
-            <li><a href="#">Privacy Policy</a></li>
-            <li><a href="#">Terms of Service</a></li>
-            <li><a href="#">Contact</a></li>
+            <li><a href="#dashboard" class="footer-link">Dashboard</a></li>
+            <li><a href="#analytics" class="footer-link">Analytics</a></li>
+            <li><a href="#goals" class="footer-link">Goals</a></li>
+            <li><a href="#settings" class="footer-link">Settings</a></li>
           </ul>
         </div>
       </div>

@@ -57,32 +57,71 @@ if (navToggle) {
   });
 }
 
+// Section Navigation System
+function showSection(sectionId) {
+  // Hide all sections
+  document.querySelectorAll('.app-section').forEach(section => {
+    section.classList.remove('active');
+  });
+  
+  // Show target section
+  const targetSection = document.getElementById(sectionId);
+  if (targetSection) {
+    targetSection.classList.add('active');
+    
+    // Update URL hash
+    window.history.pushState(null, null, `#${sectionId}`);
+    
+    // Update active nav link
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    const activeLink = document.querySelector(`.nav-link[href="#${sectionId}"]`);
+    if (activeLink) {
+      activeLink.classList.add('active');
+    }
+    
+    // Scroll to top of page
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // Update analytics if navigating to analytics section
+    if (sectionId === 'analytics') {
+      setTimeout(() => updateAnalytics(), 100);
+    }
+    
+    // Update goals if navigating to goals section
+    if (sectionId === 'goals') {
+      setTimeout(() => displayGoals(), 100);
+    }
+  }
+}
+
 // Navigation Links
 document.querySelectorAll('.nav-link').forEach(link => {
   link.addEventListener('click', (e) => {
     e.preventDefault();
     
-    // Remove active class from all links
-    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-    
-    // Add active class to clicked link
-    link.classList.add('active');
-    
-    // Close mobile menu if open
-    if (navMenu.classList.contains('active')) {
-      navMenu.classList.remove('active');
-      navToggle.classList.remove('active');
-    }
-    
-    // Smooth scroll to section if it exists
     const targetId = link.getAttribute('href');
     if (targetId.startsWith('#')) {
-      const targetElement = document.querySelector(targetId);
-      if (targetElement) {
-        targetElement.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        });
+      const sectionId = targetId.substring(1);
+      showSection(sectionId);
+    }
+    
+    // Close mobile menu if open
+    if (navMenu && navMenu.classList.contains('active')) {
+      navMenu.classList.remove('active');
+      if (navToggle) navToggle.classList.remove('active');
+    }
+  });
+});
+
+// Footer Links Navigation
+document.querySelectorAll('.footer-link').forEach(link => {
+  link.addEventListener('click', (e) => {
+    const href = link.getAttribute('href');
+    if (href && href.startsWith('#')) {
+      e.preventDefault();
+      const sectionId = href.substring(1);
+      if (document.getElementById(sectionId)) {
+        showSection(sectionId);
       }
     }
   });
@@ -266,6 +305,12 @@ function addTransaction(e) {
   updateValues();
   updateLocalStorage();
   
+  // Update analytics if on analytics page
+  const analyticsSection = document.getElementById('analytics');
+  if (analyticsSection && analyticsSection.classList.contains('active')) {
+    updateAnalytics();
+  }
+  
   // Clear form
   text.value = '';
   amount.value = '';
@@ -273,7 +318,8 @@ function addTransaction(e) {
   type.value = '';
   
   // Show success notification
-  showNotification(`${type.value.charAt(0).toUpperCase() + type.value.slice(1)} added successfully!`, 'success');
+  const transactionType = type.value || 'transaction';
+  showNotification(`${transactionType.charAt(0).toUpperCase() + transactionType.slice(1)} added successfully!`, 'success');
 }
   
 // Generate Random ID
@@ -447,6 +493,12 @@ function removeTransaction(id) {
   updateLocalStorage();
   displayTransactions();
   updateValues();
+  
+  // Update analytics if on analytics page
+  const analyticsSection = document.getElementById('analytics');
+  if (analyticsSection && analyticsSection.classList.contains('active')) {
+    updateAnalytics();
+  }
   
   // Show notification
   showNotification('Transaction deleted successfully', 'success');
@@ -809,7 +861,11 @@ const updateButton = document.getElementById('update-button');
 // Service Worker Registration
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
+    // Get the base path for service worker registration
+    const basePath = window.location.pathname.split('/').slice(0, -1).join('/') || '.';
+    const swPath = basePath === '.' ? './sw.js' : `${basePath}/sw.js`;
+    
+    navigator.serviceWorker.register(swPath, { scope: basePath === '.' ? './' : basePath })
       .then((registration) => {
         console.log('SW registered: ', registration);
         
@@ -825,6 +881,10 @@ if ('serviceWorker' in navigator) {
       })
       .catch((registrationError) => {
         console.log('SW registration failed: ', registrationError);
+        // Fallback to simple path
+        navigator.serviceWorker.register('./sw.js').catch(err => {
+          console.log('Fallback SW registration also failed: ', err);
+        });
       });
   });
 }
@@ -904,7 +964,324 @@ Init();
 // Event Listeners
 form.addEventListener('submit', addTransaction);
 
-// Add smooth scroll behavior
+// Analytics Functions
+function updateAnalytics() {
+  if (transactions.length === 0) {
+    return;
+  }
+  
+  // Calculate category totals
+  const categoryTotals = {};
+  transactions.forEach(transaction => {
+    const category = transaction.category || 'other';
+    if (!categoryTotals[category]) {
+      categoryTotals[category] = { income: 0, expense: 0 };
+    }
+    if (transaction.amount > 0) {
+      categoryTotals[category].income += transaction.amount;
+    } else {
+      categoryTotals[category].expense += Math.abs(transaction.amount);
+    }
+  });
+  
+  // Display top categories
+  const categoryList = document.getElementById('category-list');
+  if (categoryList) {
+    const sortedCategories = Object.entries(categoryTotals)
+      .sort((a, b) => (b[1].expense + b[1].income) - (a[1].expense + a[1].income))
+      .slice(0, 5);
+    
+    if (sortedCategories.length > 0) {
+      categoryList.innerHTML = sortedCategories.map(([key, value]) => {
+        const categoryInfo = categories[key] || categories.other;
+        const total = value.income + value.expense;
+        const incomePercent = total > 0 ? (value.income / total) * 100 : 0;
+        const expensePercent = total > 0 ? (value.expense / total) * 100 : 0;
+        return `
+          <div class="category-stat-item">
+            <div class="category-stat-header">
+              <span class="category-icon">${categoryInfo.name}</span>
+              <span class="category-total">₹${total.toFixed(2)}</span>
+            </div>
+            <div class="category-stat-bars">
+              <div class="stat-bar income-bar" style="width: ${incomePercent}%"></div>
+              <div class="stat-bar expense-bar" style="width: ${expensePercent}%"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } else {
+      categoryList.innerHTML = '<p class="empty-message">No category data available</p>';
+    }
+  }
+  
+  // Update stats
+  const totalTransactions = transactions.length;
+  const expenses = transactions.filter(t => t.amount < 0);
+  const incomes = transactions.filter(t => t.amount > 0);
+  const avgExpense = expenses.length > 0 
+    ? expenses.reduce((sum, t) => sum + Math.abs(t.amount), 0) / expenses.length 
+    : 0;
+  const avgIncome = incomes.length > 0 
+    ? incomes.reduce((sum, t) => sum + t.amount, 0) / incomes.length 
+    : 0;
+  const totalIncome = incomes.reduce((sum, t) => sum + t.amount, 0);
+  const totalExpense = expenses.reduce((sum, t) => sum + Math.abs(t.amount), 0);
+  const savingsRate = totalIncome > 0 ? ((totalIncome - totalExpense) / totalIncome * 100).toFixed(1) : 0;
+  
+  const totalTransactionsEl = document.getElementById('total-transactions');
+  const avgExpenseEl = document.getElementById('avg-expense');
+  const avgIncomeEl = document.getElementById('avg-income');
+  const savingsRateEl = document.getElementById('savings-rate');
+  
+  if (totalTransactionsEl) totalTransactionsEl.textContent = totalTransactions;
+  if (avgExpenseEl) avgExpenseEl.textContent = `₹${avgExpense.toFixed(2)}`;
+  if (avgIncomeEl) avgIncomeEl.textContent = `₹${avgIncome.toFixed(2)}`;
+  if (savingsRateEl) savingsRateEl.textContent = `${savingsRate}%`;
+}
+
+// Goals Management
+let goals = JSON.parse(localStorage.getItem('goals')) || [];
+
+function saveGoals() {
+  localStorage.setItem('goals', JSON.stringify(goals));
+}
+
+function displayGoals() {
+  const goalsGrid = document.getElementById('goals-grid');
+  if (!goalsGrid) return;
+  
+  if (goals.length === 0) {
+    goalsGrid.innerHTML = `
+      <div class="empty-goals">
+        <i class="fas fa-bullseye fa-4x"></i>
+        <h3>No Goals Set Yet</h3>
+        <p>Start by creating your first financial goal</p>
+        <button class="btn-primary" onclick="document.getElementById('add-goal-btn').click()">
+          <i class="fas fa-plus"></i> Create Goal
+        </button>
+      </div>
+    `;
+    return;
+  }
+  
+  goalsGrid.innerHTML = goals.map((goal, index) => {
+    const progress = (goal.current / goal.amount) * 100;
+    const daysRemaining = Math.ceil((new Date(goal.deadline) - new Date()) / (1000 * 60 * 60 * 24));
+    const remaining = goal.amount - goal.current;
+    
+    return `
+      <div class="goal-card">
+        <div class="goal-header">
+          <h3>${goal.title}</h3>
+          <button class="goal-delete" onclick="deleteGoal(${index})">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+        <div class="goal-progress">
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${Math.min(progress, 100)}%"></div>
+          </div>
+          <div class="progress-text">
+            <span>₹${goal.current.toFixed(2)} / ₹${goal.amount.toFixed(2)}</span>
+            <span>${progress.toFixed(1)}%</span>
+          </div>
+        </div>
+        <div class="goal-details">
+          <div class="goal-detail-item">
+            <i class="fas fa-calendar"></i>
+            <span>${daysRemaining > 0 ? `${daysRemaining} days left` : 'Deadline passed'}</span>
+          </div>
+          <div class="goal-detail-item">
+            <i class="fas fa-rupee-sign"></i>
+            <span>₹${remaining.toFixed(2)} remaining</span>
+          </div>
+        </div>
+        ${goal.description ? `<p class="goal-description">${goal.description}</p>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function deleteGoal(index) {
+  if (confirm('Are you sure you want to delete this goal?')) {
+    goals.splice(index, 1);
+    saveGoals();
+    displayGoals();
+    showNotification('Goal deleted successfully', 'success');
+  }
+}
+
+// Goals Form Handler
+const goalForm = document.getElementById('goal-form');
+const goalModal = document.getElementById('goal-modal');
+const addGoalBtn = document.getElementById('add-goal-btn');
+const closeGoalModal = document.getElementById('close-goal-modal');
+const cancelGoal = document.getElementById('cancel-goal');
+
+if (addGoalBtn) {
+  addGoalBtn.addEventListener('click', () => {
+    if (goalModal) goalModal.style.display = 'flex';
+  });
+}
+
+if (closeGoalModal) {
+  closeGoalModal.addEventListener('click', () => {
+    if (goalModal) goalModal.style.display = 'none';
+    if (goalForm) goalForm.reset();
+  });
+}
+
+if (cancelGoal) {
+  cancelGoal.addEventListener('click', () => {
+    if (goalModal) goalModal.style.display = 'none';
+    if (goalForm) goalForm.reset();
+  });
+}
+
+if (goalForm) {
+  goalForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    const title = document.getElementById('goal-title').value;
+    const amount = parseFloat(document.getElementById('goal-amount').value);
+    const current = parseFloat(document.getElementById('goal-current').value) || 0;
+    const deadline = document.getElementById('goal-deadline').value;
+    const description = document.getElementById('goal-description').value;
+    
+    if (!title || !amount || !deadline) {
+      showNotification('Please fill in all required fields', 'error');
+      return;
+    }
+    
+    const newGoal = {
+      id: Date.now(),
+      title,
+      amount,
+      current,
+      deadline,
+      description,
+      createdAt: new Date().toISOString()
+    };
+    
+    goals.push(newGoal);
+    saveGoals();
+    displayGoals();
+    goalForm.reset();
+    if (goalModal) goalModal.style.display = 'none';
+    showNotification('Goal created successfully!', 'success');
+  });
+}
+
+// Settings Functions
+const displayNameInput = document.getElementById('display-name');
+const currencySelect = document.getElementById('currency-select');
+const accentColorInput = document.getElementById('accent-color');
+const notificationsEnabled = document.getElementById('notifications-enabled');
+const budgetAlerts = document.getElementById('budget-alerts');
+const exportAllDataBtn = document.getElementById('export-all-data');
+const clearAllDataBtn = document.getElementById('clear-all-data');
+
+// Load settings
+function loadSettings() {
+  const settings = JSON.parse(localStorage.getItem('settings')) || {};
+  
+  if (displayNameInput) displayNameInput.value = settings.displayName || 'John Doe';
+  if (currencySelect) currencySelect.value = settings.currency || 'INR';
+  if (accentColorInput) accentColorInput.value = settings.accentColor || '#64ffda';
+  if (notificationsEnabled) notificationsEnabled.checked = settings.notificationsEnabled !== false;
+  if (budgetAlerts) budgetAlerts.checked = settings.budgetAlerts !== false;
+}
+
+// Save settings
+function saveSettings() {
+  const settings = {
+    displayName: displayNameInput ? displayNameInput.value : 'John Doe',
+    currency: currencySelect ? currencySelect.value : 'INR',
+    accentColor: accentColorInput ? accentColorInput.value : '#64ffda',
+    notificationsEnabled: notificationsEnabled ? notificationsEnabled.checked : true,
+    budgetAlerts: budgetAlerts ? budgetAlerts.checked : true
+  };
+  localStorage.setItem('settings', JSON.stringify(settings));
+  
+  // Update username display
+  const usernameSpan = document.querySelector('.username');
+  if (usernameSpan && displayNameInput) {
+    usernameSpan.textContent = displayNameInput.value;
+  }
+  
+  showNotification('Settings saved successfully', 'success');
+}
+
+// Settings event listeners
+if (displayNameInput) {
+  displayNameInput.addEventListener('change', saveSettings);
+}
+if (currencySelect) {
+  currencySelect.addEventListener('change', saveSettings);
+}
+if (accentColorInput) {
+  accentColorInput.addEventListener('change', () => {
+    saveSettings();
+    document.documentElement.style.setProperty('--accent-primary', accentColorInput.value);
+  });
+}
+if (notificationsEnabled) {
+  notificationsEnabled.addEventListener('change', saveSettings);
+}
+if (budgetAlerts) {
+  budgetAlerts.addEventListener('change', saveSettings);
+}
+
+// Export all data
+if (exportAllDataBtn) {
+  exportAllDataBtn.addEventListener('click', () => {
+    const allData = {
+      transactions,
+      goals,
+      settings: JSON.parse(localStorage.getItem('settings')) || {},
+      exportDate: new Date().toISOString()
+    };
+    
+    const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `expenseflow-backup-${new Date().toISOString().split('T')[0]}.json`;
+    link.click();
+    showNotification('All data exported successfully', 'success');
+  });
+}
+
+// Clear all data
+if (clearAllDataBtn) {
+  clearAllDataBtn.addEventListener('click', () => {
+    if (confirm('Are you sure you want to delete ALL data? This action cannot be undone!')) {
+      localStorage.clear();
+      transactions = [];
+      goals = [];
+      updateLocalStorage();
+      saveGoals();
+      displayTransactions();
+      updateValues();
+      displayGoals();
+      loadSettings();
+      showNotification('All data cleared successfully', 'success');
+    }
+  });
+}
+
+// Theme switcher
+document.querySelectorAll('.theme-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const theme = btn.getAttribute('data-theme');
+    // Theme switching can be implemented here
+    showNotification(`Theme changed to ${theme}`, 'info');
+  });
+});
+
+// Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
   // Add loading animation
   document.body.style.opacity = '0';
@@ -912,4 +1289,48 @@ document.addEventListener('DOMContentLoaded', function() {
     document.body.style.transition = 'opacity 0.5s ease-in-out';
     document.body.style.opacity = '1';
   }, 100);
+  
+  // Show dashboard section by default
+  const hash = window.location.hash.substring(1);
+  if (hash && document.getElementById(hash)) {
+    showSection(hash);
+  } else {
+    showSection('dashboard');
+  }
+  
+  // Handle hash changes
+  window.addEventListener('hashchange', () => {
+    const hash = window.location.hash.substring(1);
+    if (hash && document.getElementById(hash)) {
+      showSection(hash);
+    }
+  });
+  
+  // Load settings
+  loadSettings();
+  
+  // Display goals
+  displayGoals();
+  
+  // Update analytics
+  updateAnalytics();
+  
+  // Close modal when clicking outside
+  if (goalModal) {
+    goalModal.addEventListener('click', (e) => {
+      if (e.target === goalModal) {
+        goalModal.style.display = 'none';
+        if (goalForm) goalForm.reset();
+      }
+    });
+  }
+  
+  // Hook into transaction updates to refresh analytics
+  const originalUpdateLocalStorage = updateLocalStorage;
+  updateLocalStorage = function() {
+    originalUpdateLocalStorage();
+    if (document.getElementById('analytics') && document.getElementById('analytics').classList.contains('active')) {
+      updateAnalytics();
+    }
+  };
 });
