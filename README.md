@@ -1,35 +1,37 @@
-# 💸 ExpenseFlow – Smart Expense Tracker  
+# 💸 ExpenseFlow – Smart Expense Tracker
 
-**ExpenseFlow** is a modern and responsive **expense tracking web application** designed to help users manage their finances efficiently.  
-With a clean and elegant dark-themed UI, it allows users to monitor spending, analyze balance, and achieve their financial goals effortlessly.  
+**ExpenseFlow** is a modern and responsive **expense tracking we...on** designed to help users manage their finances efficiently.  
+With a clean and elegant dark-themed UI, it allows users to moni...alyze balance, and achieve their financial goals effortlessly.
 
 ---
 
 ## 🧭 Table of Contents
-- [✨ Features](#-features)
-- [🖥️ Overview](#️-overview)
-- [🛠️ Tech Stack](#️-tech-stack)
-- [📂 Folder Structure](#-folder-structure)
-- [🚀 How to Run Locally](#-how-to-run-locally)
-- [📸 Screenshots](#-screenshots)
-- [🧩 Future Enhancements](#-future-enhancements)
-- [🎯 Learning Outcomes](#-learning-outcomes)
-- [🤝 Contributing](#-contributing)
-- [🧾 License](#-license)
-- [👩‍💻 Author](#-author)
-- [💬 Quote](#-quote)
+
+- [✨ Features](#-features)  
+- [🖥️ Overview](#-overview)  
+- [🛠️ Tech Stack](#-tech-stack)  
+- [📂 Folder Structure](#-folder-structure)  
+- [🚀 How to Run Locally](#-how-to-run-locally)  
+- [📸 Screenshots](#-screenshots)  
+- [🧩 Future Enhancements](#-future-enhancements)  
+- [🎯 Learning Outcomes](#-learning-outcomes)  
+- [🤝 Contributing](#-contributing)  
+- [🧾 License](#-license)  
+- [👩‍💻 Author](#-author)  
+- [💬 Quote](#-quote)  
+- [🌟 Show Some Love](#-show-some-love)  
 
 ---
 
 ## ✨ Features
 
-- 📊 **Smart Dashboard** – Displays total balance, spending trends, and updates.  
-- 💰 **Expense & Income Management** – Add, edit, or remove transactions easily.  
-- 🎯 **Goal Tracking** – Set saving targets and measure progress.  
-- 📈 **Analytics View** – Track your financial health visually.  
-- 🌙 **Dark Mode UI** – Sleek and eye-comfortable dark theme.  
-- ⚙️ **Responsive Design** – Optimized for desktop and mobile devices.  
-- 🔐 **PWA Ready** – Manifest and service worker support for offline usage.  
+- 📊 **Smart Dashboard** – Displays total balance, spending trends, and updates  
+- 💰 **Expense & Income Management** – Add, edit, or remove transactions easily  
+- 🎯 **Goal Tracking** – Set saving targets and measure progress  
+- 📈 **Analytics View** – Track your financial health visually  
+- 🌙 **Dark Mode UI** – Sleek and eye-comfortable dark theme  
+- ⚙️ **Responsive Design** – Optimized for desktop and mobile devices  
+- 🔐 **PWA Ready** – Manifest and service worker support for offline usage  
 
 ---
 
@@ -48,7 +50,7 @@ The app emphasizes:
 ## 🛠️ Tech Stack
 
 | Category | Technology Used |
-|-----------|------------------|
+|----------|------------------|
 | **Frontend** | HTML5, CSS3, JavaScript (Vanilla JS) |
 | **Styling** | Tailwind CSS / Custom CSS |
 | **Version Control** | Git, GitHub |
@@ -59,15 +61,20 @@ The app emphasizes:
 
 ## 📂 Folder Structure
 
+```
+
 ExpenseFlow-expensetracker/
-│<br>
-├── expenseTracker.html # Main HTML layout <br>
-├── <br>expenseTracker.css # Styling and UI components<br>
-├──<br> trackerScript.js # Core JavaScript functionality<br>
-├── <br>manifest.json # Manifest file for PWA<br>
-├── <br>sw.js # Service Worker for offline caching<br>
-├── <br>LICENSE # MIT License<br>
-└── <br>README.md # Documentation<br>
+│
+├── expenseTracker.html      # Main HTML layout
+├── expenseTracker.css       # Styling and UI components
+├── trackerScript.js         # Core JavaScript functionality
+├── manifest.json            # Manifest file for PWA
+├── sw.js                    # Service Worker for offline caching
+├── LICENSE                  # MIT License
+└── README.md                # Documentation
+
+````
+
 ---
 
 ## 🚀 How to Run Locally
@@ -77,33 +84,41 @@ Follow these simple steps to set up and view the project on your local machine �
 ### 1️⃣ Clone the Repository
 ```bash
 git clone https://github.com/Renu-code123/ExpenseFlow-expensetracker.git
+````
+
 ### 2️⃣ Navigate into the Project Folder
 
+```bash
 cd ExpenseFlow-expensetracker
+```
 
-#3️⃣ Open the HTML File
-Simply open the expenseTracker.html file in your browser.
+### 3️⃣ Open the HTML File
 
-or run a live development server using:
+Simply open the `expenseTracker.html` file in your browser.
 
-bash
-Copy code
+Or run a live development server using:
+
+```bash
 npx live-server
+```
+
+---
 
 ## 📸 Screenshots
 
-### 🏠 Dashboard Preview  
+### 🏠 Dashboard Preview
+
 **Smart Money Management – Take control of your finances with our intuitive expense tracker.**
 
 ---
 
 ## 🧩 Future Enhancements
 
-- 🔗 Add backend for real-time data persistence (Firebase or Node.js)  
-- 📊 Integrate charting tools like Chart.js for expense visualization  
-- 🧾 Introduce login/authentication system  
-- 💡 Add category filters for detailed analysis  
-- 📱 Improve PWA support for full offline functionality  
+* 🔗 Add backend for real-time data persistence (Firebase or Node.js)
+* 📊 Integrate charting tools like Chart.js for expense visualization
+* 🧾 Introduce login/authentication system
+* 💡 Add category filters for detailed analysis
+* 📱 Improve PWA support for full offline functionality
 
 ---
 
@@ -111,53 +126,68 @@ npx live-server
 
 By building this project, you’ll learn:
 
-- 🎨 Responsive UI design using CSS  
-- 🧠 DOM manipulation using vanilla JavaScript  
-- 📂 Managing and displaying dynamic user data  
-- ⚙️ Working with manifests and service workers  
-- 🏗️ Structuring a scalable frontend project  
+* 🎨 Responsive UI design using CSS
+* 🧠 DOM manipulation using vanilla JavaScript
+* 📂 Managing and displaying dynamic user data
+* ⚙️ Working with manifests and service workers
+* 🏗️ Structuring a scalable frontend project
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are always welcome!  
+Contributions are always welcome!
 If you’d like to improve **ExpenseFlow**, follow these steps 👇
 
-1. **Fork the repository**  
+1. **Fork the repository**
 2. **Create a new branch**
+
    ```bash
    git checkout -b feature-name
+   ```
 3. **Commit your changes**
-git commit -m "Added a new feature"
 
+   ```bash
+   git commit -m "Added a new feature"
+   ```
 4. **Push to your branch**
-git push origin feature-name
 
+   ```bash
+   git push origin feature-name
+   ```
 5. **Open a Pull Request**
 
-## 🧾 License  
-This project is licensed under the **MIT License** – see the [LICENSE](./LICENSE) file for details.  
+---
+
+## 🧾 License
+
+This project is licensed under the **MIT License** – see the [LICENSE](./LICENSE) file for details.
 
 ---
 
-## 👩‍💻 Author  
-**Renu Kumari Prajapati**  
-🎓 Information Technology Student | 💻 Frontend Developer | 🌍 Open Source Enthusiast  
+## 👩‍💻 Author
 
-📫 **Connect with me:**  
-- **GitHub:** [@Renu-code123](https://github.com/Renu-code123)  
-- **LinkedIn:** [Your LinkedIn Profile Link Here]  
+**Renu Kumari Prajapati**
+🎓 Information Technology Student | 💻 Frontend Developer | 🌍 Open Source Enthusiast
 
----
+📫 **Connect with me:**
 
-## 💬 Quote  
-> “Smart money management begins with awareness — track it, plan it, and grow it with **ExpenseFlow**.”  
+* **GitHub:** [@Renu-code123](https://github.com/Renu-code123)
+* **LinkedIn:** [Your LinkedIn Profile Link Here]
 
 ---
 
-## 🌟 Show Some Love  
-If you found this project useful, don’t forget to ⭐ **Star** the repository!  
+## 💬 Quote
+
+> “Smart money management begins with awareness — track it, plan it, and grow it with **ExpenseFlow**.”
+
+---
+
+## 🌟 Show Some Love
+
+If you found this project useful, don’t forget to ⭐ **Star** the repository!
 Let’s build smarter tools for financial awareness together 💜
 
+```
 
+---

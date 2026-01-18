@@ -28,6 +28,8 @@ When you report a bug, include as much information as possible:
 - 🔍 Describe the **expected behavior** vs. the **actual behavior**
 - 🌐 Mention your **browser/device environment**
 
+---
+
 ### 💡 Suggesting Enhancements
 
 Enhancement suggestions help improve user experience and usability.  
@@ -51,6 +53,8 @@ Follow these steps when submitting your pull request:
 
 > After submission, the reviewer(s) may request design adjustments, code changes, or tests before final acceptance.
 
+---
+
 ### ✅ Steps to Contribute
 
 ```bash
@@ -69,36 +73,39 @@ git commit -m "Add: new feature or fix"
 # 5️⃣ Push to your branch
 git push origin feature/your-feature-name
 
-#6️⃣ Open a Pull Request on GitHub 🎉
+# 6️⃣ Open a Pull Request on GitHub 🎉
+````
+
+---
 
 ## 🎨 Styleguides
 
 ### 🧾 Git Commit Messages
 
-- ✍️ Use **present tense** (“Add feature” not “Added feature”)  
-- 💬 Use **imperative mood** (“Fix bug” not “Fixes bug”)  
-- 📏 Keep the first line under **72 characters**  
-- 🔗 Reference related issues when possible (`#issue-number`)
+* ✍️ Use **present tense** (“Add feature” not “Added feature”)
+* 💬 Use **imperative mood** (“Fix bug” not “Fixes bug”)
+* 📏 Keep the first line under **72 characters**
+* 🔗 Reference related issues when possible (`#issue-number`)
 
 ---
 
 ### 💻 JavaScript Guidelines
 
-- 🧠 Follow **JavaScript Standard Style** → [standardjs.com](https://standardjs.com/)  
-- 🐫 Use `camelCase` for variables and functions  
-- 🧱 Use `PascalCase` for constructors and classes  
-- 🔤 Write **clear, descriptive variable names**  
-- 💭 Add **comments** for complex or critical logic  
+* 🧠 Follow **JavaScript Standard Style** → [standardjs.com](https://standardjs.com/)
+* 🐫 Use `camelCase` for variables and functions
+* 🧱 Use `PascalCase` for constructors and classes
+* 🔤 Write **clear, descriptive variable names**
+* 💭 Add **comments** for complex or critical logic
 
 ---
 
 ### 🎨 HTML/CSS Guidelines
 
-- 🌐 Use **semantic HTML5** tags properly  
-- 🧩 Follow **BEM (Block Element Modifier)** naming convention for CSS classes  
-- ⬜ Maintain **2-space indentation** for consistency  
-- 💬 Comment **complex or responsive** CSS rules  
-- 🌙 Keep design **consistent** with dark theme guidelines  
+* 🌐 Use **semantic HTML5** tags properly
+* 🧩 Follow **BEM (Block Element Modifier)** naming convention for CSS classes
+* ⬜ Maintain **2-space indentation** for consistency
+* 💬 Comment **complex or responsive** CSS rules
+* 🌙 Keep design **consistent** with dark theme guidelines
 
 ---
 
@@ -118,30 +125,38 @@ open expenseTracker.html
 
 # OR run it using live server
 npx live-server
+```
+
+---
 
 ## 🏷️ Issue and Pull Request Labels
 
 We use the following labels to organize and identify contributions:
 
-| Label | Description |
-|-------|--------------|
-| 🐞 **bug** | Reports broken functionality |
-| 🚀 **enhancement** | Suggests new features or improvements |
-| 📚 **documentation** | Related to project documentation |
-| 🌱 **good first issue** | Ideal for new contributors |
-| 🤝 **help wanted** | Extra help or review needed |
+| Label                   | Description                           |
+| ----------------------- | ------------------------------------- |
+| 🐞 **bug**              | Reports broken functionality          |
+| 🚀 **enhancement**      | Suggests new features or improvements |
+| 📚 **documentation**    | Related to project documentation      |
+| 🌱 **good first issue** | Ideal for new contributors            |
+| 🤝 **help wanted**      | Extra help or review needed           |
 
 ---
 
 ## 💜 Additional Notes
 
-- ✅ Please ensure your code is **clean, readable, and tested**  
-- 🙌 Be **respectful and supportive** of all contributors  
-- 💡 Your contribution — big or small — makes **ExpenseFlow** better!  
+* ✅ Please ensure your code is **clean, readable, and tested**
+* 🙌 Be **respectful and supportive** of all contributors
+* 💡 Your contribution — big or small — makes **ExpenseFlow** better!
 
 ---
 
 ## 🌟 Let’s Build Together
 
-If you love **ExpenseFlow**, don’t forget to ⭐ **star the repository** and spread the word!  
+If you love **ExpenseFlow**, don’t forget to ⭐ **star the repository** and spread the word!
 Together, let’s build **smarter tools for financial awareness.** 💰💡
+
+```
+
+---
+
