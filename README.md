@@ -1,7 +1,7 @@
 # 💸 ExpenseFlow – Smart Expense Tracker
 
-**ExpenseFlow** is a modern and responsive **expense tracking we...on** designed to help users manage their finances efficiently.  
-With a clean and elegant dark-themed UI, it allows users to moni...alyze balance, and achieve their financial goals effortlessly.
+**ExpenseFlow** is a modern and responsive **expense tracking web application** designed to help users manage their finances efficiently.  
+With a clean and elegant dark-themed UI, it allows users to monitor spending, analyze balance, and achieve their financial goals effortlessly.  
 
 ---
 
@@ -19,19 +19,19 @@ With a clean and elegant dark-themed UI, it allows users to moni...alyze balance
 - [🧾 License](#-license)  
 - [👩‍💻 Author](#-author)  
 - [💬 Quote](#-quote)  
-- [🌟 Show Some Love](#-show-some-love)  
+- [🌟 Show Some Love](#-show-some-love)   
 
 ---
 
 ## ✨ Features
 
-- 📊 **Smart Dashboard** – Displays total balance, spending trends, and updates  
-- 💰 **Expense & Income Management** – Add, edit, or remove transactions easily  
-- 🎯 **Goal Tracking** – Set saving targets and measure progress  
-- 📈 **Analytics View** – Track your financial health visually  
-- 🌙 **Dark Mode UI** – Sleek and eye-comfortable dark theme  
-- ⚙️ **Responsive Design** – Optimized for desktop and mobile devices  
-- 🔐 **PWA Ready** – Manifest and service worker support for offline usage  
+- 📊 **Smart Dashboard** – Displays total balance, spending trends, and updates.  
+- 💰 **Expense & Income Management** – Add, edit, or remove transactions easily.  
+- 🎯 **Goal Tracking** – Set saving targets and measure progress.  
+- 📈 **Analytics View** – Track your financial health visually.  
+- 🌙 **Dark Mode UI** – Sleek and eye-comfortable dark theme.  
+- ⚙️ **Responsive Design** – Optimized for desktop and mobile devices.  
+- 🔐 **PWA Ready** – Manifest and service worker support for offline usage.  
 
 ---
 
@@ -187,7 +187,5 @@ This project is licensed under the **MIT License** – see the [LICENSE](./LICEN
 
 If you found this project useful, don’t forget to ⭐ **Star** the repository!
 Let’s build smarter tools for financial awareness together 💜
-
-```
 
 ---
