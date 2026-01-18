@@ -156,7 +156,5 @@ We use the following labels to organize and identify contributions:
 If you love **ExpenseFlow**, don’t forget to ⭐ **star the repository** and spread the word!
 Together, let’s build **smarter tools for financial awareness.** 💰💡
 
-```
-
 ---
 
