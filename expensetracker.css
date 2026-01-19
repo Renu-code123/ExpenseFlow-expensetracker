@@ -36,6 +36,18 @@
   box-sizing: border-box;
 }
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -181,12 +193,9 @@ body {
 }
 
 .container {
-  max-width: 1200px;
+  width: 100%;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 0 2rem;
-  display: grid;
-  gap: 2rem;
-  margin-bottom: 4rem;
 }
 
 /* Balance Card */
@@ -259,10 +268,10 @@ body {
 
 /* Income & Expense Cards */
 .inc-exp-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  animation: fadeInUp 1s ease-out 0.6s both;
+  display: flex;
+  width: 100%;
+  max-width: 100%;
+  gap: 1rem;
 }
 
 .income-card,
@@ -538,6 +547,8 @@ body {
   position: relative;
   transition: all 0.3s ease;
   animation: slideInLeft 0.3s ease-out;
+  max-width: 100%;
+  word-break: break-word;
 }
 
 .list li:hover {
