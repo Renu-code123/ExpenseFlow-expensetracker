@@ -30,6 +30,11 @@ router.post('/', auth, async (req, res) => {
 
     const expense = new Expense({ ...value, user: req.user._id });
     await expense.save();
+    
+    // Emit real-time update to all user's connected devices
+    const io = req.app.get('io');
+    io.to(`user_${req.user._id}`).emit('expense_created', expense);
+    
     res.status(201).json(expense);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -48,6 +53,11 @@ router.put('/:id', auth, async (req, res) => {
       { new: true }
     );
     if (!expense) return res.status(404).json({ error: 'Expense not found' });
+    
+    // Emit real-time update
+    const io = req.app.get('io');
+    io.to(`user_${req.user._id}`).emit('expense_updated', expense);
+    
     res.json(expense);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -59,6 +69,11 @@ router.delete('/:id', auth, async (req, res) => {
   try {
     const expense = await Expense.findOneAndDelete({ _id: req.params.id, user: req.user._id });
     if (!expense) return res.status(404).json({ error: 'Expense not found' });
+    
+    // Emit real-time update
+    const io = req.app.get('io');
+    io.to(`user_${req.user._id}`).emit('expense_deleted', { id: req.params.id });
+    
     res.json({ message: 'Expense deleted' });
   } catch (error) {
     res.status(500).json({ error: error.message });
