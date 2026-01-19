@@ -1440,3 +1440,31 @@ body {
     right: max(20px, env(safe-area-inset-right) + 20px);
   }
 }
+.empty-state {
+  list-style: none;
+}
+
+.empty-state-content {
+  text-align: center;
+  padding: 2.5rem 1.5rem;
+  border: 1px dashed rgba(100, 255, 218, 0.4);
+  border-radius: 12px;
+  background: rgba(100, 255, 218, 0.05);
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.7;
+}
+
+.empty-cta {
+  margin-top: 1rem;
+  background-color: #64ffda;
+  color: #0f0f23;
+  border: none;
+  padding: 0.6rem 1.4rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}

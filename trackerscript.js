@@ -352,19 +352,38 @@ function displayTransactions() {
   
   const filteredTransactions = getFilteredTransactions();
   
-  if (filteredTransactions.length === 0) {
-    const emptyMessage = document.createElement('div');
-    emptyMessage.className = 'empty-state';
+if (filteredTransactions.length === 0) {
+  const emptyMessage = document.createElement('li');
+  emptyMessage.className = 'empty-state';
+
+  // 👇 FIRST TIME USER
+  if (transactions.length === 0) {
     emptyMessage.innerHTML = `
-      <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
-        <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
-        <p>No ${currentFilter === 'all' ? '' : currentFilter} transactions found.</p>
-        <small>Start by adding your first transaction below.</small>
+      <div class="empty-state-content">
+        <i class="fas fa-wallet empty-icon"></i>
+        <h3>No expenses yet</h3>
+        <p>Add your first transaction to start tracking your money.</p>
+        <button class="empty-cta" onclick="document.getElementById('text').focus()">
+          + Add Transaction
+        </button>
       </div>
     `;
-    list.appendChild(emptyMessage);
-    return;
+  } 
+  // 👇 FILTER RESULT EMPTY
+  else {
+    emptyMessage.innerHTML = `
+      <div class="empty-state-content">
+        <i class="fas fa-filter empty-icon"></i>
+        <h3>No matching transactions</h3>
+        <p>Try clearing or adjusting your filters.</p>
+      </div>
+    `;
   }
+
+  list.appendChild(emptyMessage);
+  return;
+}
+
   
   filteredTransactions
     .sort((a, b) => new Date(b.date) - new Date(a.date))
