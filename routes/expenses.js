@@ -1,6 +1,7 @@
 const express = require('express');
 const Joi = require('joi');
 const Expense = require('../models/Expense');
+const auth = require('../middleware/auth');
 const router = express.Router();
 
 const expenseSchema = Joi.object({
@@ -11,23 +12,23 @@ const expenseSchema = Joi.object({
   date: Joi.date().optional()
 });
 
-// GET all expenses
-router.get('/', async (req, res) => {
+// GET all expenses for authenticated user
+router.get('/', auth, async (req, res) => {
   try {
-    const expenses = await Expense.find().sort({ date: -1 });
+    const expenses = await Expense.find({ user: req.user._id }).sort({ date: -1 });
     res.json(expenses);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// POST new expense
-router.post('/', async (req, res) => {
+// POST new expense for authenticated user
+router.post('/', auth, async (req, res) => {
   try {
     const { error, value } = expenseSchema.validate(req.body);
     if (error) return res.status(400).json({ error: error.details[0].message });
 
-    const expense = new Expense(value);
+    const expense = new Expense({ ...value, user: req.user._id });
     await expense.save();
     res.status(201).json(expense);
   } catch (error) {
@@ -35,13 +36,17 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT update expense
-router.put('/:id', async (req, res) => {
+// PUT update expense for authenticated user
+router.put('/:id', auth, async (req, res) => {
   try {
     const { error, value } = expenseSchema.validate(req.body);
     if (error) return res.status(400).json({ error: error.details[0].message });
 
-    const expense = await Expense.findByIdAndUpdate(req.params.id, value, { new: true });
+    const expense = await Expense.findOneAndUpdate(
+      { _id: req.params.id, user: req.user._id },
+      value,
+      { new: true }
+    );
     if (!expense) return res.status(404).json({ error: 'Expense not found' });
     res.json(expense);
   } catch (error) {
@@ -49,10 +54,10 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE expense
-router.delete('/:id', async (req, res) => {
+// DELETE expense for authenticated user
+router.delete('/:id', auth, async (req, res) => {
   try {
-    const expense = await Expense.findByIdAndDelete(req.params.id);
+    const expense = await Expense.findOneAndDelete({ _id: req.params.id, user: req.user._id });
     if (!expense) return res.status(404).json({ error: 'Expense not found' });
     res.json({ message: 'Expense deleted' });
   } catch (error) {
