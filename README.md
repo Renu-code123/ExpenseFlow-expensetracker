@@ -1,4 +1,3 @@
-# 💸 ExpenseFlow – Smart Expense Tracker  
 
 **ExpenseFlow** is a modern and responsive **expense tracking web application** designed to help users manage their finances efficiently.  
 With a clean and elegant dark-themed UI, it allows users to monitor spending, analyze balance, and achieve their financial goals effortlessly.  
@@ -59,15 +58,18 @@ The app emphasizes:
 
 ## 📂 Folder Structure
 
+```tree
 ExpenseFlow-expensetracker/
-│<br>
-├── expenseTracker.html # Main HTML layout <br>
-├── <br>expenseTracker.css # Styling and UI components<br>
-├──<br> trackerScript.js # Core JavaScript functionality<br>
-├── <br>manifest.json # Manifest file for PWA<br>
-├── <br>sw.js # Service Worker for offline caching<br>
-├── <br>LICENSE # MIT License<br>
-└── <br>README.md # Documentation<br>
+│
+├── expenseTracker.html   # Main HTML layout
+├── expenseTracker.css    # Styling and UI components
+├── trackerScript.js      # Core JavaScript functionality
+├── manifest.json         # Manifest file for PWA
+├── sw.js                 # Service Worker for offline caching
+├── LICENSE               # MIT License
+└── README.md             # Documentation
+```
+
 ---
 
 ## 🚀 How to Run Locally
@@ -77,20 +79,27 @@ Follow these simple steps to set up and view the project on your local machine �
 ### 1️⃣ Clone the Repository
 ```bash
 git clone https://github.com/Renu-code123/ExpenseFlow-expensetracker.git
+```
+
 ### 2️⃣ Navigate into the Project Folder
 
+```bash
 cd ExpenseFlow-expensetracker
+```
 
 #3️⃣ Open the HTML File
 Simply open the expenseTracker.html file in your browser.
 
 or run a live development server using:
 
-bash
-Copy code
+```bash
 npx live-server
+```
 
 ## 📸 Screenshots
+<img width="1919" height="837" alt="image" src="https://github.com/user-attachments/assets/b8386693-f852-48f0-bcf0-dbbdb5ce141a" />
+<img width="1919" height="838" alt="image" src="https://github.com/user-attachments/assets/9f73707e-16ba-4866-865c-e938dd0c0ce2" />
+
 
 ### 🏠 Dashboard Preview  
 **Smart Money Management – Take control of your finances with our intuitive expense tracker.**
@@ -126,15 +135,30 @@ If you’d like to improve **ExpenseFlow**, follow these steps 👇
 
 1. **Fork the repository**  
 2. **Create a new branch**
-   ```bash
+ ```bash
    git checkout -b feature-name
+ ```
+   
 3. **Commit your changes**
+```bash
 git commit -m "Added a new feature"
+```
 
 4. **Push to your branch**
+```bash
 git push origin feature-name
+```
 
-5. **Open a Pull Request**
+7. **Open a Pull Request**
+
+
+
+## How to Use ExpenseFlow
+
+1. Open the application in your browser.
+2. Add a new expense using the expense input form.
+3. View all added expenses in the dashboard.
+4. Track and manage your daily spending easily.
 
 ## 🧾 License  
 This project is licensed under the **MIT License** – see the [LICENSE](./LICENSE) file for details.  
@@ -157,17 +181,3 @@ This project is licensed under the **MIT License** – see the [LICENSE](./LICEN
 ## 🌟 Show Some Love  
 If you found this project useful, don’t forget to ⭐ **Star** the repository!  
 Let’s build smarter tools for financial awareness together 💜
-
-
-## How to Use ExpenseFlow
-
-1. Open the application in your browser.
-2. Add a new expense using the expense input form.
-3. View all added expenses in the dashboard.
-4. Track and manage your daily spending easily.
-
-## Screenshots
-
-Screenshots of the application will be added here to demonstrate the user
-interface and application flow.
-
