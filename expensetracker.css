@@ -228,25 +228,55 @@ body {
   box-sizing: border-box;
 }
 
-/* Balance Card */
+/* Balance Card - Redesigned */
 .balance-card {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px);
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 2rem;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  backdrop-filter: blur(30px);
+  border-radius: 24px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  padding: 2.5rem;
   text-align: center;
-  box-shadow: var(--shadow-glass);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+    0 0 60px rgba(100, 255, 218, 0.1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   animation: fadeInUp 1s ease-out 0.4s both;
   width: 100%;
   box-sizing: border-box;
   margin-bottom: 0;
 }
 
+.balance-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    transparent, 
+    var(--accent-primary), 
+    transparent
+  );
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
 .balance-card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--shadow-hover);
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.2) inset,
+    0 0 80px rgba(100, 255, 218, 0.2);
+  border-color: rgba(100, 255, 218, 0.3);
+}
+
+.balance-card:hover::before {
+  opacity: 1;
 }
 
 .balance-header {
@@ -316,33 +346,78 @@ body {
 
 .income-card,
 .expense-card {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px);
-  border-radius: 15px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+  backdrop-filter: blur(25px);
+  border-radius: 20px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  padding: 2rem;
   display: flex;
   align-items: center;
-  gap: 1rem;
-  box-shadow: var(--shadow-glass);
-  transition: all 0.3s ease;
+  gap: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.income-card::before,
+.expense-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at top right, rgba(100, 255, 218, 0.1), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.income-card {
+  border-left: 3px solid var(--success);
+}
+
+.expense-card {
+  border-left: 3px solid var(--error);
 }
 
 .income-card:hover,
 .expense-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-hover);
+  transform: translateY(-6px) scale(1.03);
+  box-shadow: 
+    0 16px 40px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.15) inset,
+    0 0 40px rgba(100, 255, 218, 0.15);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.income-card:hover::before,
+.expense-card:hover::before {
+  opacity: 1;
 }
 
 .card-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 15px;
+  width: 70px;
+  height: 70px;
+  border-radius: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: 1.75rem;
   color: white;
+  position: relative;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.income-card:hover .card-icon,
+.expense-card:hover .card-icon {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
 }
 
 .income-icon {
@@ -379,19 +454,48 @@ body {
   letter-spacing: -0.5px;
 }
 
-/* History Section */
+/* History Section - Redesigned */
 .history-section {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px);
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 2rem;
-  box-shadow: var(--shadow-glass);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+  backdrop-filter: blur(30px);
+  border-radius: 24px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  padding: 2.5rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
   animation: fadeInUp 1s ease-out 0.8s both;
   width: 100%;
   box-sizing: border-box;
   margin-top: 0;
   margin-bottom: 0;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.history-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    transparent, 
+    var(--accent-primary), 
+    transparent
+  );
+  opacity: 0.5;
+}
+
+.history-section:hover {
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.15) inset,
+    0 0 60px rgba(100, 255, 218, 0.1);
+  border-color: rgba(100, 255, 218, 0.2);
 }
 
 .section-header {
@@ -589,23 +693,44 @@ body {
 }
 
 .list li {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 1rem;
-  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 0.75rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   position: relative;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   animation: slideInLeft 0.3s ease-out;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: currentColor;
+  transition: width 0.4s ease;
+  z-index: 0;
 }
 
 .list li:hover {
-  transform: translateX(5px);
-  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(8px) translateY(-2px);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.06) 100%);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.list li:hover::before {
+  width: 6px;
 }
 
 .list li.plus {
@@ -647,17 +772,46 @@ body {
 
 /* Data Management Section */
 .data-management-section {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px);
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 2rem;
-  box-shadow: var(--shadow-glass);
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+  backdrop-filter: blur(30px);
+  border-radius: 24px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  padding: 2.5rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
   width: 100%;
   box-sizing: border-box;
   margin-top: 0;
   margin-bottom: 0;
   animation: fadeInUp 1s ease-out 0.9s both;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.data-management-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    transparent, 
+    var(--accent-primary), 
+    transparent
+  );
+  opacity: 0.5;
+}
+
+.data-management-section:hover {
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.15) inset,
+    0 0 60px rgba(100, 255, 218, 0.1);
+  border-color: rgba(100, 255, 218, 0.2);
 }
 
 .data-management-section h3 {
@@ -795,19 +949,48 @@ body {
   accent-color: var(--accent-primary);
 }
 
-/* Form Section */
+/* Form Section - Redesigned */
 .form-section {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px);
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 2rem;
-  box-shadow: var(--shadow-glass);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+  backdrop-filter: blur(30px);
+  border-radius: 24px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  padding: 2.5rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
   animation: fadeInUp 1s ease-out 1s both;
   width: 100%;
   box-sizing: border-box;
   margin-top: 0;
   margin-bottom: 0;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.form-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    transparent, 
+    var(--accent-primary), 
+    transparent
+  );
+  opacity: 0.5;
+}
+
+.form-section:hover {
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.15) inset,
+    0 0 60px rgba(100, 255, 218, 0.1);
+  border-color: rgba(100, 255, 218, 0.2);
 }
 
 .form-section h3 {
