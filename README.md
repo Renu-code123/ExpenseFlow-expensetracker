@@ -159,3 +159,15 @@ If you found this project useful, don’t forget to ⭐ **Star** the repository!
 Let’s build smarter tools for financial awareness together 💜
 
 
+## How to Use ExpenseFlow
+
+1. Open the application in your browser.
+2. Add a new expense using the expense input form.
+3. View all added expenses in the dashboard.
+4. Track and manage your daily spending easily.
+
+## Screenshots
+
+Screenshots of the application will be added here to demonstrate the user
+interface and application flow.
+
