@@ -4,6 +4,7 @@ const socketIo = require('socket.io');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const socketAuth = require('./middleware/socketAuth');
+const CronJobs = require('./services/cronJobs');
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
@@ -31,7 +32,12 @@ app.set('io', io);
 
 // Database connection
 mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('MongoDB connected'))
+  .then(() => {
+    console.log('MongoDB connected');
+    // Initialize cron jobs after DB connection
+    CronJobs.init();
+    console.log('Email cron jobs initialized');
+  })
   .catch(err => console.error('MongoDB connection error:', err));
 
 // Socket.IO authentication
@@ -69,6 +75,7 @@ io.on('connection', (socket) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/sync', syncRoutes);
+app.use('/api/notifications', require('./routes/notifications'));
 
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
