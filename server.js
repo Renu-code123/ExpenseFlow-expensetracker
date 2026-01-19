@@ -76,6 +76,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/sync', syncRoutes);
 app.use('/api/notifications', require('./routes/notifications'));
+app.use('/api/receipts', require('./routes/receipts'));
 
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
