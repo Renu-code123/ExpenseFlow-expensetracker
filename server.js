@@ -2,9 +2,13 @@ const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const mongoose = require('mongoose');
+const helmet = require('helmet');
 const cors = require('cors');
 const socketAuth = require('./middleware/socketAuth');
 const CronJobs = require('./services/cronJobs');
+const { generalLimiter } = require('./middleware/rateLimiter');
+const { sanitizeInput, mongoSanitizeMiddleware } = require('./middleware/sanitization');
+const securityMonitor = require('./services/securityMonitor');
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
@@ -15,17 +19,84 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
+    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    methods: ["GET", "POST"],
+    credentials: true
   }
 });
 
 const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+// Security middleware
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"]
+    }
+  },
+  crossOriginEmbedderPolicy: false
+}));
+
+// CORS configuration
+app.use(cors({
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      process.env.FRONTEND_URL
+    ].filter(Boolean);
+    
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// Rate limiting
+app.use(generalLimiter);
+
+// Input sanitization
+app.use(mongoSanitizeMiddleware);
+app.use(sanitizeInput);
+
+// Security monitoring
+app.use(securityMonitor.blockSuspiciousIPs());
+
+// Body parsing middleware
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Static files
 app.use(express.static('.'));
+
+// Security logging middleware
+app.use((req, res, next) => {
+  const originalSend = res.send;
+  res.send = function(data) {
+    // Log failed requests
+    if (res.statusCode >= 400) {
+      securityMonitor.logSecurityEvent(req, 'suspicious_activity', {
+        statusCode: res.statusCode,
+        response: typeof data === 'string' ? data.substring(0, 200) : 'Non-string response'
+      });
+    }
+    originalSend.call(this, data);
+  };
+  next();
+});
 
 // Make io available to routes
 app.set('io', io);
@@ -72,14 +143,33 @@ io.on('connection', (socket) => {
 });
 
 // Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/expenses', expenseRoutes);
+app.use('/api/auth', require('./middleware/rateLimiter').authLimiter, authRoutes);
+app.use('/api/expenses', require('./middleware/rateLimiter').expenseLimiter, expenseRoutes);
 app.use('/api/sync', syncRoutes);
-app.use('/api/notifications', require('./routes/notifications'));
-app.use('/api/receipts', require('./routes/receipts'));
+app.use('/api/notifications', require('./middleware/rateLimiter').emailLimiter, require('./routes/notifications'));
+app.use('/api/receipts', require('./middleware/rateLimiter').uploadLimiter, require('./routes/receipts'));
 app.use('/api/budgets', require('./routes/budgets'));
 app.use('/api/goals', require('./routes/goals'));
+app.use('/api/security', require('./routes/security'));
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error('Global error:', err);
+  
+  // Log security-related errors
+  if (err.message.includes('CORS') || err.message.includes('rate limit')) {
+    securityMonitor.logSecurityEvent(req, 'suspicious_activity', {
+      error: err.message,
+      statusCode: 403
+    });
+  }
+  
+  res.status(err.status || 500).json({
+    error: process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message
+  });
+});
 
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  console.log('Security features enabled: Rate limiting, Input sanitization, Security headers');
 });
