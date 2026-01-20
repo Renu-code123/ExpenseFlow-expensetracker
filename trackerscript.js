@@ -222,30 +222,35 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  document.querySelectorAll(".nav-link").forEach(link => {
-    link.addEventListener("click", () => {
-      navMenu.classList.remove("active");
-    });
-  });
+  if (isNaN(amount.value) || amount.value === "0") {
+    showNotification("Please enter a valid amount", "error");
+    return;
+  }
 
-  /* =====================
-     ADD TRANSACTION
-  ====================== */
-  function addTransaction(e) {
-    e.preventDefault();
+  let transactionAmount = +amount.value;
 
-    let value = +amount.value;
-    if (type.value === "expense") value = -Math.abs(value);
+  if (type.value === "expense" && transactionAmount > 0) {
+    transactionAmount = -transactionAmount;
+  } else if (type.value === "income" && transactionAmount < 0) {
+    transactionAmount = Math.abs(transactionAmount);
+  }
 
-    const transaction = {
-      id: Date.now(),
-      text: text.value,
-      amount: value
-    };
+  const transaction = {
+    id: Math.floor(Math.random() * 1000000000),
+    text: text.value.trim(),
+    amount: transactionAmount,
+    category: category.value,
+    type: type.value,
+    date: new Date().toISOString(),
+  };
 
+  showLoader();
+
+  setTimeout(() => {
     transactions.push(transaction);
     updateLocalStorage();
-    init();
+    displayTransactions();
+    updateValues();
 
     text.value = "";
     amount.value = "";
@@ -258,37 +263,142 @@ document.addEventListener("DOMContentLoaded", () => {
     hideSuggestions();
   }
 
-  function updateValues() {
-    const amounts = transactions.map(t => t.amount);
-    const total = amounts.reduce((a, b) => a + b, 0);
-    const income = amounts.filter(v => v > 0).reduce((a, b) => a + b, 0);
-    const expense = amounts.filter(v => v < 0).reduce((a, b) => a + b, 0) * -1;
+  list.appendChild(emptyMessage);
+  return;
+}
 
-    balance.textContent = `₹${total.toFixed(2)}`;
-    moneyPlus.textContent = `+₹${income.toFixed(2)}`;
-    moneyMinus.textContent = `-₹${expense.toFixed(2)}`;
-  }
+  
+  filteredTransactions
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .forEach(addTransactionDOM);
+}
 
-  function init() {
-    list.innerHTML = "";
-    transactions.forEach(addTransactionDOM);
-    updateValues();
-  }
+function addTransactionDOM(transaction) {
+  const item = document.createElement("li");
+  item.classList.add(transaction.amount < 0 ? "minus" : "plus");
 
-  function updateLocalStorage() {
-    localStorage.setItem("transactions", JSON.stringify(transactions));
-  }
+  item.innerHTML = `
+    <div>
+      <strong>${transaction.text}</strong>
+      <span>₹${Math.abs(transaction.amount).toFixed(2)}</span>
+    </div>
+    <button class="delete-btn" onclick="removeTransaction(${transaction.id})">
+      <i class="fas fa-trash"></i>
+    </button>
+  `;
 
-  /* =====================
-     GLOBAL DELETE
-  ====================== */
-  window.removeTransaction = function(id) {
-    transactions = transactions.filter(t => t.id !== id);
+  list.appendChild(item);
+}
+
+// ================= UPDATE VALUES =================
+function updateValues() {
+  const amounts = transactions.map((t) => t.amount);
+
+  const total = amounts.reduce((acc, val) => acc + val, 0);
+  const income = amounts.filter((v) => v > 0).reduce((a, b) => a + b, 0);
+  const expense =
+    amounts.filter((v) => v < 0).reduce((a, b) => a + b, 0) * -1;
+
+  balance.innerHTML = `₹${total.toFixed(2)}`;
+  money_plus.innerHTML = `+₹${income.toFixed(2)}`;
+  money_minus.innerHTML = `-₹${expense.toFixed(2)}`;
+}
+
+// ================= REMOVE TRANSACTION =================
+function removeTransaction(id) {
+  showLoader();
+
+  setTimeout(() => {
+    transactions = transactions.filter((t) => t.id !== id);
     updateLocalStorage();
-    init();
+    displayTransactions();
+    updateValues();
+    hideLoader();
+    showNotification("Transaction deleted successfully", "success");
+  }, 300);
+}
+
+// ================= LOCAL STORAGE =================
+function updateLocalStorage() {
+  localStorage.setItem("transactions", JSON.stringify(transactions));
+}
+
+// ================= NOTIFICATION =================
+function showNotification(message, type = "info") {
+  alert(message);
+}
+
+// ================= IMPORT DATA =================
+function importDataFromFile(file) {
+  showLoader();
+
+  const reader = new FileReader();
+  const ext = file.name.split(".").pop().toLowerCase();
+
+  reader.onload = function (e) {
+    try {
+      let importedTransactions = [];
+
+      if (ext === "json") {
+        const data = JSON.parse(e.target.result);
+        importedTransactions = data.transactions || data;
+      }
+
+      if (!Array.isArray(importedTransactions)) {
+        throw new Error("Invalid file format");
+      }
+
+      importedTransactions.forEach((t) => {
+        t.id = t.id || Math.floor(Math.random() * 1000000000);
+      });
+
+      if (mergeDataCheckbox.checked) {
+        transactions.push(...importedTransactions);
+      } else {
+        transactions = importedTransactions;
+      }
+
+      updateLocalStorage();
+      displayTransactions();
+      updateValues();
+
+      importFileInput.value = "";
+      importDataBtn.disabled = true;
+
+      hideLoader();
+      showNotification("Data imported successfully", "success");
+    } catch (err) {
+      hideLoader();
+      showNotification("Import failed", "error");
+    }
   };
 
-  form.addEventListener("submit", addTransaction);
+  reader.readAsText(file);
+}
 
-  init();
+// ================= INIT =================
+function Init() {
+  displayTransactions();
+  updateValues();
+}
+
+form.addEventListener("submit", addTransaction);
+Init();
+
+lucide.createIcons();
+const scrollToTopBtn = document.getElementById("scrollToTopBtn");
+
+window.addEventListener("scroll", () => {
+  if (window.scrollY > 300) {
+    scrollToTopBtn.classList.add("show");
+  } else {
+    scrollToTopBtn.classList.remove("show");
+  }
+});
+
+scrollToTopBtn.addEventListener("click", () => {
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth",
+  });
 });

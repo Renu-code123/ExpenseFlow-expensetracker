@@ -5,25 +5,25 @@
   --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
   --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
   --dark-gradient: linear-gradient(135deg, #232526 0%, #414345 100%);
-  
+
   /* Background Colors */
   --bg-primary: #0f0f23;
   --bg-secondary: #1a1a2e;
   --bg-tertiary: #16213e;
   --bg-glass: rgba(255, 255, 255, 0.1);
-  
+
   /* Text Colors */
   --text-primary: #ffffff;
   --text-secondary: #b4b4b4;
   --text-accent: #64ffda;
-  
+
   /* Accent Colors */
   --accent-primary: #64ffda;
   --accent-secondary: #ff6b9d;
   --success: #00e676;
   --error: #ff5722;
   --warning: #ffc107;
-  
+
   /* Shadows */
   --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
   --shadow-hover: 0 15px 35px rgba(0, 0, 0, 0.1);
@@ -42,7 +42,8 @@
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
@@ -55,7 +56,7 @@ html {
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: var(--bg-primary);
-  background-image: 
+  background-image:
     radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
     radial-gradient(circle at 80% 20%, rgba(255, 107, 157, 0.3) 0%, transparent 50%),
     radial-gradient(circle at 40% 40%, rgba(100, 255, 218, 0.2) 0%, transparent 50%);
@@ -209,6 +210,9 @@ body {
   box-shadow: var(--shadow-glass);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   animation: fadeInUp 1s ease-out 0.4s both;
+  width: 100%;
+  max-width: 24rem;
+  margin: 0 auto;
 }
 
 .balance-card:hover {
@@ -266,12 +270,20 @@ body {
   font-size: 0.9rem;
 }
 
-/* Income & Expense Cards */
-.inc-exp-container {
-  display: flex;
+/* Dashboard Grid (Mobile First) */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
   width: 100%;
-  max-width: 100%;
-  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+/* Desktop View */
+@media (min-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .income-card,
@@ -286,6 +298,9 @@ body {
   gap: 1rem;
   box-shadow: var(--shadow-glass);
   transition: all 0.3s ease;
+  width: 100%;
+  max-width: 24rem;
+  margin: 0 auto;
 }
 
 .income-card:hover,
@@ -1004,6 +1019,7 @@ body {
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1015,6 +1031,7 @@ body {
     opacity: 0;
     transform: translateX(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -1022,9 +1039,12 @@ body {
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.05);
   }
@@ -1102,12 +1122,12 @@ body {
     padding: 2rem 0;
     transition: left 0.3s ease;
   }
-  
+
   .nav-menu.active {
     left: 0;
     display: flex;
   }
-  
+
   .nav-link {
     font-size: 1.2rem;
     padding: 1rem 2rem;
@@ -1115,23 +1135,23 @@ body {
     text-align: center;
     margin: 0.5rem 0;
   }
-  
+
   .nav-toggle {
     display: flex;
   }
-  
+
   .nav-toggle.active .bar:nth-child(2) {
     opacity: 0;
   }
-  
+
   .nav-toggle.active .bar:nth-child(1) {
     transform: translateY(8px) rotate(45deg);
   }
-  
+
   .nav-toggle.active .bar:nth-child(3) {
     transform: translateY(-8px) rotate(-45deg);
   }
-  
+
   .user-profile {
     display: none;
   }
@@ -1142,29 +1162,29 @@ body {
   .hero-title {
     font-size: 2.5rem;
   }
-  
+
   .container {
     padding: 0 1rem;
   }
-  
+
   .inc-exp-container {
     grid-template-columns: 1fr;
   }
-  
+
   .form-row {
     grid-template-columns: 1fr;
   }
-  
+
   .section-header {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .footer-bottom .footer-container {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .footer-stats {
     justify-content: center;
   }
@@ -1174,38 +1194,38 @@ body {
   .hero-title {
     font-size: 2rem;
   }
-  
+
   .balance-amount {
     font-size: 2rem;
   }
-  
+
   .income-card,
   .expense-card {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .card-icon {
     width: 50px;
     height: 50px;
   }
-  
+
   .advanced-filters {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .date-filters,
   .amount-filters {
     justify-content: stretch;
   }
-  
+
   .date-input,
   .amount-input,
   .category-select {
     flex: 1;
   }
-  
+
   .data-actions {
     grid-template-columns: 1fr;
   }
@@ -1364,6 +1384,7 @@ body {
 
 /* Touch and gesture improvements */
 @media (hover: none) and (pointer: coarse) {
+
   /* Touch device specific styles */
   .filter-btn,
   .export-btn,
@@ -1372,25 +1393,26 @@ body {
     min-height: 44px;
     padding: 0.75rem 1.5rem;
   }
-  
+
   .delete-btn {
     min-width: 44px;
     min-height: 44px;
   }
-  
+
   .nav-link {
     padding: 1rem 1.5rem;
   }
-  
+
   /* Larger tap targets for mobile */
   .category-select,
   .date-input,
   .amount-input,
   .search-input {
     min-height: 48px;
-    font-size: 16px; /* Prevents zoom on iOS */
+    font-size: 16px;
+    /* Prevents zoom on iOS */
   }
-  
+
   .form-control input,
   .form-control select {
     min-height: 48px;
@@ -1404,6 +1426,7 @@ body {
     transform: translateY(100%);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -1415,6 +1438,7 @@ body {
     transform: translateX(-50%) translateY(-100%);
     opacity: 0;
   }
+
   to {
     transform: translateX(-50%) translateY(0);
     opacity: 1;
@@ -1426,6 +1450,7 @@ body {
     transform: translateX(100%);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;
@@ -1438,136 +1463,44 @@ body {
     padding-left: max(0px, env(safe-area-inset-left));
     padding-right: max(0px, env(safe-area-inset-right));
   }
-  
+
   .main-content {
     padding-left: max(2rem, env(safe-area-inset-left) + 2rem);
     padding-right: max(2rem, env(safe-area-inset-right) + 2rem);
     padding-bottom: max(2rem, env(safe-area-inset-bottom) + 2rem);
   }
-  
+
   .install-prompt {
     bottom: max(20px, env(safe-area-inset-bottom) + 20px);
     left: max(20px, env(safe-area-inset-left) + 20px);
     right: max(20px, env(safe-area-inset-right) + 20px);
   }
 }
+ |  | 
+1468
+ 
 
-@media (max-width: 768px) {
-
-  body {
-    overflow-x: hidden;
-  }
-
-  .nav-toggle {
-    display: block;
-  }
-
-  .nav-menu {
-    position: absolute;
-    top: 64px;
-    left: 0;
-    width: 100%;
-    background: #0f0f23;
-    flex-direction: column;
-    display: none;
-  }
-
-  .nav-menu.active {
-    display: flex;
-  }
-
-  .user-profile {
-    display: none;
-  }
-
-  .inc-exp-container {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .income-card,
-  .expense-card {
-    width: 100%;
-    max-width: 100%;
-  }
-
-  form {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
+.empty-state {
+  list-style: none;
+  display: flex;
+  justify-content: center;
 }
 
-/* =========================
-   HAMBURGER MENU FIX
-   ========================= */
 
-/* Default: hide toggle */
-.nav-toggle {
-  display: none;
-}
-
-/* Hamburger bars */
-.nav-toggle .bar {
-  width: 25px;
-  height: 3px;
-  background-color: #64ffda;
-  margin: 5px 0;
-  display: block;
-  transition: 0.3s ease;
-}
-
-/* Show hamburger on tablets & phones */
-@media (max-width: 1024px) {
-  .nav-toggle {
-    display: block;
-    cursor: pointer;
-    z-index: 1001;
-  }
-
-  .nav-menu {
-    position: absolute;
-    top: 64px;
-    left: 0;
-    width: 100%;
-    background: #0f0f23;
-    flex-direction: column;
-    align-items: center;
-    display: none;
-    z-index: 1000;
-  }
-
-  .nav-menu.active {
-    display: flex;
-  }
-
-  .nav-link {
-    padding: 1rem;
-    width: 100%;
-    text-align: center;
-  }
-
-  .user-profile {
-    display: none;
-  }
-}
-
-/* Extra-small devices (<400px) */
-@media (max-width: 400px) {
-  .hero-title {
-    font-size: 1.5rem;
-  }
-
-  .hero-subtitle {
-    font-size: 0.9rem;
-  }
+.empty-state-content {
+  text-align: center;
+  padding: 2.5rem 1.5rem;
+  border: 1px dashed rgba(100, 255, 218, 0.4);
+  border-radius: 12px;
+  background: rgba(100, 255, 218, 0.05);
 }
 
 /* ULTRA SMALL DEVICES (320px)*/
 @media (max-width: 360px) {
 
   /* Global */
-  html, body {
+  html,
+  body {
     overflow-x: hidden;
   }
 
@@ -1659,6 +1592,7 @@ body {
   .footer-links a {
     font-size: 0.85rem;
   }
+
   .nav-container {
     padding: 0 0.75rem;
   }
