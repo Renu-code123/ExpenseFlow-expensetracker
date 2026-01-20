@@ -2,6 +2,7 @@ const cron = require('node-cron');
 const User = require('../models/User');
 const Expense = require('../models/Expense');
 const emailService = require('../services/emailService');
+const currencyService = require('../services/currencyService');
 
 class CronJobs {
   static init() {
@@ -22,6 +23,34 @@ class CronJobs {
       console.log('Checking budget alerts...');
       await this.checkBudgetAlerts();
     });
+
+    // Update exchange rates - Every 6 hours
+    cron.schedule('0 */6 * * *', async () => {
+      console.log('Updating exchange rates...');
+      await this.updateExchangeRates();
+    });
+
+    console.log('Cron jobs initialized successfully');
+  }
+
+  static async updateExchangeRates() {
+    try {
+      // Update rates for major base currencies
+      const baseCurrencies = ['USD', 'EUR', 'GBP', 'INR'];
+      
+      for (const currency of baseCurrencies) {
+        try {
+          await currencyService.updateExchangeRates(currency);
+          console.log(`Updated exchange rates for ${currency}`);
+        } catch (error) {
+          console.error(`Failed to update rates for ${currency}:`, error.message);
+        }
+      }
+      
+      console.log('Exchange rates update completed');
+    } catch (error) {
+      console.error('Exchange rates update error:', error);
+    }
   }
 
   static async sendWeeklyReports() {

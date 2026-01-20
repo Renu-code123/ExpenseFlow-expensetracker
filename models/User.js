@@ -19,6 +19,24 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     minlength: 6
+  },
+  preferredCurrency: {
+    type: String,
+    default: 'INR',
+    uppercase: true,
+    trim: true
+  },
+  currencySettings: {
+    locale: {
+      type: String,
+      default: 'en-IN'
+    },
+    decimalPlaces: {
+      type: Number,
+      default: 2,
+      min: 0,
+      max: 4
+    }
   }
 }, {
   timestamps: true

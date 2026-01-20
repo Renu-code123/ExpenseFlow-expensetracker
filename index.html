@@ -159,6 +159,10 @@
           <span class="bar"></span>
         </div>
         <div class="user-profile">
+          <button class="currency-btn" onclick="openCurrencyModal()" title="Currency Settings">
+            <i class="fas fa-coins"></i>
+            <span id="current-currency">INR</span>
+          </button>
           <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face"
             alt="User" class="profile-img">
           <span class="username">John Doe</span>
@@ -387,6 +391,14 @@
               <small>Tip: Use negative values for expenses, positive for income</small>
             </div>
             <div class="form-control">
+              <label for="currency">Currency</label>
+              <select id="currency" required>
+                <option value="">Loading currencies...</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-control">
               <label for="type">Transaction Type</label>
               <select id="type" required>
                 <option value="">Select Type</option>
@@ -394,6 +406,7 @@
                 <option value="expense">💸 Expense</option>
               </select>
             </div>
+            <div class="form-control"></div>
           </div>
           <button type="submit" class="btn-submit">
             <i class="fas fa-plus"></i>
@@ -403,6 +416,35 @@
       </div>
     </div>
   </main>
+
+  <!-- Currency Settings Modal -->
+  <div id="currency-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3><i class="fas fa-money-bill-wave"></i> Currency Settings</h3>
+        <span class="close-modal" onclick="closeCurrencyModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div class="form-control">
+          <label for="preferred-currency">Preferred Currency</label>
+          <select id="preferred-currency" class="currency-select">
+            <option value="">Loading currencies...</option>
+          </select>
+          <small>All expenses will be converted to this currency for display</small>
+        </div>
+        <div class="form-control">
+          <label>Exchange Rate Info</label>
+          <div class="exchange-rate-info" id="exchange-rate-info">
+            <p>Select a currency to see current exchange rates</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeCurrencyModal()">Cancel</button>
+        <button class="btn-submit" onclick="saveCurrencyPreference()">Save Settings</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Footer -->
   <footer class="footer">
@@ -466,6 +508,166 @@
 
   <script src="trackerscript.js"></script>
   <script src="analytics-dashboard.js"></script>
+  <script>
+    // Currency Management Functions
+    let supportedCurrencies = [];
+    let currentUserCurrency = 'INR';
+
+    // Load supported currencies on page load
+    async function loadSupportedCurrencies() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const response = await fetch('/api/currency/supported', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          supportedCurrencies = data.data.currencies;
+          populateCurrencySelects();
+        }
+      } catch (error) {
+        console.error('Error loading currencies:', error);
+      }
+    }
+
+    // Populate currency dropdowns
+    function populateCurrencySelects() {
+      const currencySelect = document.getElementById('currency');
+      const preferredCurrencySelect = document.getElementById('preferred-currency');
+
+      if (currencySelect && supportedCurrencies.length > 0) {
+        currencySelect.innerHTML = supportedCurrencies.map(curr => 
+          `<option value="${curr.code}">${curr.symbol} ${curr.code} - ${curr.name}</option>`
+        ).join('');
+        currencySelect.value = currentUserCurrency;
+      }
+
+      if (preferredCurrencySelect && supportedCurrencies.length > 0) {
+        preferredCurrencySelect.innerHTML = supportedCurrencies.map(curr => 
+          `<option value="${curr.code}">${curr.symbol} ${curr.code} - ${curr.name}</option>`
+        ).join('');
+        preferredCurrencySelect.value = currentUserCurrency;
+      }
+    }
+
+    // Load user's currency preference
+    async function loadUserCurrencyPreference() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const response = await fetch('/api/currency/preference', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          currentUserCurrency = data.data.preferredCurrency;
+          document.getElementById('current-currency').textContent = currentUserCurrency;
+          populateCurrencySelects();
+        }
+      } catch (error) {
+        console.error('Error loading currency preference:', error);
+      }
+    }
+
+    // Open currency settings modal
+    function openCurrencyModal() {
+      document.getElementById('currency-modal').style.display = 'flex';
+      loadExchangeRateInfo();
+    }
+
+    // Close currency settings modal
+    function closeCurrencyModal() {
+      document.getElementById('currency-modal').style.display = 'none';
+    }
+
+    // Load exchange rate information
+    async function loadExchangeRateInfo() {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/currency/rates?base=${currentUserCurrency}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          const rateInfo = document.getElementById('exchange-rate-info');
+          const rates = data.data.rates;
+          const popularCurrencies = ['USD', 'EUR', 'GBP', 'JPY', 'AUD'];
+          
+          let html = '<div class="rate-list">';
+          popularCurrencies.forEach(curr => {
+            if (rates[curr]) {
+              html += `<div class="rate-item">
+                <span class="rate-currency">${curr}</span>
+                <span class="rate-value">${rates[curr].toFixed(4)}</span>
+              </div>`;
+            }
+          });
+          html += '</div>';
+          html += `<small>Last updated: ${new Date(data.data.lastUpdated).toLocaleString()}</small>`;
+          rateInfo.innerHTML = html;
+        }
+      } catch (error) {
+        console.error('Error loading exchange rates:', error);
+      }
+    }
+
+    // Save currency preference
+    async function saveCurrencyPreference() {
+      try {
+        const token = localStorage.getItem('token');
+        const newCurrency = document.getElementById('preferred-currency').value;
+
+        const response = await fetch('/api/currency/preference', {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ currency: newCurrency })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          currentUserCurrency = newCurrency;
+          document.getElementById('current-currency').textContent = newCurrency;
+          closeCurrencyModal();
+          // Reload transactions to show in new currency
+          location.reload();
+        } else {
+          alert('Failed to update currency preference');
+        }
+      } catch (error) {
+        console.error('Error saving currency preference:', error);
+        alert('Error saving currency preference');
+      }
+    }
+
+    // Initialize currency features when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      loadSupportedCurrencies();
+      loadUserCurrencyPreference();
+    });
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+      const modal = document.getElementById('currency-modal');
+      if (event.target === modal) {
+        closeCurrencyModal();
+      }
+    }
+  </script>
 
   <!-- PWA Installation Prompt -->
   <div id="install-prompt" class="install-prompt" style="display: none;">
