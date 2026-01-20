@@ -209,6 +209,9 @@ body {
   box-shadow: var(--shadow-glass);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   animation: fadeInUp 1s ease-out 0.4s both;
+  width: 100%;
+  max-width: 24rem;
+  margin: 0 auto;
 }
 
 .balance-card:hover {
@@ -266,12 +269,20 @@ body {
   font-size: 0.9rem;
 }
 
-/* Income & Expense Cards */
-.inc-exp-container {
-  display: flex;
+/* Dashboard Grid (Mobile First) */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
   width: 100%;
-  max-width: 100%;
-  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+/* Desktop View */
+@media (min-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .income-card,
@@ -286,6 +297,9 @@ body {
   gap: 1rem;
   box-shadow: var(--shadow-glass);
   transition: all 0.3s ease;
+  width: 100%;
+  max-width: 24rem;
+  margin: 0 auto;
 }
 
 .income-card:hover,

@@ -87,14 +87,8 @@
   }
 
   /* Balance & Cards */
-  .inc-exp-container {
-    flex-direction: column;
-    gap: 1rem;
-  }
+  /* Styles moved to expensetracker.css */
 
-  .balance-card {
-    text-align: center;
-  }
 
   /* Filters */
   .filter-controls {
@@ -176,21 +170,22 @@
       </div>
 
       <div class="container">
-        <!-- Balance Card -->
-        <div class="balance-card">
-          <div class="balance-header">
-            <i class="fas fa-chart-line"></i>
-            <h4>Your Balance</h4>
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+          <!-- Balance Card -->
+          <div class="balance-card">
+            <div class="balance-header">
+              <i class="fas fa-chart-line"></i>
+              <h4>Your Balance</h4>
+            </div>
+            <h1 id="balance" class="balance-amount">&#8377;0.00</h1>
+            <div class="balance-trend">
+              <span class="trend-indicator positive">↗</span>
+              <span class="trend-text">+2.5% from last month</span>
+            </div>
           </div>
-          <h1 id="balance" class="balance-amount">&#8377;0.00</h1>
-          <div class="balance-trend">
-            <span class="trend-indicator positive">↗</span>
-            <span class="trend-text">+2.5% from last month</span>
-          </div>
-        </div>
 
-        <!-- Income & Expense Cards -->
-        <div class="inc-exp-container">
+          <!-- Income Card -->
           <div class="income-card">
             <div class="card-icon income-icon">
               <i class="fas fa-arrow-up"></i>
@@ -202,6 +197,8 @@
               </p>
             </div>
           </div>
+
+          <!-- Expense Card -->
           <div class="expense-card">
             <div class="card-icon expense-icon">
               <i class="fas fa-arrow-down"></i>
