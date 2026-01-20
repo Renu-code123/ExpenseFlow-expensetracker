@@ -210,6 +210,9 @@ body {
   box-shadow: var(--shadow-glass);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   animation: fadeInUp 1s ease-out 0.4s both;
+  width: 100%;
+  max-width: 24rem;
+  margin: 0 auto;
 }
 
 .balance-card:hover {
@@ -267,12 +270,20 @@ body {
   font-size: 0.9rem;
 }
 
-/* Income & Expense Cards */
-.inc-exp-container {
-  display: flex;
+/* Dashboard Grid (Mobile First) */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
   width: 100%;
-  max-width: 100%;
-  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+/* Desktop View */
+@media (min-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .income-card,
@@ -287,6 +298,9 @@ body {
   gap: 1rem;
   box-shadow: var(--shadow-glass);
   transition: all 0.3s ease;
+  width: 100%;
+  max-width: 24rem;
+  margin: 0 auto;
 }
 
 .income-card:hover,
@@ -1462,116 +1476,23 @@ body {
     right: max(20px, env(safe-area-inset-right) + 20px);
   }
 }
+ |  | 
+1468
+ 
 
-@media (max-width: 768px) {
-
-  body {
-    overflow-x: hidden;
-  }
-
-  .nav-toggle {
-    display: block;
-  }
-
-  .nav-menu {
-    position: absolute;
-    top: 64px;
-    left: 0;
-    width: 100%;
-    background: #0f0f23;
-    flex-direction: column;
-    display: none;
-  }
-
-  .nav-menu.active {
-    display: flex;
-  }
-
-  .user-profile {
-    display: none;
-  }
-
-  .inc-exp-container {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .income-card,
-  .expense-card {
-    width: 100%;
-    max-width: 100%;
-  }
-
-  form {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
+.empty-state {
+  list-style: none;
+  display: flex;
+  justify-content: center;
 }
 
-/* =========================
-   HAMBURGER MENU FIX
-   ========================= */
 
-/* Default: hide toggle */
-.nav-toggle {
-  display: none;
-}
-
-/* Hamburger bars */
-.nav-toggle .bar {
-  width: 25px;
-  height: 3px;
-  background-color: #64ffda;
-  margin: 5px 0;
-  display: block;
-  transition: 0.3s ease;
-}
-
-/* Show hamburger on tablets & phones */
-@media (max-width: 1024px) {
-  .nav-toggle {
-    display: block;
-    cursor: pointer;
-    z-index: 1001;
-  }
-
-  .nav-menu {
-    position: absolute;
-    top: 64px;
-    left: 0;
-    width: 100%;
-    background: #0f0f23;
-    flex-direction: column;
-    align-items: center;
-    display: none;
-    z-index: 1000;
-  }
-
-  .nav-menu.active {
-    display: flex;
-  }
-
-  .nav-link {
-    padding: 1rem;
-    width: 100%;
-    text-align: center;
-  }
-
-  .user-profile {
-    display: none;
-  }
-}
-
-/* Extra-small devices (<400px) */
-@media (max-width: 400px) {
-  .hero-title {
-    font-size: 1.5rem;
-  }
-
-  .hero-subtitle {
-    font-size: 0.9rem;
-  }
+.empty-state-content {
+  text-align: center;
+  padding: 2.5rem 1.5rem;
+  border: 1px dashed rgba(100, 255, 218, 0.4);
+  border-radius: 12px;
+  background: rgba(100, 255, 218, 0.05);
 }
 
 /* ULTRA SMALL DEVICES (320px)*/
