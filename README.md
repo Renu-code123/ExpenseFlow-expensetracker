@@ -43,6 +43,22 @@ The app emphasizes:
 - Scalable project structure for future backend integration  
 
 ---
+---
+
+## 🤔 Why to use ExpenseFlow?
+
+ExpenseFlow is designed to simplify personal finance management by providing a
+clean, intuitive, and distraction-free interface. It helps users track expenses
+and income efficiently while gaining better visibility into their spending habits.
+
+Whether you are a student, beginner, or someone learning frontend development,
+ExpenseFlow serves as:
+- A practical tool for daily expense tracking  
+- A beginner-friendly project to understand real-world UI logic  
+- A scalable base for adding backend, authentication, and analytics features  
+
+By using ExpenseFlow, users can build financial awareness while developers can
+strengthen their frontend and project-structuring skills.
 
 ## 🛠️ Tech Stack
 
