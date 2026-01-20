@@ -79,6 +79,11 @@ app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/receipts', require('./routes/receipts'));
 app.use('/api/budgets', require('./routes/budgets'));
 app.use('/api/goals', require('./routes/goals'));
+app.use('/api/analytics', require('./routes/analytics'));
+app.use('/api/currency', require('./routes/currency'));
+app.use('/api/groups', require('./routes/groups'));
+app.use('/api/splits', require('./routes/splits'));
+app.use('/api/categorization', require('./routes/categorization'));
 
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

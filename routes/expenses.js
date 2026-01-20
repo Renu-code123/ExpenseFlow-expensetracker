@@ -2,6 +2,9 @@ const express = require('express');
 const Joi = require('joi');
 const Expense = require('../models/Expense');
 const budgetService = require('../services/budgetService');
+const currencyService = require('../services/currencyService');
+const categorizationService = require('../services/categorizationService');
+const User = require('../models/User');
 const auth = require('../middleware/auth');
 const router = express.Router();
 
@@ -31,6 +34,18 @@ router.post('/', auth, async (req, res) => {
 
     const expense = new Expense({ ...value, user: req.user._id });
     await expense.save();
+    
+    // Auto-learn from user's category choice
+    try {
+      await categorizationService.autoLearnFromExpense(
+        req.user._id,
+        value.description,
+        value.category
+      );
+    } catch (learnError) {
+      console.error('Auto-learning failed:', learnError.message);
+      // Non-critical error, continue
+    }
     
     // Update budget and goal progress
     if (value.type === 'expense') {

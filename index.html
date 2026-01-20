@@ -348,67 +348,184 @@
       </div>
     </main>
 
-    <!-- Footer -->
-    <footer class="footer">
-      <div class="footer-container">
-        <div class="footer-section">
-          <div class="footer-logo">
-            <i class="fas fa-wallet"></i>
-            <span>ExpenseFlow</span>
-          </div>
-          <p>Smart money management made simple. Track, analyze, and optimize your financial habits.</p>
-          <div class="social-links">
-            <a href="#" class="social-link"><i class="fa-brands fa-x-twitter"></i></a>
-            <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
-            <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
-            <a href="#" class="social-link"><i class="fab fa-linkedin-in"></i></a>
-          </div>
-        </div>
-        
-        <div class="footer-section">
-          <h4>Features</h4>
-          <ul class="footer-links">
-            <li><a href="#">Expense Tracking</a></li>
-            <li><a href="#">Budget Planning</a></li>
-            <li><a href="#">Analytics Dashboard</a></li>
-            <li><a href="#">Goal Setting</a></li>
-          </ul>
-        </div>
-        
-        <div class="footer-section">
-          <h4>Resources</h4>
-          <ul class="footer-links">
-            <li><a href="#">Help Center</a></li>
-            <li><a href="#">Financial Tips</a></li>
-            <li><a href="#">Video Tutorials</a></li>
-            <li><a href="#">Community</a></li>
-          </ul>
-        </div>
-        
-        <div class="footer-section">
-          <h4>Company</h4>
-          <ul class="footer-links">
-            <li><a href="#">About Us</a></li>
-            <li><a href="#">Privacy Policy</a></li>
-            <li><a href="#">Terms of Service</a></li>
-            <li><a href="#">Contact</a></li>
-          </ul>
-        </div>
+  <!-- Currency Settings Modal -->
+  <div id="currency-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3><i class="fas fa-money-bill-wave"></i> Currency Settings</h3>
+        <span class="close-modal" onclick="closeCurrencyModal()">&times;</span>
       </div>
-      
-      <div class="footer-bottom">
-        <div class="footer-container">
-          <p>&copy; 2026 ExpenseFlow. All rights reserved. Made with ❤️ for better financial management.</p>
-          <div class="footer-stats">
-            <span>🏆 Trusted by 10,000+ users</span>
-            <span>💰 ₹50M+ tracked</span>
-            <span>📊 99.9% uptime</span>
+      <div class="modal-body">
+        <div class="form-control">
+          <label for="preferred-currency">Preferred Currency</label>
+          <select id="preferred-currency" class="currency-select">
+            <option value="">Loading currencies...</option>
+          </select>
+          <small>All expenses will be converted to this currency for display</small>
+        </div>
+        <div class="form-control">
+          <label>Exchange Rate Info</label>
+          <div class="exchange-rate-info" id="exchange-rate-info">
+            <p>Select a currency to see current exchange rates</p>
           </div>
         </div>
       </div>
-    </footer>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeCurrencyModal()">Cancel</button>
+        <button class="btn-submit" onclick="saveCurrencyPreference()">Save Settings</button>
+      </div>
+    </div>
+  </div>
 
-    <script src="trackerscript.js"></script>
+  <!-- Footer -->
+  <footer class="footer">
+                <div id="category-suggestions" class="category-suggestions hidden">
+                  <!-- AI suggestions will appear here -->
+                </div>
+              </div>
+            </div>
+            <div class="form-control">
+              <label for="category">Category <span id="category-confidence" class="confidence-badge hidden"></span></label>
+              <select id="category" required>
+                <option value="">Select Category</option>
+                <option value="food">🍽️ Food & Dining</option>
+                <option value="transport">🚗 Transportation</option>
+                <option value="shopping">🛒 Shopping</option>
+                <option value="entertainment">🎬 Entertainment</option>
+                <option value="bills">💡 Bills & Utilities</option>
+                <option value="healthcare">🏥 Healthcare</option>
+                <option value="education">📚 Education</option>
+                <option value="travel">✈️ Travel</option>
+                <option value="salary">💼 Salary</option>
+                <option value="freelance">💻 Freelance</option>
+                <option value="investment">📈 Investment</option>
+                <option value="other">📋 Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-control">
+              <label for="amount">Amount</label>
+              <input type="number" id="amount" placeholder="Enter amount" step="0.01" required>
+              <small>Tip: Use negative values for expenses, positive for income</small>
+            </div>
+            <div class="form-control">
+              <label for="currency">Currency</label>
+              <select id="currency" required>
+                <option value="">Loading currencies...</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-control">
+              <label for="type">Transaction Type</label>
+              <select id="type" required>
+                <option value="">Select Type</option>
+                <option value="income">💰 Income</option>
+                <option value="expense">💸 Expense</option>
+              </select>
+            </div>
+            <div class="form-control"></div>
+          </div>
+          <button type="submit" class="btn-submit">
+            <i class="fas fa-plus"></i>
+            Add Transaction
+          </button>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <!-- Currency Settings Modal -->
+  <div id="currency-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3><i class="fas fa-money-bill-wave"></i> Currency Settings</h3>
+        <span class="close-modal" onclick="closeCurrencyModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div class="form-control">
+          <label for="preferred-currency">Preferred Currency</label>
+          <select id="preferred-currency" class="currency-select">
+            <option value="">Loading currencies...</option>
+          </select>
+          <small>All expenses will be converted to this currency for display</small>
+        </div>
+        <div class="form-control">
+          <label>Exchange Rate Info</label>
+          <div class="exchange-rate-info" id="exchange-rate-info">
+            <p>Select a currency to see current exchange rates</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeCurrencyModal()">Cancel</button>
+        <button class="btn-submit" onclick="saveCurrencyPreference()">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-section">
+        <div class="footer-logo">
+          <i class="fas fa-wallet"></i>
+          <span>ExpenseFlow</span>
+        </div>
+        <p>Smart money management made simple. Track, analyze, and optimize your financial habits.</p>
+        <div class="social-links">
+          <a href="#" class="social-link"><i class="fa-brands fa-x-twitter"></i></a>
+          <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
+          <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+          <a href="#" class="social-link"><i class="fab fa-linkedin-in"></i></a>
+        </div>
+      </div>
+
+      <div class="footer-section">
+        <h4>Features</h4>
+        <ul class="footer-links">
+          <li><a href="#">Expense Tracking</a></li>
+          <li><a href="#">Budget Planning</a></li>
+          <li><a href="#">Analytics Dashboard</a></li>
+          <li><a href="#">Goal Setting</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-section">
+        <h4>Resources</h4>
+        <ul class="footer-links">
+          <li><a href="#">Help Center</a></li>
+          <li><a href="#">Financial Tips</a></li>
+          <li><a href="#">Video Tutorials</a></li>
+          <li><a href="#">Community</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-section">
+        <h4>Company</h4>
+        <ul class="footer-links">
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Service</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div class="footer-container">
+        <p>&copy; 2026 ExpenseFlow. All rights reserved. Made with ❤️ for better financial management.</p>
+        <div class="footer-stats">
+          <span>🏆 Trusted by 10,000+ users</span>
+          <span>💰 ₹50M+ tracked</span>
+          <span>📊 99.9% uptime</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="trackerscript.js"></script>
     
     <!-- PWA Installation Prompt -->
     <div id="install-prompt" class="install-prompt" style="display: none;">
