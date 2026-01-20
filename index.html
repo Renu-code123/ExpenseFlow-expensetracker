@@ -127,6 +127,19 @@
     gap: 0.5rem;
   }
 }
+  .image-preview-modal img {
+    width: auto !important;
+    height: auto !important;
+
+    max-width: 95vw;
+    max-height: 90vh;
+
+    border-radius: 18px !important; /* NOT circle */
+    object-fit: contain;
+
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8);
+  }
+
     </style>
   </head>
   <body>
@@ -155,11 +168,19 @@
             <span class="bar"></span>
           </div>
           <div class="user-profile">
-            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face" alt="User" class="profile-img">
+            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&fit=crop&crop=face" alt="User" class="profile-img" onclick="openPreview(this.src)">
             <span class="username">John Doe</span>
           </div>
+
+                    <!-- Image Preview Modal -->
+          <div id="imagePreviewModal" class="image-preview-modal">
+            <img id="previewImage" />
+          </div>
+
         </div>
+
       </nav>
+
     </header>
 
     <!-- Main Content -->
@@ -168,6 +189,9 @@
         <h1 class="hero-title">Smart Money Management</h1>
         <p class="hero-subtitle">Take control of your finances with our intuitive expense tracker</p>
       </div>
+       <div id="imagePreviewModal" class="image-preview-modal">
+            <img id="previewImage" />
+        </div>
 
       <div class="container">
         <!-- Dashboard Grid -->

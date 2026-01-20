@@ -1499,3 +1499,48 @@ body {
     transform: rotate(360deg);
   }
 }
+/* =========================
+   IMAGE PREVIEW MODAL (BIG & CENTER)
+   ========================= */
+
+
+
+.image-preview-modal img {
+  width: auto;
+  height: auto;
+
+  max-width: 95vw;   
+  max-height: 90vh;  
+
+  border-radius: 18px;
+  object-fit: contain;
+
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8);
+  animation: zoomIn 0.25s ease-in-out;
+}
+
+@keyframes zoomIn {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.image-preview-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+
+  background: rgba(0, 0, 0, 0.9);
+
+  display: none;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 999999; /* navbar पेक्षा जास्त */
+}

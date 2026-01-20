@@ -210,3 +210,30 @@ function Init() {
 
 form.addEventListener("submit", addTransaction);
 Init();
+/* =========================
+   IMAGE PREVIEW LOGIC
+   ========================= */
+
+const imageModal = document.getElementById("imagePreviewModal");
+const previewImage = document.getElementById("previewImage");
+
+function openPreview(src) {
+  previewImage.src = src;
+  imageModal.style.display = "flex"; 
+  document.body.style.overflow = "hidden";
+}
+
+imageModal.addEventListener("click", () => {
+  imageModal.style.display = "none";
+  previewImage.src = "";
+  document.body.style.overflow = "";
+});
+
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    imageModal.style.display = "none";
+    previewImage.src = "";
+    document.body.style.overflow = "";
+  }
+});
