@@ -4,15 +4,28 @@ const axios = require('axios');
 const { Notification, NotificationPreferences } = require('../models/Notification');
 const emailService = require('./emailService');
 
-// Configure web push
-webpush.setVapidDetails(
-  process.env.VAPID_SUBJECT,
-  process.env.VAPID_PUBLIC_KEY,
-  process.env.VAPID_PRIVATE_KEY
-);
+// Configure web push only if VAPID keys are provided and valid
+if (process.env.VAPID_PUBLIC_KEY && 
+    process.env.VAPID_PRIVATE_KEY && 
+    process.env.VAPID_SUBJECT &&
+    process.env.VAPID_PUBLIC_KEY.length > 10) {
+  try {
+    webpush.setVapidDetails(
+      process.env.VAPID_SUBJECT,
+      process.env.VAPID_PUBLIC_KEY,
+      process.env.VAPID_PRIVATE_KEY
+    );
+    console.log('Web push configured successfully');
+  } catch (error) {
+    console.warn('Web push configuration failed:', error.message);
+  }
+}
 
-// Configure Twilio
-const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+// Configure Twilio only if credentials are provided
+let twilioClient = null;
+if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
+  twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+}
 
 class NotificationService {
   
@@ -129,6 +142,11 @@ class NotificationService {
   // Send push notification
   async sendPushNotification(notification, preferences) {
     try {
+      if (!process.env.VAPID_PUBLIC_KEY) {
+        console.log('Push notifications not configured - skipping');
+        return false;
+      }
+
       const subscription = preferences.channels.push.subscription;
       if (!subscription) return false;
 
@@ -165,6 +183,11 @@ class NotificationService {
   // Send SMS notification
   async sendSMSNotification(notification, preferences) {
     try {
+      if (!twilioClient) {
+        console.log('SMS notifications not configured - skipping');
+        return false;
+      }
+
       const phoneNumber = preferences.channels.sms.phoneNumber;
       if (!phoneNumber) return false;
 
