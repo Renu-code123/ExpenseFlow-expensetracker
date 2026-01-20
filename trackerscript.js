@@ -210,6 +210,7 @@ function Init() {
 
 form.addEventListener("submit", addTransaction);
 Init();
+
 /* =========================
    IMAGE PREVIEW LOGIC
    ========================= */
@@ -236,4 +237,23 @@ document.addEventListener("keydown", (e) => {
     previewImage.src = "";
     document.body.style.overflow = "";
   }
+
+
+lucide.createIcons();
+const scrollToTopBtn = document.getElementById("scrollToTopBtn");
+
+window.addEventListener("scroll", () => {
+  if (window.scrollY > 300) {
+    scrollToTopBtn.classList.add("show");
+  } else {
+    scrollToTopBtn.classList.remove("show");
+  }
+});
+
+scrollToTopBtn.addEventListener("click", () => {
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth",
+  });
+
 });
