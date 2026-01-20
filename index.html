@@ -263,58 +263,6 @@
         </ul>
       </div>
 
-      <!-- Analytics Dashboard Section -->
-      <div class="analytics-dashboard" id="analytics-dashboard">
-        <div class="analytics-header">
-          <h3><i class="fas fa-chart-bar"></i> Analytics Dashboard</h3>
-          <button class="refresh-analytics-btn" id="refresh-analytics">
-            <i class="fas fa-sync-alt"></i> Refresh
-          </button>
-        </div>
-
-        <div class="analytics-grid">
-          <!-- Spending Velocity Widget -->
-          <div class="analytics-widget velocity-widget" id="velocity-widget">
-            <div class="widget-loading">
-              <i class="fas fa-spinner fa-spin"></i>
-              <span>Loading velocity...</span>
-            </div>
-          </div>
-
-          <!-- Category Breakdown Chart -->
-          <div class="analytics-widget category-widget" id="category-chart">
-            <div class="widget-loading">
-              <i class="fas fa-spinner fa-spin"></i>
-              <span>Loading categories...</span>
-            </div>
-          </div>
-
-          <!-- Spending Trends Chart -->
-          <div class="analytics-widget trends-widget" id="trends-chart">
-            <div class="widget-loading">
-              <i class="fas fa-spinner fa-spin"></i>
-              <span>Loading trends...</span>
-            </div>
-          </div>
-
-          <!-- Predictions Widget -->
-          <div class="analytics-widget predictions-widget" id="predictions-widget">
-            <div class="widget-loading">
-              <i class="fas fa-spinner fa-spin"></i>
-              <span>Loading predictions...</span>
-            </div>
-          </div>
-
-          <!-- Insights Container -->
-          <div class="analytics-widget insights-widget" id="insights-container">
-            <div class="widget-loading">
-              <i class="fas fa-spinner fa-spin"></i>
-              <span>Generating insights...</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- Data Management Section -->
       <div class="data-management-section">
         <h3><i class="fas fa-database"></i> Data Management</h3>
@@ -352,17 +300,44 @@
         </div>
       </div>
 
-      <!-- Add Transaction Form -->
-      <div class="form-section">
-        <h3><i class="fas fa-plus-circle"></i> Add New Transaction</h3>
-        <form id="form" class="transaction-form">
-          <div class="form-row">
-            <div class="form-control">
-              <label for="text">Description</label>
-              <input type="text" id="text" placeholder="Enter transaction description" required />
+  <!-- Currency Settings Modal -->
+  <div id="currency-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3><i class="fas fa-money-bill-wave"></i> Currency Settings</h3>
+        <span class="close-modal" onclick="closeCurrencyModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div class="form-control">
+          <label for="preferred-currency">Preferred Currency</label>
+          <select id="preferred-currency" class="currency-select">
+            <option value="">Loading currencies...</option>
+          </select>
+          <small>All expenses will be converted to this currency for display</small>
+        </div>
+        <div class="form-control">
+          <label>Exchange Rate Info</label>
+          <div class="exchange-rate-info" id="exchange-rate-info">
+            <p>Select a currency to see current exchange rates</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeCurrencyModal()">Cancel</button>
+        <button class="btn-submit" onclick="saveCurrencyPreference()">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+                <div id="category-suggestions" class="category-suggestions hidden">
+                  <!-- AI suggestions will appear here -->
+                </div>
+              </div>
             </div>
             <div class="form-control">
-              <label for="category">Category</label>
+              <label for="category">Category <span id="category-confidence" class="confidence-badge hidden"></span></label>
               <select id="category" required>
                 <option value="">Select Category</option>
                 <option value="food">🍽️ Food & Dining</option>
@@ -387,6 +362,14 @@
               <small>Tip: Use negative values for expenses, positive for income</small>
             </div>
             <div class="form-control">
+              <label for="currency">Currency</label>
+              <select id="currency" required>
+                <option value="">Loading currencies...</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-control">
               <label for="type">Transaction Type</label>
               <select id="type" required>
                 <option value="">Select Type</option>
@@ -394,6 +377,7 @@
                 <option value="expense">💸 Expense</option>
               </select>
             </div>
+            <div class="form-control"></div>
           </div>
           <button type="submit" class="btn-submit">
             <i class="fas fa-plus"></i>
@@ -401,8 +385,164 @@
           </button>
         </form>
       </div>
+
+      <!-- Recurring Expenses Section -->
+      <div class="recurring-section" id="recurring-section">
+        <div class="section-header">
+          <h3><i class="fas fa-sync-alt"></i> Recurring Expenses & Subscriptions</h3>
+          <button class="add-recurring-btn" id="add-recurring-btn">
+            <i class="fas fa-plus"></i> Add Recurring
+          </button>
+        </div>
+
+        <!-- Recurring Statistics -->
+        <div class="recurring-stats" id="recurring-stats">
+          <!-- Stats will be rendered here -->
+        </div>
+
+        <!-- Recurring Expenses List -->
+        <div class="recurring-list" id="recurring-list">
+          <!-- Recurring expenses will be rendered here -->
+        </div>
+      </div>
+
+      <!-- Recurring Expense Modal -->
+      <div class="recurring-modal" id="recurring-modal">
+        <div class="recurring-modal-content">
+          <div class="recurring-modal-header">
+            <h3 id="recurring-modal-title">Add Recurring Expense</h3>
+            <button class="modal-close-btn" id="recurring-modal-close">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <form id="recurring-form" class="recurring-form">
+            <input type="hidden" id="recurring-id">
+
+            <div class="form-row">
+              <div class="form-control">
+                <label for="recurring-description">Description *</label>
+                <input type="text" id="recurring-description" placeholder="e.g., Netflix Subscription" required>
+              </div>
+              <div class="form-control">
+                <label for="recurring-amount">Amount (₹) *</label>
+                <input type="number" id="recurring-amount" placeholder="499.00" step="0.01" min="0.01" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-control">
+                <label for="recurring-category">Category *</label>
+                <select id="recurring-category" required>
+                  <option value="">Select Category</option>
+                  <option value="subscription">📺 Subscription</option>
+                  <option value="rent">🏠 Rent</option>
+                  <option value="insurance">🛡️ Insurance</option>
+                  <option value="utilities">💡 Utilities</option>
+                  <option value="entertainment">🎬 Entertainment</option>
+                  <option value="food">🍽️ Food</option>
+                  <option value="transport">🚗 Transport</option>
+                  <option value="healthcare">🏥 Healthcare</option>
+                  <option value="shopping">🛒 Shopping</option>
+                  <option value="other">📋 Other</option>
+                </select>
+              </div>
+              <div class="form-control">
+                <label for="recurring-type">Type *</label>
+                <select id="recurring-type" required>
+                  <option value="expense">💸 Expense</option>
+                  <option value="income">💰 Income</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-control">
+                <label for="recurring-frequency">Frequency *</label>
+                <select id="recurring-frequency" required>
+                  <option value="monthly">Monthly</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="biweekly">Bi-weekly</option>
+                  <option value="daily">Daily</option>
+                  <option value="quarterly">Quarterly</option>
+                  <option value="yearly">Yearly</option>
+                </select>
+              </div>
+              <div class="form-control">
+                <label for="recurring-reminder-days">Remind Before (days)</label>
+                <input type="number" id="recurring-reminder-days" value="3" min="0" max="30">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-control">
+                <label for="recurring-start-date">Start Date *</label>
+                <input type="date" id="recurring-start-date" required>
+              </div>
+              <div class="form-control">
+                <label for="recurring-next-due">Next Due Date *</label>
+                <input type="date" id="recurring-next-due" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-control">
+                <label for="recurring-end-date">End Date (optional)</label>
+                <input type="date" id="recurring-end-date">
+              </div>
+              <div class="form-control checkbox-control">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="recurring-auto-create" checked>
+                  <span class="checkmark"></span>
+                  Auto-create expense on due date
+                </label>
+              </div>
+            </div>
+
+            <div class="form-control full-width">
+              <label for="recurring-notes">Notes (optional)</label>
+              <textarea id="recurring-notes" rows="3" placeholder="Add any notes..."></textarea>
+            </div>
+
+            <div class="modal-actions">
+              <button type="button" class="btn-cancel" id="recurring-cancel-btn">Cancel</button>
+              <button type="submit" class="btn-submit">
+                <i class="fas fa-save"></i> Save
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   </main>
+
+  <!-- Currency Settings Modal -->
+  <div id="currency-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3><i class="fas fa-money-bill-wave"></i> Currency Settings</h3>
+        <span class="close-modal" onclick="closeCurrencyModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div class="form-control">
+          <label for="preferred-currency">Preferred Currency</label>
+          <select id="preferred-currency" class="currency-select">
+            <option value="">Loading currencies...</option>
+          </select>
+          <small>All expenses will be converted to this currency for display</small>
+        </div>
+        <div class="form-control">
+          <label>Exchange Rate Info</label>
+          <div class="exchange-rate-info" id="exchange-rate-info">
+            <p>Select a currency to see current exchange rates</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeCurrencyModal()">Cancel</button>
+        <button class="btn-submit" onclick="saveCurrencyPreference()">Save Settings</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Footer -->
   <footer class="footer">
@@ -465,6 +605,39 @@
   </footer>
 
   <script src="trackerscript.js"></script>
+    
+    <!-- PWA Installation Prompt -->
+    <div id="install-prompt" class="install-prompt" style="display: none;">
+      <div class="install-prompt-content">
+        <div class="install-prompt-header">
+          <i class="fas fa-download"></i>
+          <h3>Install ExpenseFlow</h3>
+        </div>
+        <p>Install ExpenseFlow for quick access and offline functionality!</p>
+        <div class="install-prompt-actions">
+          <button id="install-button" class="install-btn">
+            <i class="fas fa-plus"></i> Install
+          </button>
+          <button id="install-dismiss" class="dismiss-btn">
+            <i class="fas fa-times"></i> Not now
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div class="footer-container">
+        <p>&copy; 2026 ExpenseFlow. All rights reserved. Made with ❤️ for better financial management.</p>
+        <div class="footer-stats">
+          <span>🏆 Trusted by 10,000+ users</span>
+          <span>💰 ₹50M+ tracked</span>
+          <span>📊 99.9% uptime</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="trackerscript.js"></script>
   <script src="analytics-dashboard.js"></script>
 
   <!-- PWA Installation Prompt -->
@@ -484,7 +657,7 @@
         </button>
       </div>
     </div>
-  </div>
+.7  </div>
 
   <!-- Offline Indicator -->
   <div id="offline-indicator" class="offline-indicator" style="display: none;">
