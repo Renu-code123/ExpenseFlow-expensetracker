@@ -5,25 +5,25 @@
   --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
   --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
   --dark-gradient: linear-gradient(135deg, #232526 0%, #414345 100%);
-  
+
   /* Background Colors */
   --bg-primary: #0f0f23;
   --bg-secondary: #1a1a2e;
   --bg-tertiary: #16213e;
   --bg-glass: rgba(255, 255, 255, 0.1);
-  
+
   /* Text Colors */
   --text-primary: #ffffff;
   --text-secondary: #b4b4b4;
   --text-accent: #64ffda;
-  
+
   /* Accent Colors */
   --accent-primary: #64ffda;
   --accent-secondary: #ff6b9d;
   --success: #00e676;
   --error: #ff5722;
   --warning: #ffc107;
-  
+
   /* Shadows */
   --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
   --shadow-hover: 0 15px 35px rgba(0, 0, 0, 0.1);
@@ -42,7 +42,8 @@
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
@@ -55,7 +56,7 @@ html {
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: var(--bg-primary);
-  background-image: 
+  background-image:
     radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
     radial-gradient(circle at 80% 20%, rgba(255, 107, 157, 0.3) 0%, transparent 50%),
     radial-gradient(circle at 40% 40%, rgba(100, 255, 218, 0.2) 0%, transparent 50%);
@@ -1004,6 +1005,7 @@ body {
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1015,6 +1017,7 @@ body {
     opacity: 0;
     transform: translateX(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -1022,9 +1025,12 @@ body {
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.05);
   }
@@ -1102,12 +1108,12 @@ body {
     padding: 2rem 0;
     transition: left 0.3s ease;
   }
-  
+
   .nav-menu.active {
     left: 0;
     display: flex;
   }
-  
+
   .nav-link {
     font-size: 1.2rem;
     padding: 1rem 2rem;
@@ -1115,23 +1121,23 @@ body {
     text-align: center;
     margin: 0.5rem 0;
   }
-  
+
   .nav-toggle {
     display: flex;
   }
-  
+
   .nav-toggle.active .bar:nth-child(2) {
     opacity: 0;
   }
-  
+
   .nav-toggle.active .bar:nth-child(1) {
     transform: translateY(8px) rotate(45deg);
   }
-  
+
   .nav-toggle.active .bar:nth-child(3) {
     transform: translateY(-8px) rotate(-45deg);
   }
-  
+
   .user-profile {
     display: none;
   }
@@ -1142,29 +1148,29 @@ body {
   .hero-title {
     font-size: 2.5rem;
   }
-  
+
   .container {
     padding: 0 1rem;
   }
-  
+
   .inc-exp-container {
     grid-template-columns: 1fr;
   }
-  
+
   .form-row {
     grid-template-columns: 1fr;
   }
-  
+
   .section-header {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .footer-bottom .footer-container {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .footer-stats {
     justify-content: center;
   }
@@ -1174,38 +1180,38 @@ body {
   .hero-title {
     font-size: 2rem;
   }
-  
+
   .balance-amount {
     font-size: 2rem;
   }
-  
+
   .income-card,
   .expense-card {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .card-icon {
     width: 50px;
     height: 50px;
   }
-  
+
   .advanced-filters {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .date-filters,
   .amount-filters {
     justify-content: stretch;
   }
-  
+
   .date-input,
   .amount-input,
   .category-select {
     flex: 1;
   }
-  
+
   .data-actions {
     grid-template-columns: 1fr;
   }
@@ -1364,6 +1370,7 @@ body {
 
 /* Touch and gesture improvements */
 @media (hover: none) and (pointer: coarse) {
+
   /* Touch device specific styles */
   .filter-btn,
   .export-btn,
@@ -1372,25 +1379,26 @@ body {
     min-height: 44px;
     padding: 0.75rem 1.5rem;
   }
-  
+
   .delete-btn {
     min-width: 44px;
     min-height: 44px;
   }
-  
+
   .nav-link {
     padding: 1rem 1.5rem;
   }
-  
+
   /* Larger tap targets for mobile */
   .category-select,
   .date-input,
   .amount-input,
   .search-input {
     min-height: 48px;
-    font-size: 16px; /* Prevents zoom on iOS */
+    font-size: 16px;
+    /* Prevents zoom on iOS */
   }
-  
+
   .form-control input,
   .form-control select {
     min-height: 48px;
@@ -1404,6 +1412,7 @@ body {
     transform: translateY(100%);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -1415,6 +1424,7 @@ body {
     transform: translateX(-50%) translateY(-100%);
     opacity: 0;
   }
+
   to {
     transform: translateX(-50%) translateY(0);
     opacity: 1;
@@ -1426,6 +1436,7 @@ body {
     transform: translateX(100%);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;
@@ -1438,13 +1449,13 @@ body {
     padding-left: max(0px, env(safe-area-inset-left));
     padding-right: max(0px, env(safe-area-inset-right));
   }
-  
+
   .main-content {
     padding-left: max(2rem, env(safe-area-inset-left) + 2rem);
     padding-right: max(2rem, env(safe-area-inset-right) + 2rem);
     padding-bottom: max(2rem, env(safe-area-inset-bottom) + 2rem);
   }
-  
+
   .install-prompt {
     bottom: max(20px, env(safe-area-inset-bottom) + 20px);
     left: max(20px, env(safe-area-inset-left) + 20px);
@@ -1567,7 +1578,8 @@ body {
 @media (max-width: 360px) {
 
   /* Global */
-  html, body {
+  html,
+  body {
     overflow-x: hidden;
   }
 
@@ -1659,6 +1671,7 @@ body {
   .footer-links a {
     font-size: 0.85rem;
   }
+
   .nav-container {
     padding: 0 0.75rem;
   }
@@ -1673,4 +1686,327 @@ select,
 button {
   max-width: 100%;
   min-width: 0;
+}
+
+/* ========================
+   EXPORT MODAL STYLES
+   ======================== */
+
+.export-btn.pdf-btn {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+}
+
+.export-btn.pdf-btn:hover {
+  box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+}
+
+.export-btn.advanced-btn {
+  background: var(--primary-gradient);
+}
+
+.export-btn.advanced-btn:hover {
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+/* Export Modal */
+.export-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.export-modal.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.export-modal-content {
+  background: var(--bg-secondary);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: 90%;
+  max-width: 650px;
+  max-height: 90vh;
+  overflow-y: auto;
+  transform: translateY(-20px);
+  transition: all 0.3s ease;
+}
+
+.export-modal.active .export-modal-content {
+  transform: translateY(0);
+}
+
+.export-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.export-modal-header h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.export-modal-header h3 i {
+  color: var(--accent-primary);
+}
+
+.export-modal-body {
+  padding: 2rem;
+}
+
+.export-format-section,
+.export-filters-section,
+.export-preview-section {
+  margin-bottom: 2rem;
+}
+
+.export-format-section h4,
+.export-filters-section h4,
+.export-preview-section h4 {
+  font-size: 1rem;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+/* Format Options */
+.format-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.format-option {
+  cursor: pointer;
+}
+
+.format-option input {
+  display: none;
+}
+
+.format-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  padding: 1.5rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.format-option input:checked+.format-card {
+  border-color: var(--accent-primary);
+  background: rgba(100, 255, 218, 0.1);
+}
+
+.format-card i {
+  font-size: 2.5rem;
+  color: var(--accent-primary);
+  margin-bottom: 0.5rem;
+}
+
+.format-card .format-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.format-card .format-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.format-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+}
+
+/* Filter Grid */
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+/* Export Preview */
+.export-preview {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 15px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.export-preview-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+}
+
+.preview-stat {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 1rem;
+  text-align: center;
+}
+
+.preview-stat .stat-label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.preview-stat .stat-value {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.preview-stat.income .stat-value {
+  color: var(--success);
+}
+
+.preview-stat.expense .stat-value {
+  color: var(--error);
+}
+
+.preview-stat.positive .stat-value {
+  color: var(--success);
+}
+
+.preview-stat.negative .stat-value {
+  color: var(--error);
+}
+
+.export-preview-loading,
+.export-preview-error,
+.export-preview-empty {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-secondary);
+}
+
+.export-preview-empty i {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  opacity: 0.5;
+}
+
+.export-preview-error {
+  color: var(--error);
+}
+
+/* Export Modal Footer */
+.export-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 1.5rem 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Export Notification */
+.export-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  z-index: 3000;
+  transform: translateX(120%);
+  transition: transform 0.3s ease;
+  font-weight: 500;
+}
+
+.export-notification.show {
+  transform: translateX(0);
+}
+
+.export-notification.success {
+  background: linear-gradient(135deg, rgba(0, 230, 118, 0.9) 0%, rgba(0, 200, 83, 0.9) 100%);
+  color: white;
+}
+
+.export-notification.error {
+  background: linear-gradient(135deg, rgba(255, 87, 34, 0.9) 0%, rgba(244, 67, 54, 0.9) 100%);
+  color: white;
+}
+
+.export-notification.info {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%);
+  color: white;
+}
+
+/* Responsive Export Modal */
+@media (max-width: 768px) {
+  .export-modal-content {
+    width: 95%;
+    max-height: 85vh;
+  }
+
+  .export-modal-body {
+    padding: 1.5rem;
+  }
+
+  .format-options {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .export-preview-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .export-modal-footer {
+    flex-direction: column;
+  }
+
+  .export-modal-footer button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .export-preview-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .export-buttons {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .export-btn {
+    width: 100%;
+    justify-content: center;
+  }
 }
