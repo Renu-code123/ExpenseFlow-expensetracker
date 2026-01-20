@@ -1,111 +1,212 @@
-document.addEventListener("DOMContentLoaded", () => {
+// ================= DOM ELEMENTS =================
+const balance = document.getElementById("balance");
+const money_plus = document.getElementById("money-plus");
+const money_minus = document.getElementById("money-minus");
+const list = document.getElementById("list");
+const form = document.getElementById("form");
+const text = document.getElementById("text");
+const amount = document.getElementById("amount");
+const category = document.getElementById("category");
+const type = document.getElementById("type");
+const importFileInput = document.getElementById("import-file");
+const importDataBtn = document.getElementById("import-data");
+const mergeDataCheckbox = document.getElementById("merge-data");
 
-  /* =====================
-     DOM ELEMENTS
-  ====================== */
-  const balance = document.getElementById("balance");
-  const moneyPlus = document.getElementById("money-plus");
-  const moneyMinus = document.getElementById("money-minus");
-  const list = document.getElementById("list");
-  const form = document.getElementById("form");
-  const text = document.getElementById("text");
-  const amount = document.getElementById("amount");
-  const category = document.getElementById("category");
-  const type = document.getElementById("type");
+// ================= LOADER =================
+const globalLoader = document.getElementById("global-loader");
 
-  const navToggle = document.getElementById("nav-toggle");
-  const navMenu = document.getElementById("nav-menu");
+function showLoader() {
+  if (globalLoader) globalLoader.classList.remove("hidden");
+}
 
-  /* =====================
-     STATE
-  ====================== */
-  let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
+function hideLoader() {
+  if (globalLoader) globalLoader.classList.add("hidden");
+}
 
-  /* =====================
-     MOBILE NAV
-  ====================== */
-  if (navToggle && navMenu) {
-    navToggle.addEventListener("click", () => {
-      navMenu.classList.toggle("active");
-    });
+// ================= STATE =================
+const localStorageTransactions = JSON.parse(localStorage.getItem("transactions"));
+let transactions = localStorageTransactions !== null ? localStorageTransactions : [];
+
+// ================= ADD TRANSACTION =================
+function addTransaction(e) {
+  e.preventDefault();
+
+  if (
+    text.value.trim() === "" ||
+    amount.value.trim() === "" ||
+    !category.value ||
+    !type.value
+  ) {
+    showNotification("Please fill in all required fields", "error");
+    return;
   }
 
-  document.querySelectorAll(".nav-link").forEach(link => {
-    link.addEventListener("click", () => {
-      navMenu.classList.remove("active");
-    });
-  });
+  if (isNaN(amount.value) || amount.value === "0") {
+    showNotification("Please enter a valid amount", "error");
+    return;
+  }
 
-  /* =====================
-     ADD TRANSACTION
-  ====================== */
-  function addTransaction(e) {
-    e.preventDefault();
+  let transactionAmount = +amount.value;
 
-    let value = +amount.value;
-    if (type.value === "expense") value = -Math.abs(value);
+  if (type.value === "expense" && transactionAmount > 0) {
+    transactionAmount = -transactionAmount;
+  } else if (type.value === "income" && transactionAmount < 0) {
+    transactionAmount = Math.abs(transactionAmount);
+  }
 
-    const transaction = {
-      id: Date.now(),
-      text: text.value,
-      amount: value
-    };
+  const transaction = {
+    id: Math.floor(Math.random() * 1000000000),
+    text: text.value.trim(),
+    amount: transactionAmount,
+    category: category.value,
+    type: type.value,
+    date: new Date().toISOString(),
+  };
 
+  showLoader();
+
+  setTimeout(() => {
     transactions.push(transaction);
     updateLocalStorage();
-    init();
+    displayTransactions();
+    updateValues();
 
     text.value = "";
     amount.value = "";
     category.value = "";
     type.value = "";
-  }
 
-  /* =====================
-     RENDER
-  ====================== */
-  function addTransactionDOM(tx) {
-    const item = document.createElement("li");
-    item.className = tx.amount < 0 ? "minus" : "plus";
-    item.innerHTML = `
-      ${tx.text}
-      <span>${tx.amount < 0 ? "-" : "+"}₹${Math.abs(tx.amount)}</span>
-      <button onclick="removeTransaction(${tx.id})">x</button>
+    hideLoader();
+    showNotification("Transaction added successfully!", "success");
+  }, 400);
+}
+
+// ================= DISPLAY TRANSACTIONS =================
+function displayTransactions() {
+  list.innerHTML = "";
+
+  if (transactions.length === 0) {
+    list.innerHTML = `
+      <div style="text-align:center; padding:1rem; opacity:0.7;">
+        No transactions found
+      </div>
     `;
-    list.appendChild(item);
+    return;
   }
 
-  function updateValues() {
-    const amounts = transactions.map(t => t.amount);
-    const total = amounts.reduce((a, b) => a + b, 0);
-    const income = amounts.filter(v => v > 0).reduce((a, b) => a + b, 0);
-    const expense = amounts.filter(v => v < 0).reduce((a, b) => a + b, 0) * -1;
+  transactions
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .forEach(addTransactionDOM);
+}
 
-    balance.textContent = `₹${total.toFixed(2)}`;
-    moneyPlus.textContent = `+₹${income.toFixed(2)}`;
-    moneyMinus.textContent = `-₹${expense.toFixed(2)}`;
-  }
+function addTransactionDOM(transaction) {
+  const item = document.createElement("li");
+  item.classList.add(transaction.amount < 0 ? "minus" : "plus");
 
-  function init() {
-    list.innerHTML = "";
-    transactions.forEach(addTransactionDOM);
-    updateValues();
-  }
+  item.innerHTML = `
+    <div>
+      <strong>${transaction.text}</strong>
+      <span>₹${Math.abs(transaction.amount).toFixed(2)}</span>
+    </div>
+    <button class="delete-btn" onclick="removeTransaction(${transaction.id})">
+      <i class="fas fa-trash"></i>
+    </button>
+  `;
 
-  function updateLocalStorage() {
-    localStorage.setItem("transactions", JSON.stringify(transactions));
-  }
+  list.appendChild(item);
+}
 
-  /* =====================
-     GLOBAL DELETE
-  ====================== */
-  window.removeTransaction = function(id) {
-    transactions = transactions.filter(t => t.id !== id);
+// ================= UPDATE VALUES =================
+function updateValues() {
+  const amounts = transactions.map((t) => t.amount);
+
+  const total = amounts.reduce((acc, val) => acc + val, 0);
+  const income = amounts.filter((v) => v > 0).reduce((a, b) => a + b, 0);
+  const expense =
+    amounts.filter((v) => v < 0).reduce((a, b) => a + b, 0) * -1;
+
+  balance.innerHTML = `₹${total.toFixed(2)}`;
+  money_plus.innerHTML = `+₹${income.toFixed(2)}`;
+  money_minus.innerHTML = `-₹${expense.toFixed(2)}`;
+}
+
+// ================= REMOVE TRANSACTION =================
+function removeTransaction(id) {
+  showLoader();
+
+  setTimeout(() => {
+    transactions = transactions.filter((t) => t.id !== id);
     updateLocalStorage();
-    init();
+    displayTransactions();
+    updateValues();
+    hideLoader();
+    showNotification("Transaction deleted successfully", "success");
+  }, 300);
+}
+
+// ================= LOCAL STORAGE =================
+function updateLocalStorage() {
+  localStorage.setItem("transactions", JSON.stringify(transactions));
+}
+
+// ================= NOTIFICATION =================
+function showNotification(message, type = "info") {
+  alert(message);
+}
+
+// ================= IMPORT DATA =================
+function importDataFromFile(file) {
+  showLoader();
+
+  const reader = new FileReader();
+  const ext = file.name.split(".").pop().toLowerCase();
+
+  reader.onload = function (e) {
+    try {
+      let importedTransactions = [];
+
+      if (ext === "json") {
+        const data = JSON.parse(e.target.result);
+        importedTransactions = data.transactions || data;
+      }
+
+      if (!Array.isArray(importedTransactions)) {
+        throw new Error("Invalid file format");
+      }
+
+      importedTransactions.forEach((t) => {
+        t.id = t.id || Math.floor(Math.random() * 1000000000);
+      });
+
+      if (mergeDataCheckbox.checked) {
+        transactions.push(...importedTransactions);
+      } else {
+        transactions = importedTransactions;
+      }
+
+      updateLocalStorage();
+      displayTransactions();
+      updateValues();
+
+      importFileInput.value = "";
+      importDataBtn.disabled = true;
+
+      hideLoader();
+      showNotification("Data imported successfully", "success");
+    } catch (err) {
+      hideLoader();
+      showNotification("Import failed", "error");
+    }
   };
 
-  form.addEventListener("submit", addTransaction);
+  reader.readAsText(file);
+}
 
-  init();
-});
+// ================= INIT =================
+function Init() {
+  displayTransactions();
+  updateValues();
+}
+
+form.addEventListener("submit", addTransaction);
+Init();
