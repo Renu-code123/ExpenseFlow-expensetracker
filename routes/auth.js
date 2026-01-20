@@ -3,6 +3,8 @@ const jwt = require('jsonwebtoken');
 const Joi = require('joi');
 const User = require('../models/User');
 const emailService = require('../services/emailService');
+const securityMonitor = require('../services/securityMonitor');
+const { validateUser } = require('../middleware/sanitization');
 const router = express.Router();
 
 const registerSchema = Joi.object({
@@ -17,7 +19,7 @@ const loginSchema = Joi.object({
 });
 
 // Register
-router.post('/register', async (req, res) => {
+router.post('/register', validateUser, async (req, res) => {
   try {
     const { error, value } = registerSchema.validate(req.body);
     if (error) return res.status(400).json({ error: error.details[0].message });
@@ -53,10 +55,25 @@ router.post('/login', async (req, res) => {
     if (error) return res.status(400).json({ error: error.details[0].message });
 
     const user = await User.findOne({ email: value.email });
-    if (!user) return res.status(400).json({ error: 'Invalid credentials' });
+    if (!user) {
+      // Log failed login attempt
+      await securityMonitor.logSecurityEvent(req, 'failed_login', {
+        email: value.email,
+        reason: 'User not found'
+      });
+      return res.status(400).json({ error: 'Invalid credentials' });
+    }
 
     const isMatch = await user.comparePassword(value.password);
-    if (!isMatch) return res.status(400).json({ error: 'Invalid credentials' });
+    if (!isMatch) {
+      // Log failed login attempt
+      await securityMonitor.logSecurityEvent(req, 'failed_login', {
+        email: value.email,
+        userId: user._id,
+        reason: 'Invalid password'
+      });
+      return res.status(400).json({ error: 'Invalid credentials' });
+    }
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE });
 
