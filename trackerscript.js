@@ -86,70 +86,56 @@ function displayTransactions() {
   list.innerHTML = '';
   list.style.animation = 'none';  // ✅ ADD THIS LINE 
   
-  const filteredTransactions = getFilteredTransactions();
-  
-if (filteredTransactions.length === 0) {
-  const emptyMessage = document.createElement('li');
-  emptyMessage.className = 'empty-state';
+let filteredTransactions = transactions; // show all transactions if no filter
 
-  // 👇 FIRST TIME USER
-  if (transactions.length === 0) {
-    emptyMessage.innerHTML = `
-      <div class="empty-state-content" role="status" aria-live="polite">
-      <i class="fas fa-wallet empty-icon" aria-hidden="true"></i>
-
-        <h3>No expenses yet</h3>
-        <p>Add your first transaction to start tracking your money.</p>
-        <button class="empty-cta" onclick="document.getElementById('text')?.focus()">
->
-          + Add Transaction
-        </button>
-      </div>
-    `;
-  } 
-  // 👇 FILTER RESULT EMPTY
-  else {
-    emptyMessage.innerHTML = `
-      <div class="empty-state-content">
-        <i class="fas fa-filter empty-icon"></i>
-        <h3>No matching transactions</h3>
-        <p>Try clearing or adjusting your filters.</p>
-      </div>
-    `;
-  }
-
-  list.appendChild(emptyMessage);
-  return;
+// optional: apply filter if filter exists
+if (typeof getFilteredTransactions === "function") {
+  filteredTransactions = getFilteredTransactions();
 }
 
-  
+if (!Array.isArray(filteredTransactions)) filteredTransactions = [];
+
+if (filteredTransactions.length === 0) {
+  list.innerHTML = `<li class="empty-state">No transactions yet.</li>`;
+} else {
+  list.innerHTML = "";
   filteredTransactions
     .sort((a, b) => new Date(b.date) - new Date(a.date))
     .forEach(addTransactionDOM);
 }
+}
 
 function addTransactionDOM(transaction) {
+  // Create list item
   const item = document.createElement("li");
   item.classList.add(transaction.amount < 0 ? "minus" : "plus");
 
+  // Create inner HTML
   item.innerHTML = `
-    <div>
+    <div class="transaction-info">
       <strong>${transaction.text}</strong>
-      <span>₹${Math.abs(transaction.amount).toFixed(2)}</span>
+      <span>₹${Math.abs(Number(transaction.amount)).toFixed(2)}</span>
+      <small class="transaction-category">${transaction.category}</small>
+      <small class="transaction-type">${transaction.type}</small>
     </div>
-    <button class="delete-btn" onclick="removeTransaction(${transaction.id})">
+    <button class="delete-btn" aria-label="Delete transaction" onclick="removeTransaction(${transaction.id})">
       <i class="fas fa-trash"></i>
     </button>
   `;
 
+  // Add animation for smooth entry
+  item.style.animation = "fadeIn 0.3s ease";
+
+  // Append to transaction list
   list.appendChild(item);
 }
 
+
 // ================= UPDATE VALUES =================
 function updateValues() {
-  const amounts = transactions.map((t) => t.amount);
+  const amounts = transactions.map((t) => Number(t.amount)); // ensure numbers
 
-  const total = amounts.reduce((acc, val) => acc + val, 0);
+  const total = amounts.reduce((acc, val) => acc + val, 0); // initial 0 is optional here
   const income = amounts.filter((v) => v > 0).reduce((a, b) => a + b, 0);
   const expense =
     amounts.filter((v) => v < 0).reduce((a, b) => a + b, 0) * -1;
@@ -158,6 +144,7 @@ function updateValues() {
   money_plus.innerHTML = `+₹${income.toFixed(2)}`;
   money_minus.innerHTML = `-₹${expense.toFixed(2)}`;
 }
+
 
 // ================= REMOVE TRANSACTION =================
 function removeTransaction(id) {
