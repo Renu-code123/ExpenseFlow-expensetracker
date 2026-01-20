@@ -1442,7 +1442,10 @@ body {
 }
 .empty-state {
   list-style: none;
+  display: flex;
+  justify-content: center;
 }
+
 
 .empty-state-content {
   text-align: center;
@@ -1468,3 +1471,17 @@ body {
   font-weight: 600;
   cursor: pointer;
 }
+.empty-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(100, 255, 218, 0.4);
+}
+
+.fa-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+

@@ -349,6 +349,7 @@ function getFilteredTransactions() {
 // Display transactions with filtering
 function displayTransactions() {
   list.innerHTML = '';
+  list.style.animation = 'none';  // ✅ ADD THIS LINE 
   
   const filteredTransactions = getFilteredTransactions();
   
@@ -359,11 +360,13 @@ if (filteredTransactions.length === 0) {
   // 👇 FIRST TIME USER
   if (transactions.length === 0) {
     emptyMessage.innerHTML = `
-      <div class="empty-state-content">
-        <i class="fas fa-wallet empty-icon"></i>
+      <div class="empty-state-content" role="status" aria-live="polite">
+      <i class="fas fa-wallet empty-icon" aria-hidden="true"></i>
+
         <h3>No expenses yet</h3>
         <p>Add your first transaction to start tracking your money.</p>
-        <button class="empty-cta" onclick="document.getElementById('text').focus()">
+        <button class="empty-cta" onclick="document.getElementById('text')?.focus()">
+>
           + Add Transaction
         </button>
       </div>
