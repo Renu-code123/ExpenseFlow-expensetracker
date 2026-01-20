@@ -101,6 +101,9 @@ app.use((req, res, next) => {
 // Make io available to routes
 app.set('io', io);
 
+// Make io globally available for notifications
+global.io = io;
+
 // Database connection
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
@@ -146,7 +149,7 @@ io.on('connection', (socket) => {
 app.use('/api/auth', require('./middleware/rateLimiter').authLimiter, authRoutes);
 app.use('/api/expenses', require('./middleware/rateLimiter').expenseLimiter, expenseRoutes);
 app.use('/api/sync', syncRoutes);
-app.use('/api/notifications', require('./middleware/rateLimiter').emailLimiter, require('./routes/notifications'));
+app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/receipts', require('./middleware/rateLimiter').uploadLimiter, require('./routes/receipts'));
 app.use('/api/budgets', require('./routes/budgets'));
 app.use('/api/goals', require('./routes/goals'));
