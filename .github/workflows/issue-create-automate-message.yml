@@ -17,20 +17,8 @@ jobs:
           script: |
             const issueNumber = context.issue.number;
 
-            const commentBody1 =
-              "### Thank you for raising this issue! 🙌\n" +
-              "We'll review it as soon as possible. We truly appreciate your contribution! ✨\n\n" +
-              "> 📌 **Before moving ahead:**\n" +
-              "> - Please make sure you've gone through **README.md**, **CONTRIBUTING.md**, and **CODE_OF_CONDUCT.md**.\n" +
-              "> - 🚫 Do **NOT** create a PR until this issue has been **assigned to you**.\n\n" +
-              "---\n\n" +
-              "### 🌟 Support & Explore\n" +
-              "If you like this repository, don’t forget to **⭐ star it** — it really helps and motivates maintainers!\n\n" +
-              "Also, check out **Linkshala** 🚀 for:\n" +
-              "- 🛠️ New project ideas\n" +
-              "- 📚 Learning resources\n" +
-              "- 🎮 Fun games & experiments\n\n" +
-              "Happy contributing! 😊";
+            const commentBody1 = `### Thank you for raising this issue!\n We'll review it as soon as possible. We truly appreciate your contributions! ✨\n\n> Meanwhile make sure you've visited the README.md, CONTRIBUTING.md, and CODE_OF_CONDUCT.md before creating a PR for this. Also, please do NOT create a PR until this issue has been assigned to you. 😊`;
+
 
             await github.rest.issues.createComment({
               owner: context.repo.owner,
@@ -39,4 +27,4 @@ jobs:
               body: commentBody1
             });
 
-            console.log("Comment added successfully.");
+            console.log('Comment added successfully.');
