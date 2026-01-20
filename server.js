@@ -120,26 +120,26 @@ io.use(socketAuth);
 // Socket.IO connection handling
 io.on('connection', (socket) => {
   console.log(`User ${socket.user.name} connected`);
-  
+
   // Join user-specific room
   socket.join(`user_${socket.userId}`);
-  
+
   // Handle sync requests
   socket.on('sync_request', async (data) => {
     try {
       // Process sync queue for this user
       const SyncQueue = require('./models/SyncQueue');
-      const pendingSync = await SyncQueue.find({ 
-        user: socket.userId, 
-        processed: false 
+      const pendingSync = await SyncQueue.find({
+        user: socket.userId,
+        processed: false
       }).sort({ createdAt: 1 });
-      
+
       socket.emit('sync_data', pendingSync);
     } catch (error) {
       socket.emit('sync_error', { error: error.message });
     }
   });
-  
+
   socket.on('disconnect', () => {
     console.log(`User ${socket.user.name} disconnected`);
   });
@@ -153,24 +153,7 @@ app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/receipts', require('./middleware/rateLimiter').uploadLimiter, require('./routes/receipts'));
 app.use('/api/budgets', require('./routes/budgets'));
 app.use('/api/goals', require('./routes/goals'));
-app.use('/api/security', require('./routes/security'));
-
-// Global error handler
-app.use((err, req, res, next) => {
-  console.error('Global error:', err);
-  
-  // Log security-related errors
-  if (err.message.includes('CORS') || err.message.includes('rate limit')) {
-    securityMonitor.logSecurityEvent(req, 'suspicious_activity', {
-      error: err.message,
-      statusCode: 403
-    });
-  }
-  
-  res.status(err.status || 500).json({
-    error: process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message
-  });
-});
+app.use('/api/analytics', require('./routes/analytics'));
 
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
