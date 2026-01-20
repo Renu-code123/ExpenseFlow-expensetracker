@@ -36,6 +36,18 @@
   box-sizing: border-box;
 }
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -181,12 +193,9 @@ body {
 }
 
 .container {
-  max-width: 1200px;
+  width: 100%;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 0 2rem;
-  display: grid;
-  gap: 2rem;
-  margin-bottom: 4rem;
 }
 
 /* Balance Card */
@@ -200,6 +209,9 @@ body {
   box-shadow: var(--shadow-glass);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   animation: fadeInUp 1s ease-out 0.4s both;
+  width: 100%;
+  max-width: 24rem;
+  margin: 0 auto;
 }
 
 .balance-card:hover {
@@ -257,12 +269,20 @@ body {
   font-size: 0.9rem;
 }
 
-/* Income & Expense Cards */
-.inc-exp-container {
+/* Dashboard Grid (Mobile First) */
+.dashboard-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 1.5rem;
-  animation: fadeInUp 1s ease-out 0.6s both;
+  width: 100%;
+  margin-bottom: 2rem;
+}
+
+/* Desktop View */
+@media (min-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .income-card,
@@ -277,6 +297,9 @@ body {
   gap: 1rem;
   box-shadow: var(--shadow-glass);
   transition: all 0.3s ease;
+  width: 100%;
+  max-width: 24rem;
+  margin: 0 auto;
 }
 
 .income-card:hover,
@@ -538,6 +561,8 @@ body {
   position: relative;
   transition: all 0.3s ease;
   animation: slideInLeft 0.3s ease-out;
+  max-width: 100%;
+  word-break: break-word;
 }
 
 .list li:hover {
@@ -1440,6 +1465,10 @@ body {
     right: max(20px, env(safe-area-inset-right) + 20px);
   }
 }
+ |  | 
+1468
+ 
+
 .empty-state {
   list-style: none;
   display: flex;
