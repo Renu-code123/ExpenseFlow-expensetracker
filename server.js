@@ -46,26 +46,26 @@ io.use(socketAuth);
 // Socket.IO connection handling
 io.on('connection', (socket) => {
   console.log(`User ${socket.user.name} connected`);
-  
+
   // Join user-specific room
   socket.join(`user_${socket.userId}`);
-  
+
   // Handle sync requests
   socket.on('sync_request', async (data) => {
     try {
       // Process sync queue for this user
       const SyncQueue = require('./models/SyncQueue');
-      const pendingSync = await SyncQueue.find({ 
-        user: socket.userId, 
-        processed: false 
+      const pendingSync = await SyncQueue.find({
+        user: socket.userId,
+        processed: false
       }).sort({ createdAt: 1 });
-      
+
       socket.emit('sync_data', pendingSync);
     } catch (error) {
       socket.emit('sync_error', { error: error.message });
     }
   });
-  
+
   socket.on('disconnect', () => {
     console.log(`User ${socket.user.name} disconnected`);
   });
@@ -79,6 +79,7 @@ app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/receipts', require('./routes/receipts'));
 app.use('/api/budgets', require('./routes/budgets'));
 app.use('/api/goals', require('./routes/goals'));
+app.use('/api/analytics', require('./routes/analytics'));
 
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
