@@ -83,18 +83,47 @@ function addTransaction(e) {
 
 // ================= DISPLAY TRANSACTIONS =================
 function displayTransactions() {
-  list.innerHTML = "";
+  list.innerHTML = '';
+  list.style.animation = 'none';  // ✅ ADD THIS LINE 
+  
+  const filteredTransactions = getFilteredTransactions();
+  
+if (filteredTransactions.length === 0) {
+  const emptyMessage = document.createElement('li');
+  emptyMessage.className = 'empty-state';
 
+  // 👇 FIRST TIME USER
   if (transactions.length === 0) {
-    list.innerHTML = `
-      <div style="text-align:center; padding:1rem; opacity:0.7;">
-        No transactions found
+    emptyMessage.innerHTML = `
+      <div class="empty-state-content" role="status" aria-live="polite">
+      <i class="fas fa-wallet empty-icon" aria-hidden="true"></i>
+
+        <h3>No expenses yet</h3>
+        <p>Add your first transaction to start tracking your money.</p>
+        <button class="empty-cta" onclick="document.getElementById('text')?.focus()">
+>
+          + Add Transaction
+        </button>
       </div>
     `;
-    return;
+  } 
+  // 👇 FILTER RESULT EMPTY
+  else {
+    emptyMessage.innerHTML = `
+      <div class="empty-state-content">
+        <i class="fas fa-filter empty-icon"></i>
+        <h3>No matching transactions</h3>
+        <p>Try clearing or adjusting your filters.</p>
+      </div>
+    `;
   }
 
-  transactions
+  list.appendChild(emptyMessage);
+  return;
+}
+
+  
+  filteredTransactions
     .sort((a, b) => new Date(b.date) - new Date(a.date))
     .forEach(addTransactionDOM);
 }
