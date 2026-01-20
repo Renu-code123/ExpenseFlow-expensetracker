@@ -1,0 +1,301 @@
+// Authentication API Functions
+const API_BASE_URL = 'http://localhost:3000/api';
+let authToken = localStorage.getItem('authToken');
+let currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+
+// Auth API calls
+async function register(userData) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(userData)
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error);
+    }
+    
+    const data = await response.json();
+    authToken = data.token;
+    currentUser = data.user;
+    
+    localStorage.setItem('authToken', authToken);
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    
+    return data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function login(credentials) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials)
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error);
+    }
+    
+    const data = await response.json();
+    authToken = data.token;
+    currentUser = data.user;
+    
+    localStorage.setItem('authToken', authToken);
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    
+    return data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+function logout() {
+  authToken = null;
+  currentUser = null;
+  localStorage.removeItem('authToken');
+  localStorage.removeItem('currentUser');
+  localStorage.removeItem('transactions');
+  showAuthForm();
+}
+
+// Updated API functions with authentication
+async function fetchExpenses() {
+  if (!authToken) throw new Error('Not authenticated');
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/expenses`, {
+      headers: { 'Authorization': `Bearer ${authToken}` }
+    });
+    if (!response.ok) throw new Error('Failed to fetch expenses');
+    return await response.json();
+  } catch (error) {
+    if (error.message.includes('401')) {
+      logout();
+      throw new Error('Session expired');
+    }
+    throw error;
+  }
+}
+
+async function saveExpense(expense) {
+  if (!authToken) throw new Error('Not authenticated');
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/expenses`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+      },
+      body: JSON.stringify(expense)
+    });
+    if (!response.ok) throw new Error('Failed to save expense');
+    return await response.json();
+  } catch (error) {
+    if (error.message.includes('401')) {
+      logout();
+      throw new Error('Session expired');
+    }
+    throw error;
+  }
+}
+
+async function deleteExpense(id) {
+  if (!authToken) throw new Error('Not authenticated');
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/expenses/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${authToken}` }
+    });
+    if (!response.ok) throw new Error('Failed to delete expense');
+    return await response.json();
+  } catch (error) {
+    if (error.message.includes('401')) {
+      logout();
+      throw new Error('Session expired');
+    }
+    throw error;
+  }
+}
+
+// UI Functions
+function showAuthForm() {
+  document.body.innerHTML = `
+    <div class="auth-container">
+      <div class="auth-form">
+        <h2 id="auth-title">Login to ExpenseFlow</h2>
+        <form id="auth-form">
+          <div id="name-field" style="display: none;">
+            <input type="text" id="name" placeholder="Full Name" required>
+          </div>
+          <input type="email" id="email" placeholder="Email" required>
+          <input type="password" id="password" placeholder="Password" required>
+          <button type="submit" id="auth-submit">Login</button>
+        </form>
+        <p>
+          <span id="auth-switch-text">Don't have an account?</span>
+          <a href="#" id="auth-switch">Register</a>
+        </p>
+      </div>
+    </div>
+    <style>
+      .auth-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+      .auth-form {
+        background: white;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        width: 100%;
+        max-width: 400px;
+      }
+      .auth-form h2 {
+        text-align: center;
+        margin-bottom: 1.5rem;
+        color: #333;
+      }
+      .auth-form input {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 1rem;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 16px;
+      }
+      .auth-form button {
+        width: 100%;
+        padding: 12px;
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      .auth-form button:hover {
+        background: #5a6fd8;
+      }
+      .auth-form p {
+        text-align: center;
+        margin-top: 1rem;
+      }
+      .auth-form a {
+        color: #667eea;
+        text-decoration: none;
+      }
+    </style>
+  `;
+  
+  let isLogin = true;
+  
+  document.getElementById('auth-switch').addEventListener('click', (e) => {
+    e.preventDefault();
+    isLogin = !isLogin;
+    
+    const title = document.getElementById('auth-title');
+    const nameField = document.getElementById('name-field');
+    const submitBtn = document.getElementById('auth-submit');
+    const switchText = document.getElementById('auth-switch-text');
+    const switchLink = document.getElementById('auth-switch');
+    
+    if (isLogin) {
+      title.textContent = 'Login to ExpenseFlow';
+      nameField.style.display = 'none';
+      submitBtn.textContent = 'Login';
+      switchText.textContent = "Don't have an account?";
+      switchLink.textContent = 'Register';
+    } else {
+      title.textContent = 'Register for ExpenseFlow';
+      nameField.style.display = 'block';
+      submitBtn.textContent = 'Register';
+      switchText.textContent = 'Already have an account?';
+      switchLink.textContent = 'Login';
+    }
+  });
+  
+  document.getElementById('auth-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const name = document.getElementById('name').value;
+    
+    try {
+      if (isLogin) {
+        await login({ email, password });
+      } else {
+        await register({ name, email, password });
+      }
+      
+      showMainApp();
+      showNotification(`Welcome ${currentUser.name}!`, 'success');
+    } catch (error) {
+      showNotification(error.message, 'error');
+    }
+  });
+}
+
+function showMainApp() {
+  // Restore original HTML structure
+  location.reload();
+}
+
+function showNotification(message, type = 'info') {
+  const notification = document.createElement('div');
+  notification.className = `notification notification-${type}`;
+  notification.textContent = message;
+  
+  Object.assign(notification.style, {
+    position: 'fixed',
+    top: '20px',
+    right: '20px',
+    padding: '1rem',
+    borderRadius: '5px',
+    color: 'white',
+    background: type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3',
+    zIndex: '10000'
+  });
+  
+  document.body.appendChild(notification);
+  setTimeout(() => notification.remove(), 3000);
+}
+
+// Initialize authentication
+function initAuth() {
+  if (!authToken || !currentUser) {
+    showAuthForm();
+    return false;
+  }
+  
+  // Add logout button to existing UI
+  const header = document.querySelector('header') || document.querySelector('.header');
+  if (header) {
+    const logoutBtn = document.createElement('button');
+    logoutBtn.textContent = `Logout (${currentUser.name})`;
+    logoutBtn.onclick = logout;
+    logoutBtn.style.cssText = 'position: absolute; top: 10px; right: 10px; padding: 8px 16px; background: #f44336; color: white; border: none; border-radius: 5px; cursor: pointer;';
+    header.appendChild(logoutBtn);
+  }
+  
+  return true;
+}
+
+// Check authentication on page load
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initAuth);
+} else {
+  initAuth();
+}

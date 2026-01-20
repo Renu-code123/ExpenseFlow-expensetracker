@@ -1,4 +1,3 @@
-# 💸 ExpenseFlow – Smart Expense Tracker  
 
 **ExpenseFlow** is a modern and responsive **expense tracking web application** designed to help users manage their finances efficiently.  
 With a clean and elegant dark-themed UI, it allows users to monitor spending, analyze balance, and achieve their financial goals effortlessly.  
@@ -513,6 +512,7 @@ cd ExpenseFlow-expensetracker
 ```bash
 # Using npx (no installation needed)
 npx live-server
+```
 
 # Or install globally
 npm install -g live-server
@@ -610,6 +610,9 @@ graph LR
 ---
 
 ## 📸 Screenshots
+<img width="1919" height="837" alt="image" src="https://github.com/user-attachments/assets/b8386693-f852-48f0-bcf0-dbbdb5ce141a" />
+<img width="1919" height="838" alt="image" src="https://github.com/user-attachments/assets/9f73707e-16ba-4866-865c-e938dd0c0ce2" />
+
 
 ### 🏠 Dashboard Preview  
 **Smart Money Management – Take control of your finances with our intuitive expense tracker.**
@@ -657,7 +660,7 @@ If you'd like to improve **ExpenseFlow**, follow these steps:
 
 1. **Fork the repository**  
 2. **Create a new branch**
-   ```bash
+ ```bash
    git checkout -b feature-name
    ```
 3. **Commit your changes**
@@ -694,46 +697,5 @@ This project is licensed under the **MIT License** – see the [LICENSE](./LICEN
 ---
 
 ## 🌟 Show Some Love  
-If you found this project useful, don't forget to ⭐ **Star** the repository!  
-Let's build smarter tools for financial awareness together 💜
-
----
-
-## 📊 Project Statistics
-
-- 📁 **Total Files**: 8
-- 💻 **Lines of Code**: ~2,500+
-- 🎨 **CSS Classes**: 100+
-- ⚡ **JavaScript Functions**: 30+
-- 📱 **PWA Ready**: ✅
-- 🌐 **Browser Support**: All modern browsers
-- 📦 **Dependencies**: Zero (Vanilla JS)
-
----
-
-## 🐛 Known Issues
-
-- Service Worker caching may require hard refresh on updates
-- Large transaction lists (>1000) may experience performance issues
-- Date filters use local timezone (UTC conversion coming soon)
-
----
-
-## 🔗 Related Projects
-
-- [Expense Tracker API](https://github.com/example/expense-api) - Backend API for ExpenseFlow
-- [ExpenseFlow Mobile](https://github.com/example/expenseflow-mobile) - Mobile app version
-
----
-
-## 📞 Support
-
-If you encounter any issues or have questions:
-
-1. Check the [Issues](https://github.com/Renu-code123/ExpenseFlow-expensetracker/issues) page
-2. Read the [Documentation](./CONTRIBUTING.md)
-3. Create a new issue with detailed information
-
----
-
-**Made with ❤️ for better financial management**
+If you found this project useful, don’t forget to ⭐ **Star** the repository!  
+Let’s build smarter tools for financial awareness together 💜

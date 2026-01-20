@@ -41,6 +41,18 @@
   box-sizing: border-box;
 }
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -217,7 +229,8 @@ body {
 }
 
 .container {
-  max-width: 1200px;
+  width: 100%;
+  max-width: 1100px;
   margin: 0 auto;
   padding: 0 2rem;
   display: flex;
@@ -264,6 +277,8 @@ body {
   );
   opacity: 0;
   transition: opacity 0.4s ease;
+  max-width: 24rem;
+  margin: 0 auto;
 }
 
 .balance-card:hover {
@@ -333,15 +348,24 @@ body {
   font-size: 0.9rem;
 }
 
-/* Income & Expense Cards */
-.inc-exp-container {
+/* Dashboard Grid (Mobile First) */
+.dashboard-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 1.5rem;
   animation: fadeInUp 1s ease-out 0.6s both;
   width: 100%;
   box-sizing: border-box;
   margin-bottom: 0;
+  width: 100%;
+  margin-bottom: 2rem;
+}
+
+/* Desktop View */
+@media (min-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .income-card,
@@ -383,6 +407,12 @@ body {
 
 .expense-card {
   border-left: 3px solid var(--error);
+  gap: 1rem;
+  box-shadow: var(--shadow-glass);
+  transition: all 0.3s ease;
+  width: 100%;
+  max-width: 24rem;
+  margin: 0 auto;
 }
 
 .income-card:hover,
@@ -720,6 +750,8 @@ body {
   background: currentColor;
   transition: width 0.4s ease;
   z-index: 0;
+  max-width: 100%;
+  word-break: break-word;
 }
 
 .list li:hover {
@@ -2056,6 +2088,8 @@ body {
 /* Modal Styles */
 .modal {
   display: none;
+/* ===== GLOBAL LOADER ===== */
+.global-loader {
   position: fixed;
   top: 0;
   left: 0;
@@ -2401,5 +2435,31 @@ body {
   
   .modal-content {
     padding: 1.5rem;
+  }
+}
+  background: rgba(15, 15, 35, 0.75);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20000;
+}
+
+.global-loader.hidden {
+  display: none;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 5px solid rgba(255, 255, 255, 0.2);
+  border-top: 5px solid var(--accent-primary);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
