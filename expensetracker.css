@@ -1,6 +1,6 @@
 :root {
   /* Color Palette */
-  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --primary-gradient: linear-gradient(135deg, #309b81 0%, #31319a 100%);
   --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
   --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
   --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
@@ -13,15 +13,15 @@
   --bg-glass: rgba(255, 255, 255, 0.1);
   
   /* Text Colors */
-  --text-primary: #ffffff;
-  --text-secondary: #b4b4b4;
-  --text-accent: #64ffda;
+  --text-primary: #f5f4f4;
+  --text-secondary: #a3a0a0;
+  --text-accent: #40fcd0;
   
   /* Accent Colors */
-  --accent-primary: #64ffda;
+  --accent-primary: #40fcd0;
   --accent-secondary: #ff6b9d;
-  --success: #00e676;
-  --error: #ff5722;
+  --success: #00b75e;
+  --error: #ff855e;
   --warning: #ffc107;
   
   /* Shadows */
