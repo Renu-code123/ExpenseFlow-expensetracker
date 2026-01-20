@@ -23,9 +23,18 @@ function hideLoader() {
   if (globalLoader) globalLoader.classList.add("hidden");
 }
 
-// ================= STATE =================
-const localStorageTransactions = JSON.parse(localStorage.getItem("transactions"));
-let transactions = localStorageTransactions !== null ? localStorageTransactions : [];
+// ================= STATE  (SAFE LOCALSTORAGE PARSING) =================
+let transactions = [];
+
+try {
+  const storedTransactions = localStorage.getItem("transactions");
+  transactions = storedTransactions ? JSON.parse(storedTransactions) : [];
+} catch (error) {
+  console.warn("Invalid transactions data in localStorage. Resetting data.");
+  localStorage.removeItem("transactions");
+  transactions = [];
+}
+
 
 // ================= ADD TRANSACTION =================
 function addTransaction(e) {
