@@ -74,38 +74,66 @@ strengthen their frontend and project-structuring skills.
 | **PWA Support** | manifest.json, sw.js |
 
 ---
-
-## 📂 Folder Structure
-
-```
-
-ExpenseFlow-expensetracker/
+## Folder Structure
+```text
+ExpenseFlow/
 │
-├── expenseTracker.html      # Main HTML layout
-├── expenseTracker.css       # Styling and UI components
-├── trackerScript.js         # Core JavaScript functionality
-├── manifest.json            # Manifest file for PWA
-├── sw.js                    # Service Worker for offline caching
-├── LICENSE                  # MIT License
-└── README.md                # Documentation
+├── .env                        → Environment variables
+├── server.js                    → Main backend server
+├── package.json                 → Node dependencies
+├── package-lock.json            → Locked package versions
+│
+├── AUTH_SETUP.md                → Authentication setup guide
+├── BACKEND_SETUP.md             → Backend setup guide
+├── API_SECURITY.md              → API security & rate limiting
+├── EMAIL_NOTIFICATIONS.md       → Email notification system
+├── ADVANCED_NOTIFICATION.md     → Advanced notification features
+├── BUDGET_GOALS.md              → Budget goals feature documentation
+├── REALTIME_SYNC.md             → Real-time sync documentation
+├── RECEIPT_MANAGEMENT.md        → Receipt management documentation
+│
+├── auth-integration.js          → Auth backend logic
+├── budget-goals.js              → Budget goals logic
+├── realtime-sync.js             → Realtime sync logic
+├── notification-center.js       → Notifications logic
+├── api-integration.js           → API integration logic
+├── analytics-dashboard.js       → Dashboard logic
+├── receipt-upload.js            → Receipt upload logic
+├── sw.js                        → Service worker
+├── sw-notifications.js          → Service worker notifications
+├── trackerscript.js             → Frontend logic
+│
+├── index.html                   → Frontend main page
+├── finance-tips.html            → Finance tips page
+├── expensetracker.css           → Frontend styling
+├── terms_service.html           → Terms & service page
+│
+├── middleware/                  → Middleware functions
+├── models/                      → Database models
+├── routes/                      → API routes
+├── services/                    → Helper services
+├── node_modules/                → Node modules
+├── .github/ISSUE_TEMPLATE/      → GitHub issue templates
+├── LICENSE
+├── manifest.json
+└── README.md                    → Project documentation
 
-````
 
----
+
 
 ## 🚀 How to Run Locally
 
-Follow these simple steps to set up and view the project on your local machine 👇  
+Follow these simple steps to set up and run the project on your local machine:
 
 ### 1️⃣ Clone the Repository
 ```bash
-git clone https://github.com/Renu-code123/ExpenseFlow-expensetracker.git
-````
+git clone https://github.com/ana2822/ExpenseFlow.git
+
 
 ### 2️⃣ Navigate into the Project Folder
 
 ```bash
-cd ExpenseFlow-expensetracker
+cd ExpenseFlow
 ```
 
 ### 3️⃣ Open the HTML File
