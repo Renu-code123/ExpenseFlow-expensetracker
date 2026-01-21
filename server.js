@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const cors = require('cors');
 const socketAuth = require('./middleware/socketAuth');
 const CronJobs = require('./services/cronJobs');
+const backupScheduler = require('./services/backupScheduler');
 const { generalLimiter } = require('./middleware/rateLimiter');
 const { sanitizeInput, mongoSanitizeMiddleware } = require('./middleware/sanitization');
 const securityMonitor = require('./services/securityMonitor');
@@ -111,6 +112,10 @@ mongoose.connect(process.env.MONGODB_URI)
     // Initialize cron jobs after DB connection
     CronJobs.init();
     console.log('Email cron jobs initialized');
+    
+    // Initialize backup scheduler
+    backupScheduler.init();
+    console.log('Backup scheduler initialized');
   })
   .catch(err => console.error('MongoDB connection error:', err));
 
@@ -154,6 +159,7 @@ app.use('/api/receipts', require('./middleware/rateLimiter').uploadLimiter, requ
 app.use('/api/budgets', require('./routes/budgets'));
 app.use('/api/goals', require('./routes/goals'));
 app.use('/api/security', require('./routes/security'));
+app.use('/api/backup', require('./routes/backup'));
 
 // Global error handler
 app.use((err, req, res, next) => {
