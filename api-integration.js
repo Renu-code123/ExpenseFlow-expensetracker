@@ -1,12 +1,13 @@
 // API Configuration
 const API_BASE_URL = 'http://localhost:3000/api';
 
-// API Functions
-async function fetchExpenses() {
+// API Functions with pagination support
+async function fetchExpenses(page = 1, limit = 50) {
   try {
-    const response = await fetch(`${API_BASE_URL}/expenses`);
+    const response = await fetch(`${API_BASE_URL}/expenses?page=${page}&limit=${limit}`);
     if (!response.ok) throw new Error('Failed to fetch expenses');
-    return await response.json();
+    const result = await response.json();
+    return result.success ? result.data : result;
   } catch (error) {
     console.error('Error fetching expenses:', error);
     showNotification('Failed to load expenses', 'error');
