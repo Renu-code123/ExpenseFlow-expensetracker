@@ -64,4 +64,9 @@ const expenseSchema = new mongoose.Schema({
   timestamps: true
 });
 
+// Indexes for performance optimization
+expenseSchema.index({ user: 1, date: -1 });
+expenseSchema.index({ user: 1, type: 1, date: -1 });
+expenseSchema.index({ user: 1, category: 1, date: -1 });
+
 module.exports = mongoose.model('Expense', expenseSchema);
