@@ -27,6 +27,12 @@ const expenseSchema = new mongoose.Schema({
     required: true,
     enum: ['income', 'expense']
   },
+  merchant: {
+    type: String,
+    trim: true,
+    maxlength: 50,
+    default: ''
+  },
   date: {
     type: Date,
     default: Date.now
