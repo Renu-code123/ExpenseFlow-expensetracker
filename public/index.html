@@ -135,6 +135,23 @@
         gap: 0.5rem;
       }
     }
+        #redirect{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-left: 12px;
+        border: 1px solid #64ffda;
+        background-color: #0f0f23;
+        padding: 6px 12px;
+        border-radius: 8px;
+        transition: background-color 0.3s ease;
+    }
+    #redirect a{
+        color: #64ffda;
+        text-decoration: none;
+        font-weight: 500;
+        margin-right: 8px;
+    }
   </style>
 </head>
 
@@ -165,7 +182,10 @@
           </button>
           <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face"
             alt="User" class="profile-img">
-          <span class="username">John Doe</span>
+          <span class="username" id="navUsername"></span>
+          <div id="redirect" >
+                <a href="#" id="logoutLink" onclick="logout()">Logout</a>
+              </div>
         </div>
       </div>
     </nav>
@@ -874,7 +894,7 @@
 </footer>
 
 
-  <script src="trackerscript.js"></script>
+
     
     <!-- PWA Installation Prompt -->
     <div id="install-prompt" class="install-prompt" style="display: none;">
@@ -907,8 +927,7 @@
     </div>
   </footer>
 
-  <script src="trackerscript.js"></script>
-  <script src="analytics-dashboard.js"></script>
+ 
   <script>
     // Recurring Modal Control
     function openRecurringModal() {
@@ -1116,6 +1135,18 @@
         closeCurrencyModal();
       }
     }
+document.addEventListener('DOMContentLoaded', () => {
+  const logoutLink = document.getElementById('logoutLink');
+
+  if (logoutLink) {
+    logoutLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      logout();
+    });
+  }
+});
+
+
   </script>
 
   <!-- PWA Installation Prompt -->
@@ -1135,7 +1166,7 @@
         </button>
       </div>
     </div>
-.7  </div>
+  </div>
 
   <!-- Offline Indicator -->
   <div id="offline-indicator" class="offline-indicator" style="display: none;">
@@ -1151,6 +1182,12 @@
       <button id="update-button" class="update-btn">Update Now</button>
     </div>
   </div>
+<script src="auth-check.js"></script>
+<script src="auth.js"></script>
+ <script src="trackerscript.js"></script>
+  <script src="analytics-dashboard.js"></script>
+
+
 </body>
 
 </html>
