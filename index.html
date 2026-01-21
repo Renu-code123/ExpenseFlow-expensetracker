@@ -72,6 +72,24 @@
         display: block;
         cursor: pointer;
       }
+.glass {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  animation: fadeIn 0.8s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
       .user-profile {
         display: none;
@@ -129,6 +147,37 @@
         gap: 2rem;
         text-align: center;
       }
+.balance-card,
+.income-card,
+.expense-card,
+.history-section,
+.form-section,
+.data-management-section,
+.recurring-section {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.balance-card:hover,
+.income-card:hover,
+.expense-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
+}
+.btn-submit {
+  background: linear-gradient(135deg, #64ffda, #48e0c1);
+  border: none;
+  color: #041212;
+  font-weight: 600;
+  border-radius: 14px;
+  padding: 0.85rem 1.5rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(100, 255, 218, 0.35);
+}
 
       .footer-stats {
         flex-direction: column;
@@ -173,7 +222,7 @@
 
   <!-- Main Content -->
   <main class="main-content">
-    <div class="hero-section">
+    <div class="hero-section glass">
       <h1 class="hero-title">Smart Money Management</h1>
       <p class="hero-subtitle">Take control of your finances with our intuitive expense tracker</p>
     </div>
@@ -691,7 +740,8 @@
 
   </div>
 
-  <div class="footer-bottom">
+<div class="footer-bottom">
+  <div class="footer-container">
     <p>&copy; 2026 ExpenseFlow. All rights reserved. Made with ❤️ for better financial management.</p>
     <div class="footer-stats">
       <span>🏆 Trusted by 10,000+ users</span>
@@ -699,41 +749,10 @@
       <span>📊 99.9% uptime</span>
     </div>
   </div>
+</div>
 </footer>
 
 
-  <script src="trackerscript.js"></script>
-    
-    <!-- PWA Installation Prompt -->
-    <div id="install-prompt" class="install-prompt" style="display: none;">
-      <div class="install-prompt-content">
-        <div class="install-prompt-header">
-          <i class="fas fa-download"></i>
-          <h3>Install ExpenseFlow</h3>
-        </div>
-        <p>Install ExpenseFlow for quick access and offline functionality!</p>
-        <div class="install-prompt-actions">
-          <button id="install-button" class="install-btn">
-            <i class="fas fa-plus"></i> Install
-          </button>
-          <button id="install-dismiss" class="dismiss-btn">
-            <i class="fas fa-times"></i> Not now
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div class="footer-bottom">
-      <div class="footer-container">
-        <p>&copy; 2026 ExpenseFlow. All rights reserved. Made with ❤️ for better financial management.</p>
-        <div class="footer-stats">
-          <span>🏆 Trusted by 10,000+ users</span>
-          <span>💰 ₹50M+ tracked</span>
-          <span>📊 99.9% uptime</span>
-        </div>
-      </div>
-    </div>
-  </footer>
 
   <script src="trackerscript.js"></script>
   <script src="analytics-dashboard.js"></script>
