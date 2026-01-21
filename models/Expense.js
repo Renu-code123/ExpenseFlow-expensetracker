@@ -17,6 +17,29 @@ const expenseSchema = new mongoose.Schema({
     required: true,
     min: 0.01
   },
+  originalAmount: {
+    type: Number,
+    required: true,
+    min: 0.01
+  },
+  originalCurrency: {
+    type: String,
+    required: true,
+    default: 'INR',
+    uppercase: true
+  },
+  convertedAmount: {
+    type: Number,
+    min: 0.01
+  },
+  convertedCurrency: {
+    type: String,
+    uppercase: true
+  },
+  exchangeRate: {
+    type: Number,
+    min: 0
+  },
   category: {
     type: String,
     required: true,
