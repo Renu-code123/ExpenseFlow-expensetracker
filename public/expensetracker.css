@@ -4201,3 +4201,352 @@ button {
     font-size: 0.9rem;
   }
 }
+
+/* Finance Tips Layout Enhancements */
+.hero-section + .container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+  align-items: stretch;
+}
+
+.hero-section + .container .data-management-section {
+  grid-column: 1 / -1;
+}
+
+.hero-section + .container .balance-card {
+  margin: 0;
+}
+
+/* Budget Goals Dashboard */
+#budget-goals-dashboard {
+  max-width: 1200px;
+  margin: 6rem auto 3rem;
+  padding: 2.5rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 24px;
+  box-shadow: var(--shadow-glass);
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.dashboard-header h2 {
+  font-size: 2rem;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.dashboard-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.dashboard-actions button {
+  padding: 0.65rem 1.5rem;
+  border-radius: 999px;
+  border: none;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dashboard-actions button.btn-primary {
+  background: var(--primary-gradient);
+  color: white;
+  box-shadow: 0 10px 35px rgba(102, 126, 234, 0.35);
+}
+
+.dashboard-actions button.btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dashboard-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.summary-card {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 18px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: var(--shadow-glass);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.summary-card h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+.metric {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+}
+
+.metric .value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.dashboard-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.budgets-section,
+.goals-section,
+.alerts-section {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1.75rem;
+  box-shadow: var(--shadow-glass);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.budgets-section h3,
+.goals-section h3,
+.alerts-section h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.budget-item,
+.goal-item {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.budget-header,
+.goal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.budget-header h4,
+.goal-header h4 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.budget-percentage,
+.goal-type {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--accent-primary);
+}
+
+.budget-progress,
+.goal-progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 0.35rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--primary-gradient);
+  box-shadow: 0 4px 12px rgba(118, 75, 162, 0.4);
+}
+
+.progress-text {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.goal-details,
+.budget-details {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  flex-wrap: wrap;
+}
+
+.goal-details .days-left {
+  font-weight: 600;
+  color: var(--accent-primary);
+}
+
+.alerts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.alert-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.alert-icon {
+  font-size: 1.5rem;
+}
+
+.alert-content h4 {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.alert-content p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.alert-content span {
+  color: var(--accent-primary);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+#budget-modal .modal-content,
+#goal-modal .modal-content {
+  width: min(90vw, 520px);
+  padding: 1.5rem;
+}
+
+.modal-actions {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+@media (max-width: 768px) {
+  .nav-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0 1rem;
+  }
+
+  .nav-menu {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    width: 100%;
+    gap: 0.75rem;
+  }
+
+  .nav-link {
+    width: 100%;
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    border-radius: 10px;
+  }
+
+  .hero-section {
+    padding: 4rem 1.5rem 2rem;
+    text-align: left;
+  }
+
+  .hero-title {
+    font-size: 2.4rem;
+  }
+
+  .hero-cta {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hero-cta .cta-primary,
+  .hero-cta .cta-secondary {
+    width: 100%;
+  }
+
+  .hero-section + .container {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+
+  #budget-goals-dashboard {
+    margin: 4.5rem 1rem;
+    padding: 1.75rem;
+  }
+
+  .dashboard-actions button {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .dashboard-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-content {
+    grid-template-columns: 1fr;
+  }
+
+  .alerts-section {
+    order: 3;
+  }
+
+  .items-list {
+    max-height: 360px;
+  }
+}
