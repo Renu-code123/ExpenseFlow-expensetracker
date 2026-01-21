@@ -16,7 +16,7 @@ With a clean and elegant dark-themed UI, it allows users to monitor spending, an
 - [🤝 Contributing](#-contributing)
 - [🧾 License](#-license)
 - [👩‍💻 Author](#-author)
-- [💬 Quote](#-quote)
+- [💬 inspiration](#-inspiration)
 
 ---
 
@@ -173,7 +173,7 @@ This project is licensed under the **MIT License** – see the [LICENSE](./LICEN
 - **GitHub:** [@Renu-code123](https://github.com/Renu-code123)
 ---
 
-## 💬 Quote  
+## 💬 inspiration 
 > “Smart money management begins with awareness — track it, plan it, and grow it with **ExpenseFlow**.”  
 
 ---
