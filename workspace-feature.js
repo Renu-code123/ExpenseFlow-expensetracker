@@ -1,5 +1,5 @@
 // Workspace Management Feature for ExpenseFlow
-const WORKSPACE_API_URL = 'http://localhost:3000/api/workspaces';
+var WORKSPACE_API_URL = '/api/workspaces';
 
 // State management
 let currentWorkspaces = [];
@@ -10,7 +10,7 @@ let activeWorkspace = null;
 // ========================
 
 async function getAuthHeaders() {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('authToken');
     return {
         'Content-Type': 'application/json',
         'Authorization': token ? `Bearer ${token}` : ''
@@ -22,6 +22,9 @@ async function getAuthHeaders() {
  */
 async function fetchWorkspaces() {
     try {
+        const token = localStorage.getItem('authToken');
+        if (!token) return [];
+
         const response = await fetch(WORKSPACE_API_URL, {
             headers: await getAuthHeaders()
         });

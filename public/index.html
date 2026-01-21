@@ -849,18 +849,21 @@
 
     </div>
 
+    </div>
+
     <div class="footer-bottom">
-      <p>&copy; 2026 ExpenseFlow. All rights reserved. Made with ❤️ for better financial management.</p>
-      <div class="footer-stats">
-        <span>🏆 Trusted by 10,000+ users</span>
-        <span>💰 ₹50M+ tracked</span>
-        <span>📊 99.9% uptime</span>
+      <div class="footer-container">
+        <p>&copy; 2026 ExpenseFlow. All rights reserved. Made with ❤️ for better financial management.</p>
+        <div class="footer-stats">
+          <span>🏆 Trusted by 10,000+ users</span>
+          <span>💰 ₹50M+ tracked</span>
+          <span>📊 99.9% uptime</span>
+        </div>
       </div>
     </div>
   </footer>
 
 
-  <script src="trackerscript.js"></script>
 
   <!-- PWA Installation Prompt -->
   <div id="install-prompt" class="install-prompt" style="display: none;">
@@ -881,20 +884,7 @@
     </div>
   </div>
 
-  <div class="footer-bottom">
-    <div class="footer-container">
-      <p>&copy; 2026 ExpenseFlow. All rights reserved. Made with ❤️ for better financial management.</p>
-      <div class="footer-stats">
-        <span>🏆 Trusted by 10,000+ users</span>
-        <span>💰 ₹50M+ tracked</span>
-        <span>📊 99.9% uptime</span>
-      </div>
-    </div>
-  </div>
-  </footer>
 
-  <script src="trackerscript.js"></script>
-  <script src="analytics-dashboard.js"></script>
   <script>
     // Recurring Modal Control
     function openRecurringModal() {
@@ -951,7 +941,7 @@
     // Load supported currencies on page load
     async function loadSupportedCurrencies() {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('authToken');
         if (!token) return;
 
         const response = await fetch('/api/currency/supported', {
@@ -993,7 +983,7 @@
     // Load user's currency preference
     async function loadUserCurrencyPreference() {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('authToken');
         if (!token) return;
 
         const response = await fetch('/api/currency/preference', {
@@ -1005,7 +995,8 @@
         const data = await response.json();
         if (data.success) {
           currentUserCurrency = data.data.preferredCurrency;
-          document.getElementById('current-currency').textContent = currentUserCurrency;
+          const currentCurrencyEl = document.getElementById('current-currency');
+          if (currentCurrencyEl) currentCurrencyEl.textContent = currentUserCurrency;
           populateCurrencySelects();
         }
       } catch (error) {
@@ -1015,19 +1006,25 @@
 
     // Open currency settings modal
     function openCurrencyModal() {
-      document.getElementById('currency-modal').style.display = 'flex';
-      loadExchangeRateInfo();
+      const modal = document.getElementById('currency-modal');
+      if (modal) {
+        modal.style.display = 'flex';
+        loadExchangeRateInfo();
+      }
     }
 
     // Close currency settings modal
     function closeCurrencyModal() {
-      document.getElementById('currency-modal').style.display = 'none';
+      const modal = document.getElementById('currency-modal');
+      if (modal) {
+        modal.style.display = 'none';
+      }
     }
 
     // Load exchange rate information
     async function loadExchangeRateInfo() {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('authToken');
         const response = await fetch(`/api/currency/rates?base=${currentUserCurrency}`, {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -1037,6 +1034,8 @@
         const data = await response.json();
         if (data.success) {
           const rateInfo = document.getElementById('exchange-rate-info');
+          if (!rateInfo) return;
+
           const rates = data.data.rates;
           const popularCurrencies = ['USD', 'EUR', 'GBP', 'JPY', 'AUD'];
 
@@ -1061,8 +1060,11 @@
     // Save currency preference
     async function saveCurrencyPreference() {
       try {
-        const token = localStorage.getItem('token');
-        const newCurrency = document.getElementById('preferred-currency').value;
+        const token = localStorage.getItem('authToken');
+        const prefSelect = document.getElementById('preferred-currency');
+        if (!prefSelect) return;
+
+        const newCurrency = prefSelect.value;
 
         const response = await fetch('/api/currency/preference', {
           method: 'PUT',
@@ -1076,7 +1078,8 @@
         const data = await response.json();
         if (data.success) {
           currentUserCurrency = newCurrency;
-          document.getElementById('current-currency').textContent = newCurrency;
+          const currentCurrencyEl = document.getElementById('current-currency');
+          if (currentCurrencyEl) currentCurrencyEl.textContent = newCurrency;
           closeCurrencyModal();
           // Reload transactions to show in new currency
           location.reload();
@@ -1099,11 +1102,15 @@
     window.onclick = function (event) {
       const modal = document.getElementById('currency-modal');
       const wsModal = document.getElementById('workspace-modal');
+      const recModal = document.getElementById('recurring-modal');
       if (event.target === modal) {
         closeCurrencyModal();
       }
       if (event.target === wsModal) {
         closeWorkspaceModal();
+      }
+      if (event.target === recModal) {
+        closeRecurringModal();
       }
     }
   </script>
@@ -1137,28 +1144,17 @@
     </div>
   </div>
 
+  <!-- API and Feature Scripts -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="auth-integration.js"></script>
   <script src="api-integration.js"></script>
   <script src="workspace-feature.js"></script>
+  <script src="budget-goals.js"></script>
+  <script src="receipt-upload.js"></script>
+  <script src="analytics-dashboard.js"></script>
+  <script src="realtime-sync.js"></script>
 
-  <!-- PWA Installation Prompt -->
-  <div id="install-prompt" class="install-prompt" style="display: none;">
-    <div class="install-prompt-content">
-      <div class="install-prompt-header">
-        <i class="fas fa-download"></i>
-        <h3>Install ExpenseFlow</h3>
-      </div>
-      <p>Install ExpenseFlow for quick access and offline functionality!</p>
-      <div class="install-prompt-actions">
-        <button id="install-button" class="install-btn">
-          <i class="fas fa-plus"></i> Install
-        </button>
-        <button id="install-dismiss" class="dismiss-btn">
-          <i class="fas fa-times"></i> Not now
-        </button>
-      </div>
-    </div>
-    .7
-  </div>
+  <!-- Offline Indicator -->
 
   <!-- Offline Indicator -->
   <div id="offline-indicator" class="offline-indicator" style="display: none;">

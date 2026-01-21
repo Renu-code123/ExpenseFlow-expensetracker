@@ -1,14 +1,93 @@
 // API Configuration
-const API_BASE_URL = 'http://localhost:3000/api';
+var API_BASE_URL = '/api';
 
-// API Functions with pagination support
+// State
+let transactions = [];
+let currentFilter = 'all';
+let suggestionTimeout = null;
+let currentSuggestions = [];
+let selectedSuggestion = null;
+
+// DOM Elements
+const balance = document.getElementById("balance");
+const money_plus = document.getElementById("money-plus");
+const money_minus = document.getElementById("money-minus");
+const list = document.getElementById("list");
+const form = document.getElementById("form");
+const text = document.getElementById("text");
+const amount = document.getElementById("amount");
+const category = document.getElementById("category");
+const type = document.getElementById("type");
+const categorySuggestions = document.getElementById("category-suggestions");
+const categoryConfidence = document.getElementById("category-confidence");
+const navToggle = document.getElementById("nav-toggle");
+const navMenu = document.getElementById("nav-menu");
+
+// Constant labels and emojis
+const categoryEmojis = {
+  food: '🍽️',
+  transport: '🚗',
+  shopping: '🛒',
+  entertainment: '🎬',
+  bills: '💡',
+  utilities: '💡',
+  healthcare: '🏥',
+  education: '📚',
+  travel: '✈️',
+  salary: '💼',
+  freelance: '💻',
+  investment: '📈',
+  other: '📋'
+};
+
+const categoryLabels = {
+  food: 'Food & Dining',
+  transport: 'Transportation',
+  shopping: 'Shopping',
+  entertainment: 'Entertainment',
+  bills: 'Bills & Utilities',
+  utilities: 'Bills & Utilities',
+  healthcare: 'Healthcare',
+  education: 'Education',
+  travel: 'Travel',
+  salary: 'Salary',
+  freelance: 'Freelance',
+  investment: 'Investment',
+  other: 'Other'
+};
+
+const categories = {
+  food: { name: '🍽️ Food & Dining', color: '#FF6B6B' },
+  transport: { name: '🚗 Transportation', color: '#4ECDC4' },
+  shopping: { name: '🛒 Shopping', color: '#45B7D1' },
+  entertainment: { name: '🎬 Entertainment', color: '#96CEB4' },
+  utilities: { name: '💡 Bills & Utilities', color: '#FECA57' },
+  healthcare: { name: '🏥 Healthcare', color: '#FF9FF3' },
+  other: { name: '📋 Other', color: '#A55EEA' }
+};
+
+// ========================
+// API Functions
+// ========================
+
+function getAuthToken() {
+  return localStorage.getItem('authToken');
+}
+
 async function fetchExpenses(page = 1, limit = 50, workspaceId = null) {
   try {
+    const token = getAuthToken();
+    if (!token) return [];
+
     let url = `${API_BASE_URL}/expenses?page=${page}&limit=${limit}`;
-    if (workspaceId && workspaceId !== 'personal') {
-      url += `&workspaceId=${workspaceId}`;
+    const activeWs = localStorage.getItem('activeWorkspaceId');
+    if (activeWs && activeWs !== 'personal') {
+      url += `&workspaceId=${activeWs}`;
     }
-    const response = await fetch(url);
+
+    const response = await fetch(url, {
+      headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+    });
     if (!response.ok) throw new Error('Failed to fetch expenses');
     const result = await response.json();
     return result.success ? result.data : result;
@@ -22,12 +101,17 @@ async function fetchExpenses(page = 1, limit = 50, workspaceId = null) {
 async function saveExpense(expense, workspaceId = null) {
   try {
     const payload = { ...expense };
-    if (workspaceId && workspaceId !== 'personal') {
-      payload.workspaceId = workspaceId;
+    const activeWs = workspaceId || localStorage.getItem('activeWorkspaceId');
+    if (activeWs && activeWs !== 'personal') {
+      payload.workspaceId = activeWs;
     }
+
     const response = await fetch(`${API_BASE_URL}/expenses`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getAuthToken()}`
+      },
       body: JSON.stringify(payload)
     });
     if (!response.ok) throw new Error('Failed to save expense');
@@ -39,26 +123,11 @@ async function saveExpense(expense, workspaceId = null) {
   }
 }
 
-async function updateExpense(id, expense) {
-  try {
-    const response = await fetch(`${API_BASE_URL}/expenses/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(expense)
-    });
-    if (!response.ok) throw new Error('Failed to update expense');
-    return await response.json();
-  } catch (error) {
-    console.error('Error updating expense:', error);
-    showNotification('Failed to update expense', 'error');
-    throw error;
-  }
-}
-
 async function deleteExpense(id) {
   try {
     const response = await fetch(`${API_BASE_URL}/expenses/${id}`, {
-      method: 'DELETE'
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${getAuthToken()}` }
     });
     if (!response.ok) throw new Error('Failed to delete expense');
     return await response.json();
@@ -69,7 +138,26 @@ async function deleteExpense(id) {
   }
 }
 
-// Modified Add Transaction Function
+async function fetchCategorySuggestions(description) {
+  if (!description || description.trim().length < 3) return null;
+  try {
+    const response = await fetch(`${API_BASE_URL}/categorization/suggest?description=${encodeURIComponent(description)}`, {
+      headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+    });
+    if (response.ok) {
+      const data = await response.json();
+      return data.data;
+    }
+  } catch (error) {
+    console.error('Error fetching suggestions:', error);
+  }
+  return null;
+}
+
+// ========================
+// CORE LOGIC
+// ========================
+
 async function addTransaction(e) {
   e.preventDefault();
 
@@ -99,21 +187,19 @@ async function addTransaction(e) {
   };
 
   try {
-    const workspaceId = localStorage.getItem('activeWorkspaceId');
-    const savedExpense = await saveExpense(expense, workspaceId);
+    const savedExpense = await saveExpense(expense);
 
-    // Convert to local format
+    // Convert to local format for state
     const transaction = {
-      id: savedExpense._id,
-      text: savedExpense.description,
-      amount: savedExpense.type === 'expense' ? -savedExpense.amount : savedExpense.amount,
-      category: savedExpense.category,
-      type: savedExpense.type,
-      date: savedExpense.date
+      id: savedExpense.data ? savedExpense.data._id : savedExpense._id,
+      text: savedExpense.data ? savedExpense.data.description : savedExpense.description,
+      amount: transactionAmount,
+      category: category.value,
+      type: type.value,
+      date: new Date().toISOString()
     };
 
     transactions.push(transaction);
-
     displayTransactions();
     updateValues();
     updateLocalStorage();
@@ -123,10 +209,13 @@ async function addTransaction(e) {
     amount.value = '';
     category.value = '';
     type.value = '';
+    if (categoryConfidence) categoryConfidence.classList.add('hidden');
+    selectedSuggestion = null;
+    hideSuggestions();
 
     showNotification(`${type.value.charAt(0).toUpperCase() + type.value.slice(1)} added successfully!`, 'success');
   } catch (error) {
-    // Handle offline mode - save to localStorage
+    // Save offline
     const transaction = {
       id: generateID(),
       text: text.value.trim(),
@@ -151,7 +240,6 @@ async function addTransaction(e) {
   }
 }
 
-// Modified Remove Transaction Function
 async function removeTransaction(id) {
   const transactionToRemove = transactions.find(t => t.id === id);
   if (!transactionToRemove) return;
@@ -168,10 +256,8 @@ async function removeTransaction(id) {
 
     showNotification('Transaction deleted successfully', 'success');
   } catch (error) {
-    // Mark for deletion when online
-    const transaction = transactions.find(t => t.id === id);
-    if (transaction) {
-      transaction.pendingDelete = true;
+    if (transactionToRemove) {
+      transactionToRemove.pendingDelete = true;
       updateLocalStorage();
       displayTransactions();
       updateValues();
@@ -180,118 +266,17 @@ async function removeTransaction(id) {
   }
 }
 
-// Load transactions from API
-async function loadTransactions() {
-  try {
-    const expenses = await fetchExpenses();
-    transactions = expenses.map(expense => ({
-      id: expense._id,
-      text: expense.description,
-      amount: expense.type === 'expense' ? -expense.amount : expense.amount,
-      category: expense.category,
-      type: expense.type,
-      date: expense.date
-    }));
-
-    updateLocalStorage();
-    displayTransactions();
-    updateValues();
-  } catch (error) {
-    // Load from localStorage if API fails
-    const localTransactions = JSON.parse(localStorage.getItem('transactions') || '[]');
-    transactions = localTransactions;
-    displayTransactions();
-    updateValues();
-    showNotification('Loaded offline data', 'warning');
-  }
-}
-
-// Sync offline transactions when online
-async function syncOfflineTransactions() {
-  const offlineTransactions = transactions.filter(t => t.offline || t.pendingDelete);
-
-  for (const transaction of offlineTransactions) {
-    try {
-      if (transaction.pendingDelete) {
-        await deleteExpense(transaction.id);
-        transactions = transactions.filter(t => t.id !== transaction.id);
-      } else if (transaction.offline) {
-        const expense = {
-          description: transaction.text,
-          amount: Math.abs(transaction.amount),
-          category: transaction.category,
-          type: transaction.type
-        };
-
-        const savedExpense = await saveExpense(expense);
-
-        // Update local transaction with server ID
-        transaction.id = savedExpense._id;
-        transaction.offline = false;
-      }
-    } catch (error) {
-      console.error('Sync error:', error);
-    }
-  }
-
-  updateLocalStorage();
-  showNotification('Data synced successfully', 'success');
-}
-
-// Modified initialization
-async function Init() {
-  await loadTransactions();
-
-  // Sync offline data when online
-  if (navigator.onLine) {
-    await syncOfflineTransactions();
-  }
-}
-
-// Online event listener for syncing
-window.addEventListener('online', async () => {
-  await syncOfflineTransactions();
-});
-
-// Keep existing code for DOM elements, categories, and other functions...
-const balance = document.getElementById("balance");
-const money_plus = document.getElementById("money-plus");
-const money_minus = document.getElementById("money-minus");
-const list = document.getElementById("list");
-const form = document.getElementById("form");
-const text = document.getElementById("text");
-const amount = document.getElementById("amount");
-const category = document.getElementById("category");
-const type = document.getElementById("type");
-
-let transactions = [];
-let currentFilter = 'all';
-
-const categories = {
-  food: { name: '🍽️ Food & Dining', color: '#FF6B6B' },
-  transport: { name: '🚗 Transportation', color: '#4ECDC4' },
-  shopping: { name: '🛒 Shopping', color: '#45B7D1' },
-  entertainment: { name: '🎬 Entertainment', color: '#96CEB4' },
-  utilities: { name: '💡 Bills & Utilities', color: '#FECA57' },
-  healthcare: { name: '🏥 Healthcare', color: '#FF9FF3' },
-  other: { name: '📋 Other', color: '#A55EEA' }
-};
-
+// UI Helpers
 function generateID() {
   return Math.floor(Math.random() * 1000000000);
 }
 
 function displayTransactions() {
+  if (!list) return;
   list.innerHTML = '';
 
   if (transactions.length === 0) {
-    const emptyMessage = document.createElement('div');
-    emptyMessage.innerHTML = `
-      <div style="text-align: center; padding: 2rem; color: #666;">
-        <p>No transactions found.</p>
-      </div>
-    `;
-    list.appendChild(emptyMessage);
+    list.innerHTML = `<li class="empty-message">No transactions yet</li>`;
     return;
   }
 
@@ -304,9 +289,9 @@ function addTransactionDOM(transaction) {
   const item = document.createElement("li");
   item.classList.add(transaction.amount < 0 ? "minus" : "plus");
 
+  const categoryInfo = categories[transaction.category] || categories.other;
   const date = new Date(transaction.date);
   const formattedDate = date.toLocaleDateString('en-IN');
-  const categoryInfo = categories[transaction.category] || categories.other;
 
   item.innerHTML = `
     <div class="transaction-content">
@@ -318,7 +303,7 @@ function addTransactionDOM(transaction) {
         <span class="transaction-category" style="background-color: ${categoryInfo.color}20; color: ${categoryInfo.color};">
           ${categoryInfo.name}
         </span>
-        <div class="transaction-date">${formattedDate}</div>
+        <div class="transaction-date">${formattedDate}${transaction.offline ? ' (Offline)' : ''}</div>
       </div>
     </div>
     <button class="delete-btn" onclick="removeTransaction('${transaction.id}')">
@@ -336,38 +321,203 @@ function updateValues() {
   const income = amounts.filter(item => item > 0).reduce((acc, item) => acc + item, 0);
   const expense = amounts.filter(item => item < 0).reduce((acc, item) => acc + item, 0) * -1;
 
-  balance.innerHTML = `₹${total.toFixed(2)}`;
-  money_plus.innerHTML = `+₹${income.toFixed(2)}`;
-  money_minus.innerHTML = `-₹${expense.toFixed(2)}`;
+  if (balance) balance.innerHTML = `₹${total.toFixed(2)}`;
+  if (money_plus) money_plus.innerHTML = `+₹${income.toFixed(2)}`;
+  if (money_minus) money_minus.innerHTML = `-₹${expense.toFixed(2)}`;
+
+  // Update quick stats if they exist
+  const quickBalance = document.getElementById('quick-balance');
+  const quickIncome = document.getElementById('quick-income');
+  const quickExpense = document.getElementById('quick-expense');
+  if (quickBalance) quickBalance.textContent = `₹${total.toFixed(2)}`;
+  if (quickIncome) quickIncome.textContent = `₹${income.toFixed(2)}`;
+  if (quickExpense) quickExpense.textContent = `₹${expense.toFixed(2)}`;
 }
 
 function updateLocalStorage() {
   localStorage.setItem('transactions', JSON.stringify(transactions));
 }
 
-function showNotification(message, type = 'info') {
-  const notification = document.createElement('div');
-  notification.className = `notification notification-${type}`;
-  notification.textContent = message;
+// AI Suggestion UI Functions
+function showSuggestions(suggestions) {
+  if (!categorySuggestions) return;
+  if (!suggestions || !suggestions.suggestions || suggestions.suggestions.length === 0) {
+    hideSuggestions();
+    return;
+  }
 
-  Object.assign(notification.style, {
-    position: 'fixed',
-    top: '20px',
-    right: '20px',
-    padding: '1rem',
-    borderRadius: '5px',
-    color: 'white',
-    background: type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3',
-    zIndex: '10000'
+  currentSuggestions = suggestions.suggestions;
+  categorySuggestions.innerHTML = '';
+
+  const header = document.createElement('div');
+  header.className = 'suggestions-header';
+  header.innerHTML = `<i class="fas fa-brain"></i><span>AI Suggestions</span>`;
+  categorySuggestions.appendChild(header);
+
+  suggestions.suggestions.forEach((suggestion, index) => {
+    const item = document.createElement('div');
+    item.className = `suggestion-item ${index === 0 ? 'primary' : ''}`;
+    const confidenceLevel = suggestion.confidence > 0.75 ? 'high' : suggestion.confidence > 0.5 ? 'medium' : 'low';
+
+    item.innerHTML = `
+      <div class="suggestion-content">
+        <div class="suggestion-category">
+          <span class="suggestion-category-icon">${categoryEmojis[suggestion.category] || '📋'}</span>
+          <span>${categoryLabels[suggestion.category] || suggestion.category}</span>
+        </div>
+        <div class="suggestion-reason"><i class="fas fa-info-circle"></i><span>${suggestion.reason}</span></div>
+      </div>
+      <div class="suggestion-confidence confidence-${confidenceLevel}">
+        <span class="confidence-value">${(suggestion.confidence * 100).toFixed(0)}%</span>
+        <div class="confidence-bar"><div class="confidence-fill" style="width: ${suggestion.confidence * 100}%"></div></div>
+      </div>
+    `;
+
+    item.addEventListener('click', () => {
+      selectSuggestion(suggestion);
+      hideSuggestions();
+    });
+    categorySuggestions.appendChild(item);
   });
 
-  document.body.appendChild(notification);
-
-  setTimeout(() => notification.remove(), 3000);
+  categorySuggestions.classList.remove('hidden');
+  categorySuggestions.classList.add('visible');
 }
 
-// Initialize app
-Init();
+function hideSuggestions() {
+  if (!categorySuggestions) return;
+  categorySuggestions.classList.remove('visible');
+  setTimeout(() => { if (categorySuggestions) categorySuggestions.classList.add('hidden'); }, 300);
+}
 
-// Event listeners
-form.addEventListener('submit', addTransaction);
+function selectSuggestion(suggestion) {
+  if (!category || !categoryConfidence) return;
+  selectedSuggestion = suggestion;
+  category.value = suggestion.category;
+  categoryConfidence.innerHTML = `<i class="fas fa-check-circle"></i> ${(suggestion.confidence * 100).toFixed(0)}% confident`;
+  categoryConfidence.classList.remove('hidden');
+}
+
+// Global UI functions
+if (!window.showNotification) {
+  window.showNotification = function (message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.textContent = message;
+    Object.assign(notification.style, {
+      position: 'fixed', top: '20px', right: '20px', padding: '1rem',
+      borderRadius: '5px', color: 'white', zIndex: '10000',
+      background: type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'
+    });
+    document.body.appendChild(notification);
+    setTimeout(() => notification.remove(), 3000);
+  };
+}
+
+// ========================
+// SYNC LOGIC
+// ========================
+
+async function syncOfflineTransactions() {
+  const offlineTransactions = transactions.filter(t => t.offline || t.pendingDelete);
+  if (offlineTransactions.length === 0) return;
+
+  for (const transaction of offlineTransactions) {
+    try {
+      if (transaction.pendingDelete) {
+        await deleteExpense(transaction.id);
+        transactions = transactions.filter(t => t.id !== transaction.id);
+      } else if (transaction.offline) {
+        const expenseData = {
+          description: transaction.text,
+          amount: Math.abs(transaction.amount),
+          category: transaction.category,
+          type: transaction.type
+        };
+
+        const savedExpense = await saveExpense(expenseData);
+        transaction.id = savedExpense.data ? savedExpense.data._id : savedExpense._id;
+        transaction.offline = false;
+      }
+    } catch (error) {
+      console.error('Sync error:', error);
+    }
+  }
+
+  updateLocalStorage();
+  displayTransactions();
+  updateValues();
+  showNotification('Data synced successfully', 'success');
+}
+
+// ========================
+// INITIALIZATION
+// ========================
+
+async function initApp() {
+  try {
+    const expenses = await fetchExpenses();
+    transactions = expenses.map(expense => ({
+      id: expense._id,
+      text: expense.description,
+      amount: expense.type === 'expense' ? -expense.amount : expense.amount,
+      category: expense.category,
+      type: expense.type,
+      date: expense.date
+    }));
+  } catch (error) {
+    transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+  }
+
+  displayTransactions();
+  updateValues();
+
+  if (navigator.onLine) {
+    await syncOfflineTransactions();
+  }
+}
+
+// Event Listeners
+if (form) form.addEventListener('submit', addTransaction);
+
+if (text) {
+  text.addEventListener('input', (e) => {
+    const description = e.target.value;
+    if (suggestionTimeout) clearTimeout(suggestionTimeout);
+    if (categoryConfidence) categoryConfidence.classList.add('hidden');
+    selectedSuggestion = null;
+
+    if (description.trim().length >= 3) {
+      if (categorySuggestions) {
+        categorySuggestions.innerHTML = '<div class="suggestions-loading"><i class="fas fa-spinner"></i> <span>Getting suggestions...</span></div>';
+        categorySuggestions.classList.remove('hidden');
+        categorySuggestions.classList.add('visible');
+      }
+
+      suggestionTimeout = setTimeout(async () => {
+        const suggestions = await fetchCategorySuggestions(description);
+        if (suggestions) {
+          showSuggestions(suggestions);
+          if (suggestions.primarySuggestion && suggestions.primarySuggestion.confidence > 0.8) {
+            selectSuggestion(suggestions.primarySuggestion);
+          }
+        } else hideSuggestions();
+      }, 500);
+    } else hideSuggestions();
+  });
+}
+
+if (navToggle && navMenu) {
+  navToggle.addEventListener("click", () => {
+    navMenu.classList.toggle("active");
+  });
+}
+
+window.addEventListener('online', syncOfflineTransactions);
+
+// Global Exposure
+window.removeTransaction = removeTransaction;
+window.updateAllData = initApp;
+
+// Start the app
+document.addEventListener('DOMContentLoaded', initApp);

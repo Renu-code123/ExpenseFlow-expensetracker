@@ -1,7 +1,7 @@
 // Budget and Goals Management
 class BudgetGoalsManager {
   constructor() {
-    this.apiUrl = 'http://localhost:3000/api';
+    this.apiUrl = '/api';
     this.authToken = localStorage.getItem('authToken');
     this.initializeDashboard();
   }
@@ -147,15 +147,15 @@ class BudgetGoalsManager {
     // Dashboard toggle
     document.getElementById('add-budget-btn').addEventListener('click', () => this.showBudgetModal());
     document.getElementById('add-goal-btn').addEventListener('click', () => this.showGoalModal());
-    
+
     // Modal controls
     document.getElementById('close-budget-modal').addEventListener('click', () => this.hideBudgetModal());
     document.getElementById('close-goal-modal').addEventListener('click', () => this.hideGoalModal());
-    
+
     // Form submissions
     document.getElementById('budget-form').addEventListener('submit', (e) => this.handleBudgetSubmit(e));
     document.getElementById('goal-form').addEventListener('submit', (e) => this.handleGoalSubmit(e));
-    
+
     // Alert threshold slider
     document.getElementById('alert-threshold').addEventListener('input', (e) => {
       document.getElementById('threshold-value').textContent = e.target.value;
@@ -175,6 +175,9 @@ class BudgetGoalsManager {
 
   // Load dashboard data
   async loadDashboardData() {
+    this.authToken = localStorage.getItem('authToken');
+    if (!this.authToken) return;
+
     try {
       await Promise.all([
         this.loadBudgetSummary(),
@@ -194,10 +197,10 @@ class BudgetGoalsManager {
       const response = await fetch(`${this.apiUrl}/budgets/summary`, {
         headers: { 'Authorization': `Bearer ${this.authToken}` }
       });
-      
+
       if (!response.ok) throw new Error('Failed to load budget summary');
       const summary = await response.json();
-      
+
       document.getElementById('total-budget').textContent = `₹${summary.totalBudget.toFixed(2)}`;
       document.getElementById('total-spent').textContent = `₹${summary.totalSpent.toFixed(2)}`;
       document.getElementById('remaining-budget').textContent = `₹${summary.remainingBudget.toFixed(2)}`;
@@ -212,10 +215,10 @@ class BudgetGoalsManager {
       const response = await fetch(`${this.apiUrl}/goals/summary`, {
         headers: { 'Authorization': `Bearer ${this.authToken}` }
       });
-      
+
       if (!response.ok) throw new Error('Failed to load goals summary');
       const summary = await response.json();
-      
+
       document.getElementById('active-goals').textContent = summary.active;
       document.getElementById('completed-goals').textContent = summary.completed;
       document.getElementById('overall-progress').textContent = `${summary.overallProgress.toFixed(1)}%`;
@@ -230,10 +233,10 @@ class BudgetGoalsManager {
       const response = await fetch(`${this.apiUrl}/budgets?active=true`, {
         headers: { 'Authorization': `Bearer ${this.authToken}` }
       });
-      
+
       if (!response.ok) throw new Error('Failed to load budgets');
       const budgets = await response.json();
-      
+
       this.displayBudgets(budgets);
     } catch (error) {
       console.error('Budgets loading error:', error);
@@ -244,11 +247,11 @@ class BudgetGoalsManager {
   displayBudgets(budgets) {
     const container = document.getElementById('budgets-list');
     container.innerHTML = '';
-    
+
     budgets.forEach(budget => {
       const percentage = (budget.spent / budget.amount) * 100;
       const isOverBudget = percentage > 100;
-      
+
       const budgetItem = document.createElement('div');
       budgetItem.className = `budget-item ${isOverBudget ? 'over-budget' : ''}`;
       budgetItem.innerHTML = `
@@ -266,7 +269,7 @@ class BudgetGoalsManager {
           <span class="remaining">₹${(budget.amount - budget.spent).toFixed(2)} remaining</span>
         </div>
       `;
-      
+
       container.appendChild(budgetItem);
     });
   }
@@ -277,10 +280,10 @@ class BudgetGoalsManager {
       const response = await fetch(`${this.apiUrl}/goals?status=active`, {
         headers: { 'Authorization': `Bearer ${this.authToken}` }
       });
-      
+
       if (!response.ok) throw new Error('Failed to load goals');
       const goals = await response.json();
-      
+
       this.displayGoals(goals);
     } catch (error) {
       console.error('Goals loading error:', error);
@@ -291,11 +294,11 @@ class BudgetGoalsManager {
   displayGoals(goals) {
     const container = document.getElementById('goals-list');
     container.innerHTML = '';
-    
+
     goals.forEach(goal => {
       const progress = (goal.currentAmount / goal.targetAmount) * 100;
       const daysLeft = Math.ceil((new Date(goal.targetDate) - new Date()) / (1000 * 60 * 60 * 24));
-      
+
       const goalItem = document.createElement('div');
       goalItem.className = 'goal-item';
       goalItem.innerHTML = `
@@ -314,7 +317,7 @@ class BudgetGoalsManager {
           <span class="days-left">${daysLeft > 0 ? `${daysLeft} days left` : 'Overdue'}</span>
         </div>
       `;
-      
+
       container.appendChild(goalItem);
     });
   }
@@ -325,10 +328,10 @@ class BudgetGoalsManager {
       const response = await fetch(`${this.apiUrl}/budgets/alerts`, {
         headers: { 'Authorization': `Bearer ${this.authToken}` }
       });
-      
+
       if (!response.ok) throw new Error('Failed to load alerts');
       const alerts = await response.json();
-      
+
       this.displayAlerts(alerts);
     } catch (error) {
       console.error('Alerts loading error:', error);
@@ -339,12 +342,12 @@ class BudgetGoalsManager {
   displayAlerts(alerts) {
     const container = document.getElementById('budget-alerts');
     container.innerHTML = '';
-    
+
     if (alerts.length === 0) {
       container.innerHTML = '<p class="no-alerts">✅ No budget alerts</p>';
       return;
     }
-    
+
     alerts.forEach(alert => {
       const alertItem = document.createElement('div');
       alertItem.className = `alert-item ${alert.isOverBudget ? 'critical' : 'warning'}`;
@@ -356,7 +359,7 @@ class BudgetGoalsManager {
           <span>₹${alert.spent.toFixed(2)} / ₹${alert.amount.toFixed(2)}</span>
         </div>
       `;
-      
+
       container.appendChild(alertItem);
     });
   }
@@ -386,12 +389,12 @@ class BudgetGoalsManager {
   // Handle budget form submission
   async handleBudgetSubmit(e) {
     e.preventDefault();
-    
+
     const formData = new FormData(e.target);
     const now = new Date();
     const startDate = new Date(now.getFullYear(), now.getMonth(), 1);
     const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    
+
     const budgetData = {
       name: document.getElementById('budget-name').value,
       category: document.getElementById('budget-category').value,
@@ -401,7 +404,7 @@ class BudgetGoalsManager {
       endDate: endDate.toISOString(),
       alertThreshold: parseInt(document.getElementById('alert-threshold').value)
     };
-    
+
     try {
       const response = await fetch(`${this.apiUrl}/budgets`, {
         method: 'POST',
@@ -411,9 +414,9 @@ class BudgetGoalsManager {
         },
         body: JSON.stringify(budgetData)
       });
-      
+
       if (!response.ok) throw new Error('Failed to create budget');
-      
+
       this.showNotification('Budget created successfully! 💰', 'success');
       this.hideBudgetModal();
       this.loadDashboardData();
@@ -425,7 +428,7 @@ class BudgetGoalsManager {
   // Handle goal form submission
   async handleGoalSubmit(e) {
     e.preventDefault();
-    
+
     const goalData = {
       title: document.getElementById('goal-title').value,
       description: document.getElementById('goal-description').value,
@@ -434,7 +437,7 @@ class BudgetGoalsManager {
       targetDate: document.getElementById('goal-date').value,
       priority: document.getElementById('goal-priority').value
     };
-    
+
     try {
       const response = await fetch(`${this.apiUrl}/goals`, {
         method: 'POST',
@@ -444,9 +447,9 @@ class BudgetGoalsManager {
         },
         body: JSON.stringify(goalData)
       });
-      
+
       if (!response.ok) throw new Error('Failed to create goal');
-      
+
       this.showNotification('Goal created successfully! 🎯', 'success');
       this.hideGoalModal();
       this.loadDashboardData();
