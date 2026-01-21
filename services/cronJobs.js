@@ -2,26 +2,65 @@ const cron = require('node-cron');
 const User = require('../models/User');
 const Expense = require('../models/Expense');
 const emailService = require('../services/emailService');
+const recurringService = require('../services/recurringService');
 
 class CronJobs {
   static init() {
+    // Process recurring expenses - Daily at 6 AM
+    cron.schedule('0 6 * * *', async () => {
+      console.log('[CronJobs] Processing recurring expenses...');
+      await this.processRecurringExpenses();
+    });
+
+    // Send recurring expense reminders - Daily at 9 AM
+    cron.schedule('0 9 * * *', async () => {
+      console.log('[CronJobs] Sending recurring expense reminders...');
+      await this.sendRecurringReminders();
+    });
+
     // Weekly report - Every Sunday at 9 AM
     cron.schedule('0 9 * * 0', async () => {
-      console.log('Sending weekly reports...');
+      console.log('[CronJobs] Sending weekly reports...');
       await this.sendWeeklyReports();
     });
 
     // Monthly report - 1st day of month at 10 AM
     cron.schedule('0 10 1 * *', async () => {
-      console.log('Sending monthly reports...');
+      console.log('[CronJobs] Sending monthly reports...');
       await this.sendMonthlyReports();
     });
 
     // Budget alerts - Daily at 8 PM
     cron.schedule('0 20 * * *', async () => {
-      console.log('Checking budget alerts...');
+      console.log('[CronJobs] Checking budget alerts...');
       await this.checkBudgetAlerts();
     });
+
+    console.log('[CronJobs] All cron jobs scheduled successfully');
+  }
+
+  /**
+   * Process all due recurring expenses and create actual expense entries
+   */
+  static async processRecurringExpenses() {
+    try {
+      const result = await recurringService.processRecurringExpenses();
+      console.log(`[CronJobs] Recurring expenses processed: ${result.processedCount} created, ${result.skippedCount} skipped, ${result.errorCount} errors`);
+    } catch (error) {
+      console.error('[CronJobs] Error processing recurring expenses:', error);
+    }
+  }
+
+  /**
+   * Send reminders for upcoming recurring expenses
+   */
+  static async sendRecurringReminders() {
+    try {
+      const sentCount = await recurringService.sendUpcomingReminders();
+      console.log(`[CronJobs] Sent ${sentCount} recurring expense reminders`);
+    } catch (error) {
+      console.error('[CronJobs] Error sending recurring reminders:', error);
+    }
   }
 
   static async sendWeeklyReports() {
