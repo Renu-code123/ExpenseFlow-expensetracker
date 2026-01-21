@@ -90,14 +90,14 @@ class FileUploadService {
   // Validate file type and size
   validateFile(file) {
     const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    const maxSize = 10 * 1024 * 1024; // 10MB
 
     if (!allowedTypes.includes(file.mimetype)) {
       throw new Error('Invalid file type. Only JPEG, PNG, and PDF files are allowed.');
     }
 
     if (file.size > maxSize) {
-      throw new Error('File size too large. Maximum size is 5MB.');
+      throw new Error('File size too large. Maximum size is 10MB.');
     }
 
     return true;

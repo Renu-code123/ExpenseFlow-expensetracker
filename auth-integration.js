@@ -138,6 +138,13 @@ function showAuthForm() {
           </div>
           <input type="email" id="email" placeholder="Email" required>
           <input type="password" id="password" placeholder="Password" required>
+          <div id="password-requirements" style="display: none; font-size: 12px; color: #666; margin-bottom: 1rem;">
+            Password must be 12-128 characters and contain:<br>
+            • At least one uppercase letter (A-Z)<br>
+            • At least one lowercase letter (a-z)<br>
+            • At least one number (0-9)<br>
+            • At least one special character (@$!%*?&)
+          </div>
           <button type="submit" id="auth-submit">Login</button>
         </form>
         <p>
@@ -207,6 +214,7 @@ function showAuthForm() {
     
     const title = document.getElementById('auth-title');
     const nameField = document.getElementById('name-field');
+    const passwordRequirements = document.getElementById('password-requirements');
     const submitBtn = document.getElementById('auth-submit');
     const switchText = document.getElementById('auth-switch-text');
     const switchLink = document.getElementById('auth-switch');
@@ -214,17 +222,42 @@ function showAuthForm() {
     if (isLogin) {
       title.textContent = 'Login to ExpenseFlow';
       nameField.style.display = 'none';
+      passwordRequirements.style.display = 'none';
       submitBtn.textContent = 'Login';
-      switchText.textContent = "Don't have an account?";
+      switchText.textContent = 'Don\'t have an account?';
       switchLink.textContent = 'Register';
     } else {
       title.textContent = 'Register for ExpenseFlow';
       nameField.style.display = 'block';
+      passwordRequirements.style.display = 'block';
       submitBtn.textContent = 'Register';
       switchText.textContent = 'Already have an account?';
       switchLink.textContent = 'Login';
     }
   });
+  
+  // Password validation function
+  function validatePassword(password) {
+    if (password.length < 12) {
+      return 'Password must be at least 12 characters long';
+    }
+    if (password.length > 128) {
+      return 'Password must not exceed 128 characters';
+    }
+    if (!/(?=.*[a-z])/.test(password)) {
+      return 'Password must contain at least one lowercase letter';
+    }
+    if (!/(?=.*[A-Z])/.test(password)) {
+      return 'Password must contain at least one uppercase letter';
+    }
+    if (!/(?=.*\d)/.test(password)) {
+      return 'Password must contain at least one number';
+    }
+    if (!/(?=.*[@$!%*?&])/.test(password)) {
+      return 'Password must contain at least one special character (@$!%*?&)';
+    }
+    return null; // Valid password
+  }
   
   document.getElementById('auth-form').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -232,6 +265,15 @@ function showAuthForm() {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
     const name = document.getElementById('name').value;
+    
+    // Client-side password validation for registration
+    if (!isLogin) {
+      const passwordError = validatePassword(password);
+      if (passwordError) {
+        showNotification(passwordError, 'error');
+        return;
+      }
+    }
     
     try {
       if (isLogin) {

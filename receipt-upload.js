@@ -146,7 +146,7 @@ class ReceiptManager {
   // Validate file
   validateFile(file) {
     const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    const maxSize = 10 * 1024 * 1024; // 10MB
 
     if (!allowedTypes.includes(file.type)) {
       this.showNotification('Invalid file type. Only JPEG, PNG, and PDF files are allowed.', 'error');
@@ -154,7 +154,7 @@ class ReceiptManager {
     }
 
     if (file.size > maxSize) {
-      this.showNotification('File size too large. Maximum size is 5MB.', 'error');
+      this.showNotification('File size too large. Maximum size is 10MB.', 'error');
       return false;
     }
 
