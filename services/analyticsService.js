@@ -2,6 +2,21 @@ const Expense = require('../models/Expense');
 const Budget = require('../models/Budget');
 const AnalyticsCache = require('../models/AnalyticsCache');
 const mongoose = require('mongoose');
+const CACHE_KEYS = {
+    SPENDING_TRENDS: CACHE_KEYS.SPENDING_TRENDS
+    ,
+    CATEGORY_BREAKDOWN: CACHE_KEYS.CATEGORY_BREAKDOWN,
+    MONTHLY_COMPARISON: CACHE_KEYS.MONTHLY_COMPARISON,
+    INSIGHTS: CACHE_KEYS.INSIGHTS,
+    PREDICTIONS: CACHE_KEYS.PREDICTIONS
+};
+
+const CACHE_TTL = {
+    SHORT: CACHE_TTL.SHORT,     // minutes
+    MEDIUM: CACHE_TTL.MEDIUM,
+    LONG: CACHE_TTL.LONG,
+    XLONG: CACHE_TTL.XLONG
+};
 
 class AnalyticsService {
     /**
@@ -16,7 +31,8 @@ class AnalyticsService {
 
         // Check cache
         if (useCache) {
-            const cached = await AnalyticsCache.getCache('spending_trends', userId, { period, months });
+            const cached = await AnalyticsCache.getCache(CACHE_KEYS.SPENDING_TRENDS
+                , userId, { period, months });
             if (cached) return cached;
         }
 
@@ -110,7 +126,8 @@ class AnalyticsService {
 
         // Cache result
         if (useCache) {
-            await AnalyticsCache.setCache('spending_trends', userId, { period, months }, result, 60);
+            await AnalyticsCache.setCache(CACHE_KEYS.SPENDING_TRENDS
+                , userId, { period, months }, result, CACHE_TTL.MEDIUM);
         }
 
         return result;
@@ -166,7 +183,7 @@ class AnalyticsService {
         };
 
         if (useCache) {
-            const cached = await AnalyticsCache.getCache('category_breakdown', userId, cacheParams);
+            const cached = await AnalyticsCache.getCache(CACHE_KEYS.CATEGORY_BREAKDOWN, userId, cacheParams);
             if (cached) return cached;
         }
 
@@ -214,7 +231,7 @@ class AnalyticsService {
         };
 
         if (useCache) {
-            await AnalyticsCache.setCache('category_breakdown', userId, cacheParams, result, 30);
+            await AnalyticsCache.setCache(CACHE_KEYS.CATEGORY_BREAKDOWN, userId, cacheParams, result, CACHE_TTL.SHORT);
         }
 
         return result;
@@ -227,7 +244,7 @@ class AnalyticsService {
         const { months = 3, useCache = true } = options;
 
         if (useCache) {
-            const cached = await AnalyticsCache.getCache('monthly_comparison', userId, { months });
+            const cached = await AnalyticsCache.getCache(CACHE_KEYS.MONTHLY_COMPARISON, userId, { months });
             if (cached) return cached;
         }
 
@@ -235,11 +252,8 @@ class AnalyticsService {
         const comparisons = [];
 
         for (let i = 0; i < months; i++) {
-            const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
-            const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59);
-
-            const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - i - 1, 1);
-            const prevMonthEnd = new Date(now.getFullYear(), now.getMonth() - i, 0, 23, 59, 59);
+            const { start: monthStart, end: monthEnd } = this.getMonthRange(i);
+            const { start: prevMonthStart, end: prevMonthEnd } = this.getMonthRange(i + 1);
 
             const [currentMonth, previousMonth] = await Promise.all([
                 this.getMonthStats(userId, monthStart, monthEnd),
@@ -271,7 +285,7 @@ class AnalyticsService {
         const result = { comparisons };
 
         if (useCache) {
-            await AnalyticsCache.setCache('monthly_comparison', userId, { months }, result, 60);
+            await AnalyticsCache.setCache(CACHE_KEYS.MONTHLY_COMPARISON, userId, { months }, result, CACHE_TTL.MEDIUM);
         }
 
         return result;
@@ -319,7 +333,7 @@ class AnalyticsService {
         const { useCache = true } = options;
 
         if (useCache) {
-            const cached = await AnalyticsCache.getCache('insights', userId, {});
+            const cached = await AnalyticsCache.getCache(CACHE_KEYS.INSIGHTS, userId, {});
             if (cached) return cached;
         }
 
@@ -456,7 +470,7 @@ class AnalyticsService {
         };
 
         if (useCache) {
-            await AnalyticsCache.setCache('insights', userId, {}, result, 120);
+            await AnalyticsCache.setCache(CACHE_KEYS.INSIGHTS, userId, {}, result, CACHE_TTL.LONG);
         }
 
         return result;
@@ -469,7 +483,7 @@ class AnalyticsService {
         const { useCache = true } = options;
 
         if (useCache) {
-            const cached = await AnalyticsCache.getCache('predictions', userId, {});
+            const cached = await AnalyticsCache.getCache(CACHE_KEYS.PREDICTIONS, userId, {});
             if (cached) return cached;
         }
 
@@ -533,7 +547,7 @@ class AnalyticsService {
         };
 
         if (useCache) {
-            await AnalyticsCache.setCache('predictions', userId, {}, result, 180);
+            await AnalyticsCache.setCache(CACHE_KEYS.PREDICTIONS, userId, {}, result, CACHE_TTL.XLONG);
         }
 
         return result;
@@ -561,7 +575,7 @@ class AnalyticsService {
             }
         ]);
 
-        const months = Math.ceil((new Date() - startDate) / (30 * 24 * 60 * 60 * 1000));
+        const months = Math.ceil((new Date() - startDate) / (CACHE_TTL.SHORT * 24 * CACHE_TTL.MEDIUM * CACHE_TTL.MEDIUM * 1000));
 
         return categoryData.map(cat => ({
             category: cat._id,
