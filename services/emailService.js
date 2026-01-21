@@ -1,0 +1,251 @@
+const nodemailer = require('nodemailer');
+
+class EmailService {
+  constructor() {
+    this.transporter = nodemailer.createTransport({
+      host: process.env.EMAIL_HOST,
+      port: process.env.EMAIL_PORT,
+      secure: false,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
+  }
+
+  async sendWelcomeEmail(user) {
+    const mailOptions = {
+      from: process.env.EMAIL_FROM,
+      to: user.email,
+      subject: 'Welcome to ExpenseFlow! 🎉',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #667eea;">Welcome to ExpenseFlow, ${user.name}!</h2>
+          <p>Thank you for joining ExpenseFlow. Start tracking your expenses and take control of your finances.</p>
+          <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3>Get Started:</h3>
+            <ul>
+              <li>Add your first expense</li>
+              <li>Set up categories</li>
+              <li>Track your spending patterns</li>
+            </ul>
+          </div>
+          <p>Happy tracking!</p>
+          <p><strong>The ExpenseFlow Team</strong></p>
+        </div>
+      `
+    };
+
+    return await this.transporter.sendMail(mailOptions);
+  }
+
+  async sendPasswordResetEmail(user, resetToken) {
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+
+    const mailOptions = {
+      from: process.env.EMAIL_FROM,
+      to: user.email,
+      subject: 'Password Reset Request - ExpenseFlow',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #667eea;">Password Reset Request</h2>
+          <p>Hi ${user.name},</p>
+          <p>You requested a password reset for your ExpenseFlow account.</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${resetUrl}" style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px;">Reset Password</a>
+          </div>
+          <p>This link will expire in 1 hour.</p>
+          <p>If you didn't request this, please ignore this email.</p>
+        </div>
+      `
+    };
+
+    return await this.transporter.sendMail(mailOptions);
+  }
+
+  async sendMonthlyReport(user, reportData) {
+    const { totalExpenses, totalIncome, balance, topCategories } = reportData;
+
+    const mailOptions = {
+      from: process.env.EMAIL_FROM,
+      to: user.email,
+      subject: `Monthly Expense Report - ${new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #667eea;">Monthly Expense Report</h2>
+          <p>Hi ${user.name},</p>
+          <p>Here's your expense summary for this month:</p>
+          
+          <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+              <span><strong>Total Income:</strong></span>
+              <span style="color: #28a745;">₹${totalIncome.toFixed(2)}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+              <span><strong>Total Expenses:</strong></span>
+              <span style="color: #dc3545;">₹${totalExpenses.toFixed(2)}</span>
+            </div>
+            <hr>
+            <div style="display: flex; justify-content: space-between;">
+              <span><strong>Balance:</strong></span>
+              <span style="color: ${balance >= 0 ? '#28a745' : '#dc3545'};">₹${balance.toFixed(2)}</span>
+            </div>
+          </div>
+
+          <h3>Top Spending Categories:</h3>
+          <ul>
+            ${topCategories.map(cat => `<li>${cat.name}: ₹${cat.amount.toFixed(2)}</li>`).join('')}
+          </ul>
+          
+          <p>Keep tracking your expenses to maintain financial health!</p>
+        </div>
+      `
+    };
+
+    return await this.transporter.sendMail(mailOptions);
+  }
+
+  async sendBudgetAlert(user, category, spent, budget) {
+    const percentage = (spent / budget) * 100;
+
+    const mailOptions = {
+      from: process.env.EMAIL_FROM,
+      to: user.email,
+      subject: `Budget Alert: ${category} - ExpenseFlow`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #ff6b6b;">Budget Alert! ⚠️</h2>
+          <p>Hi ${user.name},</p>
+          <p>You've spent <strong>${percentage.toFixed(1)}%</strong> of your ${category} budget.</p>
+          
+          <div style="background: #fff3cd; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107;">
+            <div style="margin-bottom: 10px;">
+              <strong>Category:</strong> ${category}
+            </div>
+            <div style="margin-bottom: 10px;">
+              <strong>Spent:</strong> ₹${spent.toFixed(2)}
+            </div>
+            <div style="margin-bottom: 10px;">
+              <strong>Budget:</strong> ₹${budget.toFixed(2)}
+            </div>
+            <div>
+              <strong>Remaining:</strong> ₹${(budget - spent).toFixed(2)}
+            </div>
+          </div>
+          
+          <p>Consider reviewing your spending to stay within budget.</p>
+        </div>
+      `
+    };
+
+    return await this.transporter.sendMail(mailOptions);
+  }
+
+  async sendWeeklyReport(user, reportData) {
+    const { weeklyExpenses, totalSpent, avgDaily } = reportData;
+
+    const mailOptions = {
+      from: process.env.EMAIL_FROM,
+      to: user.email,
+      subject: 'Weekly Spending Report - ExpenseFlow',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #667eea;">Weekly Spending Report</h2>
+          <p>Hi ${user.name},</p>
+          <p>Here's your spending summary for this week:</p>
+          
+          <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <div style="margin-bottom: 10px;">
+              <strong>Total Spent:</strong> ₹${totalSpent.toFixed(2)}
+            </div>
+            <div>
+              <strong>Daily Average:</strong> ₹${avgDaily.toFixed(2)}
+            </div>
+          </div>
+
+          <h3>Daily Breakdown:</h3>
+          <ul>
+            ${weeklyExpenses.map(day => `<li>${day.date}: ₹${day.amount.toFixed(2)}</li>`).join('')}
+          </ul>
+          
+          <p>Stay on track with your financial goals!</p>
+        </div>
+      `
+    };
+
+    return await this.transporter.sendMail(mailOptions);
+  }
+
+  async sendSubscriptionReminder(user, recurringExpense) {
+    const dueDate = new Date(recurringExpense.nextDueDate);
+    const formattedDate = dueDate.toLocaleDateString('en-IN', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+
+    const frequencyText = {
+      'daily': 'Daily',
+      'weekly': 'Weekly',
+      'biweekly': 'Bi-weekly',
+      'monthly': 'Monthly',
+      'quarterly': 'Quarterly',
+      'yearly': 'Yearly'
+    };
+
+    const mailOptions = {
+      from: process.env.EMAIL_FROM,
+      to: user.email,
+      subject: `Upcoming Payment Reminder: ${recurringExpense.description} - ExpenseFlow`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #667eea;">📅 Upcoming Payment Reminder</h2>
+          <p>Hi ${user.name},</p>
+          <p>This is a reminder that you have an upcoming recurring ${recurringExpense.type}:</p>
+          
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 12px; margin: 20px 0;">
+            <h3 style="margin: 0 0 15px 0; color: white;">${recurringExpense.description}</h3>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+              <span>Amount:</span>
+              <strong>₹${recurringExpense.amount.toFixed(2)}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+              <span>Category:</span>
+              <strong>${recurringExpense.category.charAt(0).toUpperCase() + recurringExpense.category.slice(1)}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+              <span>Frequency:</span>
+              <strong>${frequencyText[recurringExpense.frequency] || recurringExpense.frequency}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>Due Date:</span>
+              <strong>${formattedDate}</strong>
+            </div>
+          </div>
+
+          <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107; margin: 20px 0;">
+            <strong>⏰ Reminder:</strong> This payment is due in ${recurringExpense.reminderDays} days or less.
+          </div>
+
+          ${recurringExpense.notes ? `
+          <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <strong>Notes:</strong> ${recurringExpense.notes}
+          </div>
+          ` : ''}
+
+          <p style="color: #666; font-size: 14px;">
+            You can manage your recurring expenses anytime from your ExpenseFlow dashboard.
+          </p>
+          
+          <p>Happy budgeting! 💰</p>
+          <p><strong>The ExpenseFlow Team</strong></p>
+        </div>
+      `
+    };
+
+    return await this.transporter.sendMail(mailOptions);
+  }
+}
+
+module.exports = new EmailService();
