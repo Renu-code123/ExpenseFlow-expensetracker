@@ -40,7 +40,7 @@ jobs:
              "- Add clear commit messages and comments where necessary\n" +
              "- Ensure your changes do not break existing functionality\n\n" +
              "We'll review your PR as soon as possible. Keep up the great work! ✨\n\n" +
-             "---\n\n" +
+             "---\n\n";
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
