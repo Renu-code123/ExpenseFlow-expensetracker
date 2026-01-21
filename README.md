@@ -3,6 +3,13 @@
 With a clean and elegant dark-themed UI, it allows users to monitor spending, analyze balance, and achieve their financial goals effortlessly.  
 
 ---
+## 🔗 Quick Links
+- 🚀 [Live Demo](https://expenseflow-pearl.vercel.app)
+- ⚙️ [Getting Started](#getting-started)
+- 🐛 [Report a Bug](https://github.com/Renu-code123/ExpenseFlow/issues)
+- ✨ [Request a Feature](https://github.com/Renu-code123/ExpenseFlow/issues)
+
+---
 
 ## 🧭 Table of Contents
 - [✨ Features](#-features)
