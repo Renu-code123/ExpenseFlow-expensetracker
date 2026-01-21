@@ -159,6 +159,9 @@
           <span class="bar"></span>
         </div>
         <div class="user-profile">
+          <div class="workspace-selector" id="workspace-selector">
+            <!-- Will be rendered by workspace-feature.js -->
+          </div>
           <button class="currency-btn" onclick="openCurrencyModal()" title="Currency Settings">
             <i class="fas fa-coins"></i>
             <span id="current-currency">INR</span>
@@ -861,6 +864,11 @@
         </ul>
       </div>
 
+<<<<<<< HEAD
+=======
+    </div>
+
+>>>>>>> feature/workspaces-rbac
     </div>
 
     <div class="footer-bottom">
@@ -874,7 +882,10 @@
   </footer>
 
 
+<<<<<<< HEAD
   <script src="trackerscript.js"></script>
+=======
+>>>>>>> feature/workspaces-rbac
 
   <!-- PWA Installation Prompt -->
   <div id="install-prompt" class="install-prompt" style="display: none;">
@@ -895,6 +906,7 @@
     </div>
   </div>
 
+<<<<<<< HEAD
   <div class="footer-bottom">
     <div class="footer-container">
       <p>&copy; 2026 ExpenseFlow. All rights reserved. Made with ❤️ for better financial management.</p>
@@ -909,6 +921,9 @@
 
   <script src="trackerscript.js"></script>
   <script src="analytics-dashboard.js"></script>
+=======
+
+>>>>>>> feature/workspaces-rbac
   <script>
     // Recurring Modal Control
     function openRecurringModal() {
@@ -965,7 +980,7 @@
     // Load supported currencies on page load
     async function loadSupportedCurrencies() {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('authToken');
         if (!token) return;
 
         const response = await fetch('/api/currency/supported', {
@@ -1007,7 +1022,7 @@
     // Load user's currency preference
     async function loadUserCurrencyPreference() {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('authToken');
         if (!token) return;
 
         const response = await fetch('/api/currency/preference', {
@@ -1019,7 +1034,8 @@
         const data = await response.json();
         if (data.success) {
           currentUserCurrency = data.data.preferredCurrency;
-          document.getElementById('current-currency').textContent = currentUserCurrency;
+          const currentCurrencyEl = document.getElementById('current-currency');
+          if (currentCurrencyEl) currentCurrencyEl.textContent = currentUserCurrency;
           populateCurrencySelects();
         }
       } catch (error) {
@@ -1029,19 +1045,25 @@
 
     // Open currency settings modal
     function openCurrencyModal() {
-      document.getElementById('currency-modal').style.display = 'flex';
-      loadExchangeRateInfo();
+      const modal = document.getElementById('currency-modal');
+      if (modal) {
+        modal.style.display = 'flex';
+        loadExchangeRateInfo();
+      }
     }
 
     // Close currency settings modal
     function closeCurrencyModal() {
-      document.getElementById('currency-modal').style.display = 'none';
+      const modal = document.getElementById('currency-modal');
+      if (modal) {
+        modal.style.display = 'none';
+      }
     }
 
     // Load exchange rate information
     async function loadExchangeRateInfo() {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('authToken');
         const response = await fetch(`/api/currency/rates?base=${currentUserCurrency}`, {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -1051,6 +1073,8 @@
         const data = await response.json();
         if (data.success) {
           const rateInfo = document.getElementById('exchange-rate-info');
+          if (!rateInfo) return;
+
           const rates = data.data.rates;
           const popularCurrencies = ['USD', 'EUR', 'GBP', 'JPY', 'AUD'];
 
@@ -1075,8 +1099,11 @@
     // Save currency preference
     async function saveCurrencyPreference() {
       try {
-        const token = localStorage.getItem('token');
-        const newCurrency = document.getElementById('preferred-currency').value;
+        const token = localStorage.getItem('authToken');
+        const prefSelect = document.getElementById('preferred-currency');
+        if (!prefSelect) return;
+
+        const newCurrency = prefSelect.value;
 
         const response = await fetch('/api/currency/preference', {
           method: 'PUT',
@@ -1090,7 +1117,8 @@
         const data = await response.json();
         if (data.success) {
           currentUserCurrency = newCurrency;
-          document.getElementById('current-currency').textContent = newCurrency;
+          const currentCurrencyEl = document.getElementById('current-currency');
+          if (currentCurrencyEl) currentCurrencyEl.textContent = newCurrency;
           closeCurrencyModal();
           // Reload transactions to show in new currency
           location.reload();
@@ -1112,6 +1140,7 @@
     // Close modal when clicking outside
     window.onclick = function (event) {
       const modal = document.getElementById('currency-modal');
+<<<<<<< HEAD
       const goalModal = document.getElementById('add-goal-modal');
       const contribModal = document.getElementById('contribution-modal');
 
@@ -1232,10 +1261,67 @@
         <button id="install-dismiss" class="dismiss-btn">
           <i class="fas fa-times"></i> Not now
         </button>
+=======
+      const wsModal = document.getElementById('workspace-modal');
+      const recModal = document.getElementById('recurring-modal');
+      if (event.target === modal) {
+        closeCurrencyModal();
+      }
+      if (event.target === wsModal) {
+        closeWorkspaceModal();
+      }
+      if (event.target === recModal) {
+        closeRecurringModal();
+      }
+    }
+  </script>
+
+  <!-- Workspace Modal -->
+  <div id="workspace-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3><i class="fas fa-users"></i> Create Shared Workspace</h3>
+        <span class="close-modal" onclick="closeWorkspaceModal()">&times;</span>
+>>>>>>> feature/workspaces-rbac
       </div>
+      <form id="create-workspace-form">
+        <div class="modal-body">
+          <div class="form-control">
+            <label for="workspace-name-input">Workspace Name *</label>
+            <input type="text" id="workspace-name-input" placeholder="e.g., Family, Hackathon Team" required>
+          </div>
+          <div class="form-control">
+            <label for="workspace-desc-input">Description (Optional)</label>
+            <textarea id="workspace-desc-input" rows="3" placeholder="What is this workspace for?"></textarea>
+          </div>
+          <p class="info-text">
+            <i class="fas fa-info-circle"></i> After creating, you can invite members from the workspace settings.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" onclick="closeWorkspaceModal()">Cancel</button>
+          <button type="submit" class="btn-submit">Create Workspace</button>
+        </div>
+      </form>
     </div>
+<<<<<<< HEAD
     .7
   </div>
+=======
+  </div>
+
+  <!-- API and Feature Scripts -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="auth-integration.js"></script>
+  <script src="api-integration.js"></script>
+  <script src="workspace-feature.js"></script>
+  <script src="budget-goals.js"></script>
+  <script src="receipt-upload.js"></script>
+  <script src="analytics-dashboard.js"></script>
+  <script src="realtime-sync.js"></script>
+
+  <!-- Offline Indicator -->
+>>>>>>> feature/workspaces-rbac
 
   <!-- Offline Indicator -->
   <div id="offline-indicator" class="offline-indicator" style="display: none;">
