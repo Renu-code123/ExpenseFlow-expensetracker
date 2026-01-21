@@ -302,6 +302,20 @@ function updateValues() {
   balance.innerHTML = `₹${total.toFixed(2)}`;
   money_plus.innerHTML = `+₹${income.toFixed(2)}`;
   money_minus.innerHTML = `-₹${expense.toFixed(2)}`;
+
+  // Update quick stats
+  const quickBalance = document.getElementById('quick-balance');
+  const quickIncome = document.getElementById('quick-income');
+  const quickExpense = document.getElementById('quick-expense');
+  const quickSavings = document.getElementById('quick-savings');
+
+  if (quickBalance) quickBalance.innerHTML = `₹${total.toFixed(2)}`;
+  if (quickIncome) quickIncome.innerHTML = `₹${income.toFixed(2)}`;
+  if (quickExpense) quickExpense.innerHTML = `₹${expense.toFixed(2)}`;
+  if (quickSavings) {
+    const savingsRate = income > 0 ? (((income - expense) / income) * 100).toFixed(1) : 0;
+    quickSavings.innerHTML = `${savingsRate}%`;
+  }
 }
 
 // ================= REMOVE TRANSACTION =================
