@@ -211,7 +211,7 @@ body {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   animation: fadeInUp 1s ease-out 0.4s both;
   width: 100%;
-  max-width: 24rem;
+  max-width: 32rem;
   margin: 0 auto;
 }
 
@@ -2757,5 +2757,93 @@ button {
 
   .confidence-bar {
     width: 40px;
+  }
+}
+/* =========================
+   WIDTH PRESERVATION FIX
+   (Keeps original layout)
+========================= */
+
+/* Ensure container width stays exactly the same */
+.container,
+.nav-container,
+.footer-container {
+  max-width: 1200px;   /* same as before */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Cards should NOT stretch wider */
+.balance-card,
+.history-section,
+.form-section,
+.data-management-section,
+.income-card,
+.expense-card {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Grid spacing only – no width change */
+.container {
+  row-gap: 3.5rem;
+}
+
+/* Income / Expense grid keeps original width */
+.inc-exp-container {
+  grid-template-columns: 1fr 1fr; /* unchanged */
+  gap: 2.5rem;
+}
+
+/* Prevent accidental full-screen stretch */
+.main-content {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+/* Mobile stays stacked like before */
+@media (max-width: 768px) {
+  .inc-exp-container {
+    grid-template-columns: 1fr;
+  }
+}
+/* =========================
+   REDUCED CARD SPACING
+   (Width & style preserved)
+========================= */
+
+/* Main container – smaller vertical gap */
+.main-content .container {
+  row-gap: 1.6rem !important;
+}
+
+/* Cards – subtle spacing only */
+.balance-card,
+.history-section,
+.form-section,
+.data-management-section {
+  margin-top: 0.6rem !important;
+  margin-bottom: 0.6rem !important;
+}
+
+/* Income & Expense cards */
+.inc-exp-container {
+  gap: 1.2rem !important;
+}
+
+/* Transaction list items */
+.list li {
+  margin-bottom: 0.6rem !important;
+}
+
+/* Footer spacing */
+.footer-container {
+  row-gap: 1.5rem !important;
+}
+
+/* Mobile refinement */
+@media (max-width: 768px) {
+  .main-content .container {
+    row-gap: 1.3rem !important;
   }
 }
