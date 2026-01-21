@@ -30,7 +30,7 @@
 
 ### ✅ File Upload
 - **Drag & Drop Interface** - Intuitive file upload experience
-- **File Validation** - Type and size restrictions (5MB max)
+- **File Validation** - Type and size restrictions (10MB max)
 - **Image Compression** - Automatic optimization using Sharp
 - **Cloud Storage** - Secure storage with Cloudinary CDN
 - **Progress Indicators** - Real-time upload progress
