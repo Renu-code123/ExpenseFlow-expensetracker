@@ -14,11 +14,10 @@ class ExportService {
         // CSV Headers
         const headers = [
             'Date',
-            'Description',
+            'Amount',
             'Category',
-            'Type',
-            'Amount (₹)',
-            'Created At'
+            'Description',
+            'Merchant'
         ];
 
         const rows = [];
@@ -29,16 +28,14 @@ class ExportService {
 
         // Generate rows
         expenses.forEach(expense => {
-            const date = new Date(expense.date).toLocaleDateString(dateFormat);
-            const createdAt = new Date(expense.createdAt).toLocaleDateString(dateFormat);
+            const date = new Date(expense.date).toISOString().split('T')[0]; // YYYY-MM-DD format
 
             const row = [
-                `"${date}"`,
+                date,
+                expense.amount.toFixed(2),
+                expense.category,
                 `"${this.escapeCSV(expense.description)}"`,
-                `"${expense.category}"`,
-                `"${expense.type}"`,
-                expense.type === 'expense' ? -expense.amount : expense.amount,
-                `"${createdAt}"`
+                `"${this.escapeCSV(expense.merchant || '')}"`
             ];
 
             rows.push(row.join(','));

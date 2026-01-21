@@ -10,7 +10,16 @@ const router = express.Router();
 const registerSchema = Joi.object({
   name: Joi.string().trim().max(50).required(),
   email: Joi.string().email().required(),
-  password: Joi.string().min(6).required()
+  password: Joi.string()
+    .min(12)
+    .max(128)
+    .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
+    .required()
+    .messages({
+      'string.min': 'Password must be at least 12 characters long',
+      'string.max': 'Password must not exceed 128 characters',
+      'string.pattern.base': 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)'
+    })
 });
 
 const loginSchema = Joi.object({

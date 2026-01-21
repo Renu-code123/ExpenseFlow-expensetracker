@@ -98,7 +98,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Make io available to routes
+// Make io available to the  routes
 app.set('io', io);
 
 // Make io globally available for notifications

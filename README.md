@@ -199,8 +199,6 @@ This project is licensed under the **MIT License** – see the [LICENSE](./LICEN
 📫 **Connect with me:**
 
 * **GitHub:** [@Renu-code123](https://github.com/Renu-code123)
-* **LinkedIn:** [Your LinkedIn Profile Link Here]
-
 ---
 
 ## 💬 Quote
