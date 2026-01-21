@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 
-// Placeholder route for currency
+// Placeholder route for groups
 router.get('/', (req, res) => {
-  res.json({ message: 'Currency endpoint not implemented yet' });
+  res.json({ message: 'Groups endpoint not implemented yet' });
 });
 
 module.exports = router;
