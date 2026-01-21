@@ -19,6 +19,12 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     minlength: 6
+  },
+  monthlyLimit: {
+    type: Number,
+    default: null,
+    min: 0,
+    description: 'User-defined monthly spending limit. Null means no limit set.'
   }
 }, {
   timestamps: true

@@ -2,7 +2,6 @@ const express = require('express');
 const Joi = require('joi');
 const Expense = require('../models/Expense');
 const budgetService = require('../services/budgetService');
-const currencyService = require('../services/currencyService');
 const categorizationService = require('../services/categorizationService');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
@@ -47,17 +46,43 @@ router.post('/', auth, async (req, res) => {
       // Non-critical error, continue
     }
     
+    // Prepare response object with expense and optional warning
+    const responseData = {
+      ...expense.toObject(),
+      monthlyBudgetWarning: null
+    };
+    
     // Update budget and goal progress
     if (value.type === 'expense') {
       await budgetService.checkBudgetAlerts(req.user._id);
+      
+      // Check monthly spending limit
+      try {
+        const budgetStatus = await budgetService.checkMonthlyBudgetLimit(req.user._id);
+        
+        if (budgetStatus.isLimitSet && budgetStatus.isExceeded) {
+          responseData.monthlyBudgetWarning = {
+            isExceeded: true,
+            message: `Monthly spending limit exceeded! You have spent $${budgetStatus.currentMonthTotal.toFixed(2)} of your $${budgetStatus.limit.toFixed(2)} limit.`,
+            limit: budgetStatus.limit,
+            currentMonthTotal: budgetStatus.currentMonthTotal,
+            overAmount: (budgetStatus.currentMonthTotal - budgetStatus.limit).toFixed(2),
+            percentageUsed: budgetStatus.percentageUsed.toFixed(2)
+          };
+        }
+      } catch (limitError) {
+        console.error('Monthly budget limit check failed:', limitError.message);
+        // Non-critical error, continue without warning
+      }
     }
+    
     await budgetService.updateGoalProgress(req.user._id, value.type === 'expense' ? -value.amount : value.amount, value.category);
     
     // Emit real-time update to all user's connected devices
     const io = req.app.get('io');
     io.to(`user_${req.user._id}`).emit('expense_created', expense);
     
-    res.status(201).json(expense);
+    res.status(201).json(responseData);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

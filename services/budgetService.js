@@ -197,6 +197,64 @@ class BudgetService {
 
     return budgets;
   }
+
+  /**
+   * Check if monthly spending limit is exceeded for the current month
+   * @param {ObjectId} userId - The user ID
+   * @returns {Promise<Object>} Object containing:
+   *   - isLimitSet: boolean - whether a monthly limit is set
+   *   - limit: number - the monthly limit (or null if not set)
+   *   - currentMonthTotal: number - total expenses for the current month
+   *   - isExceeded: boolean - whether current month total exceeds limit
+   *   - remainingBudget: number - amount remaining before hitting limit (or null if not set)
+   *   - percentageUsed: number - percentage of limit used (0-100+)
+   */
+  async checkMonthlyBudgetLimit(userId) {
+    const User = require('../models/User');
+    const user = await User.findById(userId);
+    
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    // Default return object
+    const result = {
+      isLimitSet: user.monthlyLimit !== null && user.monthlyLimit > 0,
+      limit: user.monthlyLimit,
+      currentMonthTotal: 0,
+      isExceeded: false,
+      remainingBudget: null,
+      percentageUsed: 0
+    };
+
+    // If no monthly limit is set, return early
+    if (!result.isLimitSet) {
+      return result;
+    }
+
+    // Calculate current month's total expenses
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
+    const monthlyExpenses = await Expense.find({
+      user: userId,
+      type: 'expense',
+      date: {
+        $gte: monthStart,
+        $lte: monthEnd
+      }
+    });
+
+    const currentMonthTotal = monthlyExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+
+    result.currentMonthTotal = currentMonthTotal;
+    result.isExceeded = currentMonthTotal > result.limit;
+    result.remainingBudget = result.limit - currentMonthTotal;
+    result.percentageUsed = (currentMonthTotal / result.limit) * 100;
+
+    return result;
+  }
 }
 
 module.exports = new BudgetService();

@@ -114,4 +114,98 @@ router.post('/monthly', auth, async (req, res) => {
   }
 });
 
+// Get user's monthly spending limit
+router.get('/monthly-limit', auth, async (req, res) => {
+  try {
+    const budgetStatus = await budgetService.checkMonthlyBudgetLimit(req.user._id);
+    res.json(budgetStatus);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Set or update user's monthly spending limit
+router.post('/monthly-limit', auth, async (req, res) => {
+  try {
+    const { monthlyLimit } = req.body;
+    
+    // Validate input
+    if (monthlyLimit === undefined) {
+      return res.status(400).json({ error: 'monthlyLimit is required' });
+    }
+    
+    if (monthlyLimit !== null && (typeof monthlyLimit !== 'number' || monthlyLimit < 0)) {
+      return res.status(400).json({ error: 'monthlyLimit must be a non-negative number or null' });
+    }
+
+    const User = require('../models/User');
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { monthlyLimit: monthlyLimit || null },
+      { new: true, runValidators: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Return updated limit status with current month's expenses
+    const budgetStatus = await budgetService.checkMonthlyBudgetLimit(req.user._id);
+
+    res.json({
+      message: monthlyLimit ? `Monthly spending limit set to $${monthlyLimit.toFixed(2)}` : 'Monthly spending limit removed',
+      user: {
+        id: user._id,
+        email: user.email,
+        monthlyLimit: user.monthlyLimit
+      },
+      budgetStatus: budgetStatus
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update user's monthly spending limit (PUT alternative)
+router.put('/monthly-limit', auth, async (req, res) => {
+  try {
+    const { monthlyLimit } = req.body;
+    
+    // Validate input
+    if (monthlyLimit === undefined) {
+      return res.status(400).json({ error: 'monthlyLimit is required' });
+    }
+    
+    if (monthlyLimit !== null && (typeof monthlyLimit !== 'number' || monthlyLimit < 0)) {
+      return res.status(400).json({ error: 'monthlyLimit must be a non-negative number or null' });
+    }
+
+    const User = require('../models/User');
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { monthlyLimit: monthlyLimit || null },
+      { new: true, runValidators: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Return updated limit status with current month's expenses
+    const budgetStatus = await budgetService.checkMonthlyBudgetLimit(req.user._id);
+
+    res.json({
+      message: monthlyLimit ? `Monthly spending limit updated to $${monthlyLimit.toFixed(2)}` : 'Monthly spending limit removed',
+      user: {
+        id: user._id,
+        email: user.email,
+        monthlyLimit: user.monthlyLimit
+      },
+      budgetStatus: budgetStatus
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
