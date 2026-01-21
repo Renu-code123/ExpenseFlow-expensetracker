@@ -53,7 +53,7 @@ app.use(cors({
       'http://localhost:3001',
       process.env.FRONTEND_URL
     ].filter(Boolean);
-    
+
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -85,7 +85,7 @@ app.use(express.static('.'));
 // Security logging middleware
 app.use((req, res, next) => {
   const originalSend = res.send;
-  res.send = function(data) {
+  res.send = function (data) {
     // Log failed requests
     if (res.statusCode >= 400) {
       securityMonitor.logSecurityEvent(req, 'suspicious_activity', {
@@ -157,7 +157,7 @@ app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/currency', require('./routes/currency'));
 app.use('/api/groups', require('./routes/groups'));
 app.use('/api/splits', require('./routes/splits'));
-app.use('/api/currency', require('./routes/currency'));
+app.use('/api/workspaces', require('./routes/workspaces'));
 
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

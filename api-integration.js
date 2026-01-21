@@ -2,9 +2,13 @@
 const API_BASE_URL = 'http://localhost:3000/api';
 
 // API Functions with pagination support
-async function fetchExpenses(page = 1, limit = 50) {
+async function fetchExpenses(page = 1, limit = 50, workspaceId = null) {
   try {
-    const response = await fetch(`${API_BASE_URL}/expenses?page=${page}&limit=${limit}`);
+    let url = `${API_BASE_URL}/expenses?page=${page}&limit=${limit}`;
+    if (workspaceId && workspaceId !== 'personal') {
+      url += `&workspaceId=${workspaceId}`;
+    }
+    const response = await fetch(url);
     if (!response.ok) throw new Error('Failed to fetch expenses');
     const result = await response.json();
     return result.success ? result.data : result;
@@ -15,12 +19,16 @@ async function fetchExpenses(page = 1, limit = 50) {
   }
 }
 
-async function saveExpense(expense) {
+async function saveExpense(expense, workspaceId = null) {
   try {
+    const payload = { ...expense };
+    if (workspaceId && workspaceId !== 'personal') {
+      payload.workspaceId = workspaceId;
+    }
     const response = await fetch(`${API_BASE_URL}/expenses`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(expense)
+      body: JSON.stringify(payload)
     });
     if (!response.ok) throw new Error('Failed to save expense');
     return await response.json();
@@ -64,35 +72,36 @@ async function deleteExpense(id) {
 // Modified Add Transaction Function
 async function addTransaction(e) {
   e.preventDefault();
-  
+
   if (text.value.trim() === '' || amount.value.trim() === '' || !category.value || !type.value) {
     showNotification('Please fill in all required fields', 'error');
     return;
   }
-  
+
   if (isNaN(amount.value) || amount.value === '0') {
     showNotification('Please enter a valid amount', 'error');
     return;
   }
-  
+
   let transactionAmount = +amount.value;
-  
+
   if (type.value === 'expense' && transactionAmount > 0) {
     transactionAmount = -transactionAmount;
   } else if (type.value === 'income' && transactionAmount < 0) {
     transactionAmount = Math.abs(transactionAmount);
   }
-  
+
   const expense = {
     description: text.value.trim(),
     amount: Math.abs(transactionAmount),
     category: category.value,
     type: type.value
   };
-  
+
   try {
-    const savedExpense = await saveExpense(expense);
-    
+    const workspaceId = localStorage.getItem('activeWorkspaceId');
+    const savedExpense = await saveExpense(expense, workspaceId);
+
     // Convert to local format
     const transaction = {
       id: savedExpense._id,
@@ -102,19 +111,19 @@ async function addTransaction(e) {
       type: savedExpense.type,
       date: savedExpense.date
     };
-    
+
     transactions.push(transaction);
-    
+
     displayTransactions();
     updateValues();
     updateLocalStorage();
-    
+
     // Clear form
     text.value = '';
     amount.value = '';
     category.value = '';
     type.value = '';
-    
+
     showNotification(`${type.value.charAt(0).toUpperCase() + type.value.slice(1)} added successfully!`, 'success');
   } catch (error) {
     // Handle offline mode - save to localStorage
@@ -127,17 +136,17 @@ async function addTransaction(e) {
       date: new Date().toISOString(),
       offline: true
     };
-    
+
     transactions.push(transaction);
     displayTransactions();
     updateValues();
     updateLocalStorage();
-    
+
     text.value = '';
     amount.value = '';
     category.value = '';
     type.value = '';
-    
+
     showNotification('Saved offline. Will sync when online.', 'warning');
   }
 }
@@ -146,17 +155,17 @@ async function addTransaction(e) {
 async function removeTransaction(id) {
   const transactionToRemove = transactions.find(t => t.id === id);
   if (!transactionToRemove) return;
-  
+
   try {
     if (!transactionToRemove.offline) {
       await deleteExpense(id);
     }
-    
+
     transactions = transactions.filter(transaction => transaction.id !== id);
     updateLocalStorage();
     displayTransactions();
     updateValues();
-    
+
     showNotification('Transaction deleted successfully', 'success');
   } catch (error) {
     // Mark for deletion when online
@@ -183,7 +192,7 @@ async function loadTransactions() {
       type: expense.type,
       date: expense.date
     }));
-    
+
     updateLocalStorage();
     displayTransactions();
     updateValues();
@@ -200,7 +209,7 @@ async function loadTransactions() {
 // Sync offline transactions when online
 async function syncOfflineTransactions() {
   const offlineTransactions = transactions.filter(t => t.offline || t.pendingDelete);
-  
+
   for (const transaction of offlineTransactions) {
     try {
       if (transaction.pendingDelete) {
@@ -213,9 +222,9 @@ async function syncOfflineTransactions() {
           category: transaction.category,
           type: transaction.type
         };
-        
+
         const savedExpense = await saveExpense(expense);
-        
+
         // Update local transaction with server ID
         transaction.id = savedExpense._id;
         transaction.offline = false;
@@ -224,7 +233,7 @@ async function syncOfflineTransactions() {
       console.error('Sync error:', error);
     }
   }
-  
+
   updateLocalStorage();
   showNotification('Data synced successfully', 'success');
 }
@@ -232,7 +241,7 @@ async function syncOfflineTransactions() {
 // Modified initialization
 async function Init() {
   await loadTransactions();
-  
+
   // Sync offline data when online
   if (navigator.onLine) {
     await syncOfflineTransactions();
@@ -274,7 +283,7 @@ function generateID() {
 
 function displayTransactions() {
   list.innerHTML = '';
-  
+
   if (transactions.length === 0) {
     const emptyMessage = document.createElement('div');
     emptyMessage.innerHTML = `
@@ -285,7 +294,7 @@ function displayTransactions() {
     list.appendChild(emptyMessage);
     return;
   }
-  
+
   transactions
     .sort((a, b) => new Date(b.date) - new Date(a.date))
     .forEach(transaction => addTransactionDOM(transaction));
@@ -294,11 +303,11 @@ function displayTransactions() {
 function addTransactionDOM(transaction) {
   const item = document.createElement("li");
   item.classList.add(transaction.amount < 0 ? "minus" : "plus");
-  
+
   const date = new Date(transaction.date);
   const formattedDate = date.toLocaleDateString('en-IN');
   const categoryInfo = categories[transaction.category] || categories.other;
-  
+
   item.innerHTML = `
     <div class="transaction-content">
       <div class="transaction-main">
@@ -316,17 +325,17 @@ function addTransactionDOM(transaction) {
       <i class="fas fa-trash"></i>
     </button>
   `;
-  
+
   list.appendChild(item);
 }
 
 function updateValues() {
   const amounts = transactions.map(transaction => transaction.amount);
-  
+
   const total = amounts.reduce((acc, item) => acc + item, 0);
   const income = amounts.filter(item => item > 0).reduce((acc, item) => acc + item, 0);
   const expense = amounts.filter(item => item < 0).reduce((acc, item) => acc + item, 0) * -1;
-  
+
   balance.innerHTML = `₹${total.toFixed(2)}`;
   money_plus.innerHTML = `+₹${income.toFixed(2)}`;
   money_minus.innerHTML = `-₹${expense.toFixed(2)}`;
@@ -340,7 +349,7 @@ function showNotification(message, type = 'info') {
   const notification = document.createElement('div');
   notification.className = `notification notification-${type}`;
   notification.textContent = message;
-  
+
   Object.assign(notification.style, {
     position: 'fixed',
     top: '20px',
@@ -351,9 +360,9 @@ function showNotification(message, type = 'info') {
     background: type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3',
     zIndex: '10000'
   });
-  
+
   document.body.appendChild(notification);
-  
+
   setTimeout(() => notification.remove(), 3000);
 }
 
