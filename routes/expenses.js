@@ -4,6 +4,7 @@ const Expense = require('../models/Expense');
 const budgetService = require('../services/budgetService');
 const categorizationService = require('../services/categorizationService');
 const exportService = require('../services/exportService');
+const currencyService = require('../services/currencyService');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
 const router = express.Router();
@@ -18,11 +19,22 @@ const expenseSchema = Joi.object({
   date: Joi.date().optional()
 });
 
-// GET all expenses for authenticated user
+// GET all expenses for authenticated user with pagination support
 router.get('/', auth, async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const skip = (page - 1) * limit;
+
     const user = await User.findById(req.user._id);
-    const expenses = await Expense.find({ user: req.user._id }).sort({ date: -1 });
+
+    // Get total count for pagination info
+    const total = await Expense.countDocuments({ user: req.user._id });
+    
+    const expenses = await Expense.find({ user: req.user._id })
+      .sort({ date: -1 })
+      .skip(skip)
+      .limit(limit);
     
     // Convert expenses to user's preferred currency if needed
     const convertedExpenses = await Promise.all(expenses.map(async (expense) => {
@@ -51,7 +63,16 @@ router.get('/', auth, async (req, res) => {
       return expenseObj;
     }));
     
-    res.json(convertedExpenses);
+    res.json({
+      success: true,
+      data: convertedExpenses,
+      pagination: {
+        total,
+        page,
+        limit,
+        pages: Math.ceil(total / limit)
+      }
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
