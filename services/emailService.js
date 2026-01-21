@@ -41,7 +41,7 @@ class EmailService {
 
   async sendPasswordResetEmail(user, resetToken) {
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
-    
+
     const mailOptions = {
       from: process.env.EMAIL_FROM,
       to: user.email,
@@ -65,7 +65,7 @@ class EmailService {
 
   async sendMonthlyReport(user, reportData) {
     const { totalExpenses, totalIncome, balance, topCategories } = reportData;
-    
+
     const mailOptions = {
       from: process.env.EMAIL_FROM,
       to: user.email,
@@ -107,7 +107,7 @@ class EmailService {
 
   async sendBudgetAlert(user, category, spent, budget) {
     const percentage = (spent / budget) * 100;
-    
+
     const mailOptions = {
       from: process.env.EMAIL_FROM,
       to: user.email,
@@ -143,7 +143,7 @@ class EmailService {
 
   async sendWeeklyReport(user, reportData) {
     const { weeklyExpenses, totalSpent, avgDaily } = reportData;
-    
+
     const mailOptions = {
       from: process.env.EMAIL_FROM,
       to: user.email,
@@ -169,6 +169,77 @@ class EmailService {
           </ul>
           
           <p>Stay on track with your financial goals!</p>
+        </div>
+      `
+    };
+
+    return await this.transporter.sendMail(mailOptions);
+  }
+
+  async sendSubscriptionReminder(user, recurringExpense) {
+    const dueDate = new Date(recurringExpense.nextDueDate);
+    const formattedDate = dueDate.toLocaleDateString('en-IN', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+
+    const frequencyText = {
+      'daily': 'Daily',
+      'weekly': 'Weekly',
+      'biweekly': 'Bi-weekly',
+      'monthly': 'Monthly',
+      'quarterly': 'Quarterly',
+      'yearly': 'Yearly'
+    };
+
+    const mailOptions = {
+      from: process.env.EMAIL_FROM,
+      to: user.email,
+      subject: `Upcoming Payment Reminder: ${recurringExpense.description} - ExpenseFlow`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #667eea;">📅 Upcoming Payment Reminder</h2>
+          <p>Hi ${user.name},</p>
+          <p>This is a reminder that you have an upcoming recurring ${recurringExpense.type}:</p>
+          
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 12px; margin: 20px 0;">
+            <h3 style="margin: 0 0 15px 0; color: white;">${recurringExpense.description}</h3>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+              <span>Amount:</span>
+              <strong>₹${recurringExpense.amount.toFixed(2)}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+              <span>Category:</span>
+              <strong>${recurringExpense.category.charAt(0).toUpperCase() + recurringExpense.category.slice(1)}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+              <span>Frequency:</span>
+              <strong>${frequencyText[recurringExpense.frequency] || recurringExpense.frequency}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>Due Date:</span>
+              <strong>${formattedDate}</strong>
+            </div>
+          </div>
+
+          <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107; margin: 20px 0;">
+            <strong>⏰ Reminder:</strong> This payment is due in ${recurringExpense.reminderDays} days or less.
+          </div>
+
+          ${recurringExpense.notes ? `
+          <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <strong>Notes:</strong> ${recurringExpense.notes}
+          </div>
+          ` : ''}
+
+          <p style="color: #666; font-size: 14px;">
+            You can manage your recurring expenses anytime from your ExpenseFlow dashboard.
+          </p>
+          
+          <p>Happy budgeting! 💰</p>
+          <p><strong>The ExpenseFlow Team</strong></p>
         </div>
       `
     };
