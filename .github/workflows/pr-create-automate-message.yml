@@ -34,16 +34,13 @@ jobs:
               "- [ ] You've tested your changes locally\n" +
               "- [ ] Any review comments have been addressed\n\n" +
               "---\n\n" +
-              "### 🚀 Looking for More Ideas & Resources?\n" +
-              "Check out **Linkshala** — your one-stop destination for:\n" +
-              "- 🧩 New project ideas\n" +
-              "- 📚 Learning resources\n" +
-              "- 🎮 Games & creative inspiration\n" +
-              "- 💡 Developer tools & utilities\n\n" +
-              "🔗 https://linkkshala.vercel.app\n\n" +
-              "---\n\n" +
-              "We'll review your PR as soon as possible. Keep up the great work! ✨";
-
+             "### 🙌 Thank You for Contributing!\n" +
+             "We truly appreciate your interest in contributing to this project.\n\n" +
+             "- Please make sure your code follows the project structure\n" +
+             "- Add clear commit messages and comments where necessary\n" +
+             "- Ensure your changes do not break existing functionality\n\n" +
+             "We'll review your PR as soon as possible. Keep up the great work! ✨\n\n" +
+             "---\n\n" +
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
