@@ -7,6 +7,7 @@ const cors = require('cors');
 const socketAuth = require('./middleware/socketAuth');
 const CronJobs = require('./services/cronJobs');
 const backupScheduler = require('./services/backupScheduler');
+const elasticsearchService = require('./services/elasticsearchService');
 const { generalLimiter } = require('./middleware/rateLimiter');
 const { sanitizeInput, mongoSanitizeMiddleware } = require('./middleware/sanitization');
 const securityMonitor = require('./services/securityMonitor');
@@ -116,6 +117,10 @@ mongoose.connect(process.env.MONGODB_URI)
     // Initialize backup scheduler
     backupScheduler.init();
     console.log('Backup scheduler initialized');
+    
+    // Initialize Elasticsearch
+    elasticsearchService.initializeIndex();
+    console.log('Elasticsearch service initialized');
   })
   .catch(err => console.error('MongoDB connection error:', err));
 
@@ -160,6 +165,7 @@ app.use('/api/budgets', require('./routes/budgets'));
 app.use('/api/goals', require('./routes/goals'));
 app.use('/api/security', require('./routes/security'));
 app.use('/api/backup', require('./routes/backup'));
+app.use('/api/search', require('./routes/search'));
 
 // Global error handler
 app.use((err, req, res, next) => {

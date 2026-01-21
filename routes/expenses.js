@@ -2,6 +2,7 @@ const express = require('express');
 const Joi = require('joi');
 const Expense = require('../models/Expense');
 const budgetService = require('../services/budgetService');
+const elasticsearchService = require('../services/elasticsearchService');
 const auth = require('../middleware/auth');
 const router = express.Router();
 
@@ -32,6 +33,9 @@ router.post('/', auth, async (req, res) => {
     const expense = new Expense({ ...value, user: req.user._id });
     await expense.save();
     
+    // Index in Elasticsearch
+    await elasticsearchService.indexExpense(expense);
+    
     // Update budget and goal progress
     if (value.type === 'expense') {
       await budgetService.checkBudgetAlerts(req.user._id);
@@ -61,6 +65,9 @@ router.put('/:id', auth, async (req, res) => {
     );
     if (!expense) return res.status(404).json({ error: 'Expense not found' });
     
+    // Update in Elasticsearch
+    await elasticsearchService.updateExpense(req.params.id, expense);
+    
     // Update budget calculations
     await budgetService.checkBudgetAlerts(req.user._id);
     
@@ -79,6 +86,9 @@ router.delete('/:id', auth, async (req, res) => {
   try {
     const expense = await Expense.findOneAndDelete({ _id: req.params.id, user: req.user._id });
     if (!expense) return res.status(404).json({ error: 'Expense not found' });
+    
+    // Remove from Elasticsearch
+    await elasticsearchService.deleteExpense(req.params.id);
     
     // Update budget calculations
     await budgetService.checkBudgetAlerts(req.user._id);
