@@ -275,10 +275,13 @@
             <h4>Export Data</h4>
             <div class="export-buttons">
               <button class="export-btn" id="export-csv">
-                <i class="fas fa-file-csv"></i> Export to CSV
+                <i class="fas fa-file-csv"></i> Quick CSV
               </button>
-              <button class="export-btn" id="export-json">
-                <i class="fas fa-file-code"></i> Export to JSON
+              <button class="export-btn pdf-btn" id="export-pdf">
+                <i class="fas fa-file-pdf"></i> Quick PDF
+              </button>
+              <button class="export-btn advanced-btn" id="open-export-modal">
+                <i class="fas fa-cog"></i> Advanced Export
               </button>
             </div>
           </div>
@@ -304,41 +307,102 @@
         </div>
       </div>
 
-  <!-- Currency Settings Modal -->
-  <div id="currency-modal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3><i class="fas fa-money-bill-wave"></i> Currency Settings</h3>
-        <span class="close-modal" onclick="closeCurrencyModal()">&times;</span>
-      </div>
-      <div class="modal-body">
-        <div class="form-control">
-          <label for="preferred-currency">Preferred Currency</label>
-          <select id="preferred-currency" class="currency-select">
-            <option value="">Loading currencies...</option>
-          </select>
-          <small>All expenses will be converted to this currency for display</small>
-        </div>
-        <div class="form-control">
-          <label>Exchange Rate Info</label>
-          <div class="exchange-rate-info" id="exchange-rate-info">
-            <p>Select a currency to see current exchange rates</p>
+      <!-- Export Modal -->
+      <div class="export-modal" id="export-modal">
+        <div class="export-modal-content">
+          <div class="export-modal-header">
+            <h3><i class="fas fa-download"></i> Export Expenses</h3>
+            <button class="modal-close-btn" id="export-modal-close">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+
+          <div class="export-modal-body">
+            <!-- Format Selection -->
+            <div class="export-format-section">
+              <h4>Export Format</h4>
+              <div class="format-options">
+                <label class="format-option">
+                  <input type="radio" name="export-format" id="export-format" value="csv" checked>
+                  <div class="format-card">
+                    <i class="fas fa-file-csv"></i>
+                    <span class="format-name">CSV</span>
+                    <span class="format-desc">Excel compatible</span>
+                  </div>
+                </label>
+                <label class="format-option">
+                  <input type="radio" name="export-format" value="pdf">
+                  <div class="format-card">
+                    <i class="fas fa-file-pdf"></i>
+                    <span class="format-name">PDF Report</span>
+                    <span class="format-desc">With charts & summary</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="export-filters-section">
+              <h4>Filter Options</h4>
+              <div class="filter-grid">
+                <div class="form-control">
+                  <label for="export-start-date">Start Date</label>
+                  <input type="date" id="export-start-date">
+                </div>
+                <div class="form-control">
+                  <label for="export-end-date">End Date</label>
+                  <input type="date" id="export-end-date">
+                </div>
+                <div class="form-control">
+                  <label for="export-category-filter">Category</label>
+                  <select id="export-category-filter">
+                    <option value="all">All Categories</option>
+                    <option value="food">🍽️ Food & Dining</option>
+                    <option value="transport">🚗 Transportation</option>
+                    <option value="shopping">🛒 Shopping</option>
+                    <option value="entertainment">🎬 Entertainment</option>
+                    <option value="utilities">💡 Bills & Utilities</option>
+                    <option value="healthcare">🏥 Healthcare</option>
+                    <option value="other">📋 Other</option>
+                  </select>
+                </div>
+                <div class="form-control">
+                  <label for="export-type-filter">Type</label>
+                  <select id="export-type-filter">
+                    <option value="all">All Types</option>
+                    <option value="income">💰 Income Only</option>
+                    <option value="expense">💸 Expenses Only</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Preview -->
+            <div class="export-preview-section">
+              <h4>Export Preview</h4>
+              <div class="export-preview" id="export-preview">
+                <div class="export-preview-loading">Loading preview...</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="export-modal-footer">
+            <button type="button" class="btn-cancel" id="export-cancel-btn">Cancel</button>
+            <button type="button" class="btn-submit" id="export-submit-btn">
+              <i class="fas fa-download"></i> Export
+            </button>
           </div>
         </div>
       </div>
-      <div class="modal-footer">
-        <button class="btn-cancel" onclick="closeCurrencyModal()">Cancel</button>
-        <button class="btn-submit" onclick="saveCurrencyPreference()">Save Settings</button>
-      </div>
-    </div>
-  </div>
 
-  <!-- Footer -->
-  <footer class="footer">
-                <div id="category-suggestions" class="category-suggestions hidden">
-                  <!-- AI suggestions will appear here -->
-                </div>
-              </div>
+      <!-- Add Transaction Form -->
+      <div class="form-section">
+        <h3><i class="fas fa-plus-circle"></i> Add New Transaction</h3>
+        <form id="form" class="transaction-form">
+          <div class="form-row">
+            <div class="form-control">
+              <label for="text">Description</label>
+              <input type="text" id="text" placeholder="Enter transaction description" required />
             </div>
             <div class="form-control">
               <label for="category">Category <span id="category-confidence" class="confidence-badge hidden"></span></label>
