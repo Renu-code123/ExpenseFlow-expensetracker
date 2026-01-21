@@ -186,12 +186,14 @@
           <span>Trusted by 10,000+ users worldwide</span>
         </div>
         <h1 class="hero-title">Smart Money Management<br>Made Simple</h1>
-        <p class="hero-subtitle">Take control of your finances with our intelligent expense tracker.<br>Track, analyze, and optimize your spending habits effortlessly.</p>
+        <p class="hero-subtitle">Take control of your finances with our intelligent expense tracker.<br>Track, analyze,
+          and optimize your spending habits effortlessly.</p>
         <div class="hero-cta">
           <button class="cta-primary" onclick="document.getElementById('form').scrollIntoView({ behavior: 'smooth' })">
             <i class="fas fa-rocket"></i> Start Tracking Now
           </button>
-          <button class="cta-secondary" onclick="document.getElementById('features-section').scrollIntoView({ behavior: 'smooth' })">
+          <button class="cta-secondary"
+            onclick="document.getElementById('features-section').scrollIntoView({ behavior: 'smooth' })">
             <i class="fas fa-info-circle"></i> Learn More
           </button>
         </div>
@@ -572,12 +574,30 @@
         <h3><i class="fas fa-plus-circle"></i> Add New Transaction</h3>
         <form id="form" class="transaction-form">
           <div class="form-row">
+            <div class="ocr-scan-container" style="width: 100%; margin-bottom: 1.5rem;">
+              <div class="ocr-scan-wrapper"
+                style="border: 2px dashed rgba(100, 255, 218, 0.3); border-radius: 12px; padding: 1.5rem; text-align: center; background: rgba(100, 255, 218, 0.05); transition: all 0.3s ease;">
+                <i class="fas fa-camera"
+                  style="font-size: 2rem; color: var(--accent-primary); margin-bottom: 0.5rem;"></i>
+                <h4>Don't want to type?</h4>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">Upload a receipt and
+                  let AI fill the fields for you.</p>
+                <label for="receipt-scan-input" class="cta-secondary"
+                  style="display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.6rem 1.2rem; font-size: 0.9rem;">
+                  <i class="fas fa-file-upload"></i> Scan Receipt
+                </label>
+                <input type="file" id="receipt-scan-input" accept="image/*,application/pdf" style="display: none;">
+              </div>
+            </div>
+          </div>
+          <div class="form-row">
             <div class="form-control">
               <label for="text">Description</label>
               <input type="text" id="text" placeholder="Enter transaction description" required />
             </div>
             <div class="form-control">
-              <label for="category">Category <span id="category-confidence" class="confidence-badge hidden"></span></label>
+              <label for="category">Category <span id="category-confidence"
+                  class="confidence-badge hidden"></span></label>
               <select id="category" required>
                 <option value="">Select Category</option>
                 <option value="food">🍽️ Food & Dining</option>
@@ -785,130 +805,115 @@
   </div>
 
   <footer class="footer">
-  <div class="footer-container">
+    <div class="footer-container">
 
-    <div class="footer-section">
-  <div class="footer-logo">
-    <i class="fas fa-wallet"></i>
-    <span>ExpenseFlow</span>
-  </div>
-
-  <p class="footer-description">
-    Smart money management made simple. Track, analyze, and optimize your financial habits.
-  </p>
-
-  <div class="social-links">
-    <a
-      href="https://x.com/9504_renu"
-      class="social-link"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="X (Twitter)"
-    >
-      <i class="fab fa-x-twitter"></i>
-    </a>
-
-    <a
-      href="https://github.com/Renu-code123/ExpenseFlow"
-      class="social-link"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Github"
-    >
-      <i class="fab fa-github"></i>
-    </a>
-
-    <a
-      href="mailto:renu89857@gmail.com"
-      class="social-link"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Email"
-    >
-      <i class="far fa-envelope"></i>
-    </a>
-
-    <a
-      href="https://www.linkedin.com/in/renu-kumari-prajapati"
-      class="social-link"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="LinkedIn"
-    >
-      <i class="fab fa-linkedin-in"></i>
-    </a>
-  </div>
-</div>
-
-
-    <div class="footer-section">
-      <h4>Company</h4>
-      <ul class="footer-links">
-        <li><a href="AboutUs.html">About Us</a></li>
-        <li><a href="PrivacyPolicy.html">Privacy Policy</a></li>
-        <li><a href="terms_service.html">Terms of Service</a></li>
-        <li><a href="#">Contact</a></li>
-      </ul>
-    </div>
-
-    <div class="footer-section">
-      <h4>Features</h4>
-      <ul class="footer-links">
-        <li><a href="#">Expense Tracking</a></li>
-        <li><a href="#">Budget Planning</a></li>
-        <li><a href="#">Analytics Dashboard</a></li>
-        <li><a href="#">Goal Setting</a></li>
-      </ul>
-    </div>
-
-  </div>
-
-  <div class="footer-bottom">
-    <p>&copy; 2026 ExpenseFlow. All rights reserved. Made with ❤️ for better financial management.</p>
-    <div class="footer-stats">
-      <span>🏆 Trusted by 10,000+ users</span>
-      <span>💰 ₹50M+ tracked</span>
-      <span>📊 99.9% uptime</span>
-    </div>
-  </div>
-</footer>
-
-
-  <script src="trackerscript.js"></script>
-    
-    <!-- PWA Installation Prompt -->
-    <div id="install-prompt" class="install-prompt" style="display: none;">
-      <div class="install-prompt-content">
-        <div class="install-prompt-header">
-          <i class="fas fa-download"></i>
-          <h3>Install ExpenseFlow</h3>
+      <div class="footer-section">
+        <div class="footer-logo">
+          <i class="fas fa-wallet"></i>
+          <span>ExpenseFlow</span>
         </div>
-        <p>Install ExpenseFlow for quick access and offline functionality!</p>
-        <div class="install-prompt-actions">
-          <button id="install-button" class="install-btn">
-            <i class="fas fa-plus"></i> Install
-          </button>
-          <button id="install-dismiss" class="dismiss-btn">
-            <i class="fas fa-times"></i> Not now
-          </button>
+
+        <p class="footer-description">
+          Smart money management made simple. Track, analyze, and optimize your financial habits.
+        </p>
+
+        <div class="social-links">
+          <a href="https://x.com/9504_renu" class="social-link" target="_blank" rel="noopener noreferrer"
+            aria-label="X (Twitter)">
+            <i class="fab fa-x-twitter"></i>
+          </a>
+
+          <a href="https://github.com/Renu-code123/ExpenseFlow" class="social-link" target="_blank"
+            rel="noopener noreferrer" aria-label="Github">
+            <i class="fab fa-github"></i>
+          </a>
+
+          <a href="mailto:renu89857@gmail.com" class="social-link" target="_blank" rel="noopener noreferrer"
+            aria-label="Email">
+            <i class="far fa-envelope"></i>
+          </a>
+
+          <a href="https://www.linkedin.com/in/renu-kumari-prajapati" class="social-link" target="_blank"
+            rel="noopener noreferrer" aria-label="LinkedIn">
+            <i class="fab fa-linkedin-in"></i>
+          </a>
         </div>
       </div>
+
+
+      <div class="footer-section">
+        <h4>Company</h4>
+        <ul class="footer-links">
+          <li><a href="AboutUs.html">About Us</a></li>
+          <li><a href="PrivacyPolicy.html">Privacy Policy</a></li>
+          <li><a href="terms_service.html">Terms of Service</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-section">
+        <h4>Features</h4>
+        <ul class="footer-links">
+          <li><a href="#">Expense Tracking</a></li>
+          <li><a href="#">Budget Planning</a></li>
+          <li><a href="#">Analytics Dashboard</a></li>
+          <li><a href="#">Goal Setting</a></li>
+        </ul>
+      </div>
+
     </div>
 
     <div class="footer-bottom">
-      <div class="footer-container">
-        <p>&copy; 2026 ExpenseFlow. All rights reserved. Made with ❤️ for better financial management.</p>
-        <div class="footer-stats">
-          <span>🏆 Trusted by 10,000+ users</span>
-          <span>💰 ₹50M+ tracked</span>
-          <span>📊 99.9% uptime</span>
-        </div>
+      <p>&copy; 2026 ExpenseFlow. All rights reserved. Made with ❤️ for better financial management.</p>
+      <div class="footer-stats">
+        <span>🏆 Trusted by 10,000+ users</span>
+        <span>💰 ₹50M+ tracked</span>
+        <span>📊 99.9% uptime</span>
       </div>
     </div>
   </footer>
 
+
+  <script src="trackerscript.js"></script>
+
+  <!-- PWA Installation Prompt -->
+  <div id="install-prompt" class="install-prompt" style="display: none;">
+    <div class="install-prompt-content">
+      <div class="install-prompt-header">
+        <i class="fas fa-download"></i>
+        <h3>Install ExpenseFlow</h3>
+      </div>
+      <p>Install ExpenseFlow for quick access and offline functionality!</p>
+      <div class="install-prompt-actions">
+        <button id="install-button" class="install-btn">
+          <i class="fas fa-plus"></i> Install
+        </button>
+        <button id="install-dismiss" class="dismiss-btn">
+          <i class="fas fa-times"></i> Not now
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <div class="footer-container">
+      <p>&copy; 2026 ExpenseFlow. All rights reserved. Made with ❤️ for better financial management.</p>
+      <div class="footer-stats">
+        <span>🏆 Trusted by 10,000+ users</span>
+        <span>💰 ₹50M+ tracked</span>
+        <span>📊 99.9% uptime</span>
+      </div>
+    </div>
+  </div>
+  </footer>
+
   <script src="trackerscript.js"></script>
   <script src="analytics-dashboard.js"></script>
+  <script src="api-integration.js"></script>
+  <script src="workspace-feature.js"></script>
+  <script src="goal-feature.js"></script>
+  <script src="receipt-ocr.js"></script>
+
   <script>
     // Recurring Modal Control
     function openRecurringModal() {
@@ -930,7 +935,7 @@
     }
 
     // Initialize recurring button
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       const addBtn = document.getElementById('add-recurring-btn');
       if (addBtn) {
         addBtn.addEventListener('click', openRecurringModal);
@@ -990,14 +995,14 @@
       const preferredCurrencySelect = document.getElementById('preferred-currency');
 
       if (currencySelect && supportedCurrencies.length > 0) {
-        currencySelect.innerHTML = supportedCurrencies.map(curr => 
+        currencySelect.innerHTML = supportedCurrencies.map(curr =>
           `<option value="${curr.code}">${curr.symbol} ${curr.code} - ${curr.name}</option>`
         ).join('');
         currencySelect.value = currentUserCurrency;
       }
 
       if (preferredCurrencySelect && supportedCurrencies.length > 0) {
-        preferredCurrencySelect.innerHTML = supportedCurrencies.map(curr => 
+        preferredCurrencySelect.innerHTML = supportedCurrencies.map(curr =>
           `<option value="${curr.code}">${curr.symbol} ${curr.code} - ${curr.name}</option>`
         ).join('');
         preferredCurrencySelect.value = currentUserCurrency;
@@ -1053,7 +1058,7 @@
           const rateInfo = document.getElementById('exchange-rate-info');
           const rates = data.data.rates;
           const popularCurrencies = ['USD', 'EUR', 'GBP', 'JPY', 'AUD'];
-          
+
           let html = '<div class="rate-list">';
           popularCurrencies.forEach(curr => {
             if (rates[curr]) {
@@ -1104,19 +1109,135 @@
     }
 
     // Initialize currency features when page loads
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       loadSupportedCurrencies();
       loadUserCurrencyPreference();
     });
 
     // Close modal when clicking outside
-    window.onclick = function(event) {
+    window.onclick = function (event) {
       const modal = document.getElementById('currency-modal');
-      if (event.target === modal) {
-        closeCurrencyModal();
-      }
+      const wsModal = document.getElementById('workspace-modal');
+      const goalModal = document.getElementById('add-goal-modal');
+      const contribModal = document.getElementById('contribution-modal');
+      const ocrModal = document.getElementById('ocr-result-modal');
+
+      if (event.target === modal) closeCurrencyModal();
+      if (event.target === wsModal) if (typeof closeWorkspaceModal === 'function') closeWorkspaceModal();
+      if (event.target === goalModal) if (typeof closeGoalModal === 'function') closeGoalModal();
+      if (event.target === contribModal) if (typeof closeContributionModal === 'function') closeContributionModal();
+      if (event.target === ocrModal) if (typeof closeOCRModal === 'function') closeOCRModal();
     }
   </script>
+
+  <!-- OCR Result Modal -->
+  <div id="ocr-result-modal" class="modal">
+    <div class="modal-content" style="max-width: 800px;">
+      <div class="modal-header">
+        <h3><i class="fas fa-file-invoice-dollar"></i> Confirm Scanned Receipt</h3>
+        <span class="close-modal" onclick="closeOCRModal()">&times;</span>
+      </div>
+      <div class="modal-body" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+        <div class="receipt-preview">
+          <h4 style="margin-bottom: 1rem;">Receipt Image</h4>
+          <div
+            style="background: #000; border-radius: 12px; overflow: hidden; height: 350px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1);">
+            <img id="ocr-preview-img" src="" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+          </div>
+        </div>
+        <div class="ocr-extracted-data">
+          <h4 style="margin-bottom: 1rem;">Extracted Data</h4>
+          <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1rem;">Please verify and correct the
+            information below.</p>
+
+          <div class="form-control" style="margin-bottom: 1rem;">
+            <label>Merchant / Title</label>
+            <input type="text" id="ocr-merchant">
+          </div>
+
+          <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+            <div class="form-control" style="flex: 1;">
+              <label>Amount (₹)</label>
+              <input type="number" id="ocr-amount" step="0.01">
+            </div>
+            <div class="form-control" style="flex: 1;">
+              <label>Date</label>
+              <input type="date" id="ocr-date">
+            </div>
+          </div>
+
+          <div class="form-control" style="margin-bottom: 1.5rem;">
+            <label>Category (Suggested)</label>
+            <select id="ocr-category"
+              style="width: 100%; background: #252545; color: white; border: 1px solid rgba(255,255,255,0.1); padding: 0.75rem; border-radius: 8px;">
+              <option value="food">🍽️ Food & Dining</option>
+              <option value="transport">🚗 Transportation</option>
+              <option value="shopping">🛒 Shopping</option>
+              <option value="entertainment">🎬 Entertainment</option>
+              <option value="utilities">💡 Bills & Utilities</option>
+              <option value="healthcare">🏥 Healthcare</option>
+              <option value="other">📋 Other</option>
+            </select>
+          </div>
+
+          <div class="confidence-info" style="margin-bottom: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 0.4rem;">
+              <span style="color: var(--text-secondary);">AI Confidence Score</span>
+              <span id="ocr-confidence-text"
+                style="color: var(--accent-primary); font-weight: bold;">Calculating...</span>
+            </div>
+            <div class="progress-bar"
+              style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
+              <div id="ocr-confidence-bar" class="progress-fill"
+                style="width: 0%; height: 100%; background: var(--accent-primary); transition: width 0.5s ease;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer"
+        style="display: flex; justify-content: flex-end; gap: 1rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
+        <button type="button" class="btn-cancel" onclick="closeOCRModal()"
+          style="padding: 0.75rem 1.5rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: var(--text-secondary); cursor: pointer;">Discard</button>
+        <button type="button" class="btn-submit" id="ocr-save-btn"
+          style="padding: 0.75rem 1.5rem; border-radius: 8px; border: none; background: var(--primary-gradient); color: white; font-weight: bold; cursor: pointer;">Confirm
+          & Save Expense</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- OCR Loading Overlay -->
+  <div id="ocr-loading-overlay" class="modal" style="background: rgba(15, 15, 35, 0.95); z-index: 10001;">
+    <div
+      style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center;">
+      <div class="ai-loader"
+        style="width: 80px; height: 80px; border: 4px solid var(--accent-primary); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1.5rem;">
+      </div>
+      <h3 class="loading-text" style="color: var(--text-primary); margin-bottom: 0.5rem; font-size: 1.5rem;">AI is
+        scanning your receipt...</h3>
+      <p style="color: var(--text-secondary); font-size: 1rem;">Extracting amount, date, and merchant details using
+        Computer Vision.</p>
+    </div>
+  </div>
+
+  <style>
+    @keyframes spin {
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    .progress-fill.high {
+      background: #4caf50 !important;
+    }
+
+    .progress-fill.medium {
+      background: #ffc107 !important;
+    }
+
+    .progress-fill.low {
+      background: #f44336 !important;
+    }
+  </style>
 
   <!-- PWA Installation Prompt -->
   <div id="install-prompt" class="install-prompt" style="display: none;">
@@ -1135,7 +1256,8 @@
         </button>
       </div>
     </div>
-.7  </div>
+    .7
+  </div>
 
   <!-- Offline Indicator -->
   <div id="offline-indicator" class="offline-indicator" style="display: none;">
