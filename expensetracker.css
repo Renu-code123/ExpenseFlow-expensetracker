@@ -211,7 +211,7 @@ body {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   animation: fadeInUp 1s ease-out 0.4s both;
   width: 100%;
-  max-width: 24rem;
+  max-width: 32rem;
   margin: 0 auto;
 }
 
@@ -2670,48 +2670,440 @@ button {
   animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+/* ULTRA SMALL DEVICES (320px)*/
+@media (max-width: 360px) {
+
+  /* Global */
+  html,
+  body {
+    overflow-x: hidden;
+  }
+
+  body {
+    font-size: 14px;
+  }
+
+  .container {
+    padding: 0.75rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Navbar */
+  .nav-logo span {
+    font-size: 0.9rem;
+  }
+
+  .nav-toggle .bar {
+    width: 22px;
+    height: 2.5px;
+  }
+
+  /* Hero */
+  .hero-title {
+    font-size: 1.4rem;
+    line-height: 1.3;
+  }
+
+  .hero-subtitle {
+    font-size: 0.85rem;
+  }
+
+  /* Balance */
+  .balance-card {
+    padding: 1rem;
+  }
+
+  .balance-amount {
+    font-size: 1.5rem;
+  }
+
+  /* Income / Expense cards */
+  .income-card,
+  .expense-card {
+    padding: 0.75rem;
+  }
+
+  /* Filters */
+  .search-input,
+  .category-select,
+  .date-input,
+  .amount-input,
+  .filter-btn,
+  .clear-filters-btn {
+    width: 100%;
+    min-width: 0;
+    font-size: 0.85rem;
+  }
+
+  .filter-buttons {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  /* Transaction list */
+  .list li {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  /* Form */
+  .transaction-form {
+    padding: 1rem;
+  }
+
+  .transaction-form input,
+  .transaction-form select,
+  .btn-submit {
+    font-size: 0.9rem;
+  }
+
+  /* Footer */
+  .footer-section h4 {
+    font-size: 1rem;
+  }
+
+  .footer-links a {
+    font-size: 0.85rem;
+  }
+
+  .nav-container {
+    padding: 0 0.75rem;
+  }
+
+  .nav-logo span {
+    font-size: 0.85rem;
+  }
 }
 
-/* No suggestions state */
-.suggestions-empty {
+input,
+select,
+button {
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* ========================
+   EXPORT MODAL STYLES
+   ======================== */
+
+.export-btn.pdf-btn {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+}
+
+.export-btn.pdf-btn:hover {
+  box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+}
+
+.export-btn.advanced-btn {
+  background: var(--primary-gradient);
+}
+
+.export-btn.advanced-btn:hover {
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+/* Export Modal */
+.export-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.export-modal.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.export-modal-content {
+  background: var(--bg-secondary);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: 90%;
+  max-width: 650px;
+  max-height: 90vh;
+  overflow-y: auto;
+  transform: translateY(-20px);
+  transition: all 0.3s ease;
+}
+
+.export-modal.active .export-modal-content {
+  transform: translateY(0);
+}
+
+.export-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.export-modal-header h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.export-modal-header h3 i {
+  color: var(--accent-primary);
+}
+
+.export-modal-body {
+  padding: 2rem;
+}
+
+.export-format-section,
+.export-filters-section,
+.export-preview-section {
+  margin-bottom: 2rem;
+}
+
+.export-format-section h4,
+.export-filters-section h4,
+.export-preview-section h4 {
+  font-size: 1rem;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+/* Format Options */
+.format-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.format-option {
+  cursor: pointer;
+}
+
+.format-option input {
+  display: none;
+}
+
+.format-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
   padding: 1.5rem;
   text-align: center;
-  color: var(--text-secondary);
-  font-size: 0.875rem;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.suggestions-empty i {
+.format-option input:checked+.format-card {
+  border-color: var(--accent-primary);
+  background: rgba(100, 255, 218, 0.1);
+}
+
+.format-card i {
+  font-size: 2.5rem;
+  color: var(--accent-primary);
+  margin-bottom: 0.5rem;
+}
+
+.format-card .format-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.format-card .format-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.format-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+}
+
+/* Filter Grid */
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+/* Export Preview */
+.export-preview {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 15px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.export-preview-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+}
+
+.preview-stat {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 1rem;
+  text-align: center;
+}
+
+.preview-stat .stat-label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.preview-stat .stat-value {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.preview-stat.income .stat-value {
+  color: var(--success);
+}
+
+.preview-stat.expense .stat-value {
+  color: var(--error);
+}
+
+.preview-stat.positive .stat-value {
+  color: var(--success);
+}
+
+.preview-stat.negative .stat-value {
+  color: var(--error);
+}
+
+.export-preview-loading,
+.export-preview-error,
+.export-preview-empty {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-secondary);
+}
+
+.export-preview-empty i {
   font-size: 2rem;
   margin-bottom: 0.5rem;
   opacity: 0.5;
 }
 
-/* AI indicator in category label */
-.ai-indicator {
-  display: inline-flex;
+.export-preview-error {
+  color: var(--error);
+}
+
+/* Export Modal Footer */
+.export-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 1.5rem 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Export Notification */
+.export-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  display: flex;
   align-items: center;
-  gap: 0.25rem;
-  padding: 0.25rem 0.5rem;
-  background: linear-gradient(135deg, rgba(100, 255, 218, 0.15), rgba(100, 255, 218, 0.05));
-  border-radius: 8px;
-  font-size: 0.75rem;
-  margin-left: 0.5rem;
-  animation: glow 2s infinite;
+  gap: 0.75rem;
+  z-index: 3000;
+  transform: translateX(120%);
+  transition: transform 0.3s ease;
+  font-weight: 500;
 }
 
-.ai-indicator i {
-  color: var(--accent-primary);
+.export-notification.show {
+  transform: translateX(0);
 }
 
-@keyframes glow {
-  0%, 100% {
-    box-shadow: 0 0 5px rgba(100, 255, 218, 0.3);
+.export-notification.success {
+  background: linear-gradient(135deg, rgba(0, 230, 118, 0.9) 0%, rgba(0, 200, 83, 0.9) 100%);
+  color: white;
+}
+
+.export-notification.error {
+  background: linear-gradient(135deg, rgba(255, 87, 34, 0.9) 0%, rgba(244, 67, 54, 0.9) 100%);
+  color: white;
+}
+
+.export-notification.info {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%);
+  color: white;
+}
+
+/* Responsive Export Modal */
+@media (max-width: 768px) {
+  .export-modal-content {
+    width: 95%;
+    max-height: 85vh;
   }
-  50% {
-    box-shadow: 0 0 15px rgba(100, 255, 218, 0.5);
+
+  .export-modal-body {
+    padding: 1.5rem;
+  }
+
+  .format-options {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .export-preview-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .export-modal-footer {
+    flex-direction: column;
+  }
+
+  .export-modal-footer button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .export-preview-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .export-buttons {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .export-btn {
+    width: 100%;
+    justify-content: center;
   }
 }
 
@@ -2757,5 +3149,93 @@ button {
 
   .confidence-bar {
     width: 40px;
+  }
+}
+/* =========================
+   WIDTH PRESERVATION FIX
+   (Keeps original layout)
+========================= */
+
+/* Ensure container width stays exactly the same */
+.container,
+.nav-container,
+.footer-container {
+  max-width: 1200px;   /* same as before */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Cards should NOT stretch wider */
+.balance-card,
+.history-section,
+.form-section,
+.data-management-section,
+.income-card,
+.expense-card {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Grid spacing only – no width change */
+.container {
+  row-gap: 3.5rem;
+}
+
+/* Income / Expense grid keeps original width */
+.inc-exp-container {
+  grid-template-columns: 1fr 1fr; /* unchanged */
+  gap: 2.5rem;
+}
+
+/* Prevent accidental full-screen stretch */
+.main-content {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+/* Mobile stays stacked like before */
+@media (max-width: 768px) {
+  .inc-exp-container {
+    grid-template-columns: 1fr;
+  }
+}
+/* =========================
+   REDUCED CARD SPACING
+   (Width & style preserved)
+========================= */
+
+/* Main container – smaller vertical gap */
+.main-content .container {
+  row-gap: 1.6rem !important;
+}
+
+/* Cards – subtle spacing only */
+.balance-card,
+.history-section,
+.form-section,
+.data-management-section {
+  margin-top: 0.6rem !important;
+  margin-bottom: 0.6rem !important;
+}
+
+/* Income & Expense cards */
+.inc-exp-container {
+  gap: 1.2rem !important;
+}
+
+/* Transaction list items */
+.list li {
+  margin-bottom: 0.6rem !important;
+}
+
+/* Footer spacing */
+.footer-container {
+  row-gap: 1.5rem !important;
+}
+
+/* Mobile refinement */
+@media (max-width: 768px) {
+  .main-content .container {
+    row-gap: 1.3rem !important;
   }
 }
