@@ -45,11 +45,21 @@ class CronJobs {
     console.log('Cron jobs initialized successfully');
   }
 
+  static async processRecurringExpenses() {
+    console.log('Processing recurring expenses (Placeholder)');
+    // Implementation would go here
+  }
+
+  static async sendRecurringReminders() {
+    console.log('Sending recurring reminders (Placeholder)');
+    // Implementation would go here
+  }
+
   static async updateExchangeRates() {
     try {
       // Update rates for major base currencies
       const baseCurrencies = ['USD', 'EUR', 'GBP', 'INR'];
-      
+
       for (const currency of baseCurrencies) {
         try {
           await currencyService.updateExchangeRates(currency);
@@ -58,7 +68,7 @@ class CronJobs {
           console.error(`Failed to update rates for ${currency}:`, error.message);
         }
       }
-      
+
       console.log('Exchange rates update completed');
     } catch (error) {
       console.error('Exchange rates update error:', error);

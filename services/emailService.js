@@ -246,6 +246,37 @@ class EmailService {
 
     return await this.transporter.sendMail(mailOptions);
   }
+
+  async sendWorkspaceInvitation(email, data) {
+    const { workspaceName, invitedBy, role, inviteLink } = data;
+
+    const mailOptions = {
+      from: process.env.EMAIL_FROM,
+      to: email,
+      subject: `Invitation to join ${workspaceName} on ExpenseFlow`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #667eea;">👥 Workspace Invitation</h2>
+          <p>Hi there!</p>
+          <p><strong>${invitedBy}</strong> has invited you to join the <strong>${workspaceName}</strong> workspace on ExpenseFlow as an <strong>${role}</strong>.</p>
+          
+          <div style="background: #f8f9fa; padding: 25px; border-radius: 12px; margin: 20px 0; border: 1px solid #e0e0e0; text-align: center;">
+            <p style="margin-bottom: 20px;">Collaborate on expenses, track group spending, and manage family finances together.</p>
+            <a href="${inviteLink}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; text-decoration: none; border-radius: 25px; font-weight: bold; display: inline-block;">Join Workspace</a>
+          </div>
+
+          <p style="color: #666; font-size: 14px;">
+            This invitation link will expire in 7 days. If you don't have an ExpenseFlow account, you'll need to create one to join.
+          </p>
+          
+          <p>Happy collaborating! 💰</p>
+          <p><strong>The ExpenseFlow Team</strong></p>
+        </div>
+      `
+    };
+
+    return await this.transporter.sendMail(mailOptions);
+  }
 }
 
 module.exports = new EmailService();
