@@ -174,6 +174,7 @@
         <div class="nav-menu" id="nav-menu">
           <a href="#dashboard" class="nav-link active">Dashboard</a>
           <a href="#analytics" class="nav-link">Analytics</a>
+          <a href="#investments" class="nav-link">Investments</a>
           <a href="#goals" class="nav-link">Goals</a>
           <a href="#settings" class="nav-link">Settings</a>
           <a href="./contributor.html" class="nav-link">Contributors</a>
@@ -603,6 +604,23 @@
         <h3><i class="fas fa-plus-circle"></i> Add New Transaction</h3>
         <form id="form" class="transaction-form">
           <div class="form-row">
+            <div class="ocr-scan-container" style="width: 100%; margin-bottom: 1.5rem;">
+              <div class="ocr-scan-wrapper"
+                style="border: 2px dashed rgba(100, 255, 218, 0.3); border-radius: 12px; padding: 1.5rem; text-align: center; background: rgba(100, 255, 218, 0.05); transition: all 0.3s ease;">
+                <i class="fas fa-camera"
+                  style="font-size: 2rem; color: var(--accent-primary); margin-bottom: 0.5rem;"></i>
+                <h4>Don't want to type?</h4>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">Upload a receipt and
+                  let AI fill the fields for you.</p>
+                <label for="receipt-scan-input" class="cta-secondary"
+                  style="display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.6rem 1.2rem; font-size: 0.9rem;">
+                  <i class="fas fa-file-upload"></i> Scan Receipt
+                </label>
+                <input type="file" id="receipt-scan-input" accept="image/*,application/pdf" style="display: none;">
+              </div>
+            </div>
+          </div>
+          <div class="form-row">
             <div class="form-control">
               <label for="text">Description</label>
               <input type="text" id="text" placeholder="Enter transaction description" required />
@@ -784,8 +802,174 @@
           </form>
         </div>
       </div>
+
+      <!-- Analytics Dashboard Section -->
+      <section id="analytics" class="analytics-section">
+        <div class="section-header">
+          <h3><i class="fas fa-chart-bar"></i> Financial Analytics & Forecasting</h3>
+          <div class="analytics-actions">
+            <select id="trends-period" class="period-select">
+              <option value="monthly">Monthly</option>
+              <option value="weekly">Weekly</option>
+              <option value="daily">Daily</option>
+            </select>
+            <button id="refresh-analytics" class="refresh-btn">
+              <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+          </div>
+        </div>
+
+        <div id="analytics-dashboard" class="analytics-grid">
+          <!-- Top Row: Velocity and Forecast -->
+          <div class="analytics-row top-row">
+            <div id="velocity-widget" class="analytics-card velocity-card">
+              <div class="widget-loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>Calculating velocity...</span>
+              </div>
+            </div>
+            <div id="forecast-widget" class="analytics-card forecast-card">
+              <div class="widget-loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>Generating forecast...</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Middle Row: Trends and Category Breakdown -->
+          <div class="analytics-row main-charts">
+            <div id="trends-chart" class="analytics-card trends-card">
+              <div class="widget-loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>Loading trends...</span>
+              </div>
+            </div>
+            <div id="category-chart" class="analytics-card category-card">
+              <div class="widget-loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>Loading distribution...</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Row: Insights and Predictions -->
+          <div class="analytics-row details-row">
+            <div id="insights-container" class="analytics-card insights-card">
+              <div class="widget-loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>Gathering insights...</span>
+              </div>
+            </div>
+            <div id="predictions-widget" class="analytics-card predictions-card">
+              <div class="widget-loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>Predicting spending...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   </main>
+
+  <!-- Investment Portfolio Section -->
+  <section id="investments" class="investments-section container" style="display: none; padding-top: 100px;">
+    <div class="section-header">
+      <h3><i class="fas fa-chart-line"></i> Investment Portfolio</h3>
+      <button class="add-goal-btn" onclick="openInvestmentModal()">
+        <i class="fas fa-plus"></i> Add Holding
+      </button>
+    </div>
+
+    <!-- Portfolio Summary -->
+    <div class="quick-stats">
+      <div class="stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+          <i class="fas fa-coins"></i>
+        </div>
+        <div class="stat-content">
+          <p class="stat-label">Total Portfolio Value</p>
+          <h3 class="stat-value" id="portfolio-total-value">₹0.00</h3>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+          <i class="fas fa-arrow-trend-up"></i>
+        </div>
+        <div class="stat-content">
+          <p class="stat-label">Total Profit/Loss</p>
+          <h3 class="stat-value" id="portfolio-total-pl">₹0.00</h3>
+          <small id="portfolio-pl-percent" class="trend-text">0.00%</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Holdings List -->
+    <div class="investments-list-container">
+      <div class="list-header">
+        <h4>Your Holdings</h4>
+        <button class="refresh-btn-sm" title="Refresh Prices" onclick="loadInvestments()">
+          <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+      </div>
+      <div id="investments-list" class="investments-grid">
+        <!-- Investments will be rendered here -->
+        <div class="widget-loading">
+          <i class="fas fa-spinner fa-spin"></i>
+          <span>Loading portfolio...</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Add Investment Modal -->
+  <div id="investment-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3><i class="fas fa-chart-pie"></i> Add Investment</h3>
+        <span class="close-modal" onclick="closeInvestmentModal()">&times;</span>
+      </div>
+      <form id="investment-form">
+        <div class="modal-body">
+          <div class="form-control">
+            <label for="inv-type">Asset Type</label>
+            <select id="inv-type" required onchange="updateSymbolPlaceholder()">
+              <option value="crypto">Cryptocurrency</option>
+              <option value="stock">Stock</option>
+              <option value="fund">Mutual Fund</option>
+              <option value="gold">Gold/Silver</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="form-control">
+              <label for="inv-symbol">Symbol/Ticker</label>
+              <input type="text" id="inv-symbol" placeholder="e.g., BTC, AAPL" required uppercase>
+              <small id="symbol-hint">For crypto, use ticker (BTC, ETH)</small>
+            </div>
+            <div class="form-control">
+              <label for="inv-name">Asset Name</label>
+              <input type="text" id="inv-name" placeholder="e.g., Bitcoin, Apple Inc." required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-control">
+              <label for="inv-quantity">Quantity</label>
+              <input type="number" id="inv-quantity" placeholder="0.00" step="any" required>
+            </div>
+            <div class="form-control">
+              <label for="inv-buy-price">Buy Price (Per Unit)</label>
+              <input type="number" id="inv-buy-price" placeholder="₹0.00" step="any" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" onclick="closeInvestmentModal()">Cancel</button>
+          <button type="submit" class="btn-submit">Add to Portfolio</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- Currency Settings Modal -->
   <div id="currency-modal" class="modal">
@@ -825,45 +1009,6 @@
           <span>ExpenseFlow</span>
         </div>
 
-        <p class="footer-description">
-          Smart money management made simple. Track, analyze, and optimize your financial habits.
-        </p>
-
-        <div class="social-links">
-          <a href="https://x.com/9504_renu" class="social-link" target="_blank" rel="noopener noreferrer"
-            aria-label="X (Twitter)">
-            <i class="fab fa-x-twitter"></i>
-          </a>
-
-          <a href="https://github.com/Renu-code123/ExpenseFlow" class="social-link" target="_blank"
-            rel="noopener noreferrer" aria-label="Github">
-            <i class="fab fa-github"></i>
-          </a>
-
-          <a href="mailto:renu89857@gmail.com" class="social-link" target="_blank" rel="noopener noreferrer"
-            aria-label="Email">
-            <i class="far fa-envelope"></i>
-          </a>
-
-          <a href="https://www.linkedin.com/in/renu-kumari-prajapati" class="social-link" target="_blank"
-            rel="noopener noreferrer" aria-label="LinkedIn">
-            <i class="fab fa-linkedin-in"></i>
-          </a>
-        </div>
-      </div>
-
-
-      <div class="footer-section">
-        <h4>Company</h4>
-        <ul class="footer-links">
-          <li><a href="AboutUs.html">About Us</a></li>
-          <li><a href="PrivacyPolicy.html">Privacy Policy</a></li>
-          <li><a href="terms_service.html">Terms of Service</a></li>
-          <li><a href="Help-Center.html">Help Center</a></li>
-          <li><a href="contact.html">Contact Us</a></li>
-        </ul>
-      </div>
-
     </div>
 
     <div class="footer-bottom">
@@ -878,256 +1023,136 @@
     </div>
   </footer>
 
-
-  <script src="trackerscript.js"></script>
-
-  <!-- PWA Installation Prompt -->
-  <div id="install-prompt" class="install-prompt" style="display: none;">
-    <div class="install-prompt-content">
-      <div class="install-prompt-header">
-        <i class="fas fa-download"></i>
-        <h3>Install ExpenseFlow</h3>
+  <!-- OCR Result Modal -->
+  <div id="ocr-result-modal" class="modal">
+    <div class="modal-content" style="max-width: 800px;">
+      <div class="modal-header">
+        <h3><i class="fas fa-file-invoice-dollar"></i> Confirm Scanned Receipt</h3>
+        <span class="close-modal" onclick="closeOCRModal()">&times;</span>
       </div>
-      <p>Install ExpenseFlow for quick access and offline functionality!</p>
-      <div class="install-prompt-actions">
-        <button id="install-button" class="install-btn">
-          <i class="fas fa-plus"></i> Install
-        </button>
-        <button id="install-dismiss" class="dismiss-btn">
-          <i class="fas fa-times"></i> Not now
-        </button>
+      <div class="modal-body" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+        <div class="receipt-preview">
+          <h4 style="margin-bottom: 1rem;">Receipt Image</h4>
+          <div
+            style="background: #000; border-radius: 12px; overflow: hidden; height: 350px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1);">
+            <img id="ocr-preview-img" src="" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+          </div>
+        </div>
+        <div class="ocr-extracted-data">
+          <h4 style="margin-bottom: 1rem;">Extracted Data</h4>
+          <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1rem;">Please verify and correct the
+            information below.</p>
+
+          <div class="form-control" style="margin-bottom: 1rem;">
+            <label>Merchant / Title</label>
+            <input type="text" id="ocr-merchant">
+          </div>
+
+          <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+            <div class="form-control" style="flex: 1;">
+              <label>Amount (₹)</label>
+              <input type="number" id="ocr-amount" step="0.01">
+            </div>
+            <div class="form-control" style="flex: 1;">
+              <label>Date</label>
+              <input type="date" id="ocr-date">
+            </div>
+          </div>
+
+          <div class="form-control" style="margin-bottom: 1.5rem;">
+            <label>Category (Suggested)</label>
+            <select id="ocr-category"
+              style="width: 100%; background: #252545; color: white; border: 1px solid rgba(255,255,255,0.1); padding: 0.75rem; border-radius: 8px;">
+              <option value="food">🍽️ Food & Dining</option>
+              <option value="transport">🚗 Transportation</option>
+              <option value="shopping">🛒 Shopping</option>
+              <option value="entertainment">🎬 Entertainment</option>
+              <option value="utilities">💡 Bills & Utilities</option>
+              <option value="healthcare">🏥 Healthcare</option>
+              <option value="other">📋 Other</option>
+            </select>
+          </div>
+
+          <div class="confidence-info" style="margin-bottom: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 0.4rem;">
+              <span style="color: var(--text-secondary);">AI Confidence Score</span>
+              <span id="ocr-confidence-text"
+                style="color: var(--accent-primary); font-weight: bold;">Calculating...</span>
+            </div>
+            <div class="progress-bar"
+              style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
+              <div id="ocr-confidence-bar" class="progress-fill"
+                style="width: 0%; height: 100%; background: var(--accent-primary); transition: width 0.5s ease;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer"
+        style="display: flex; justify-content: flex-end; gap: 1rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
+        <button type="button" class="btn-cancel" onclick="closeOCRModal()"
+          style="padding: 0.75rem 1.5rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: var(--text-secondary); cursor: pointer;">Discard</button>
+        <button type="button" class="btn-submit" id="ocr-save-btn"
+          style="padding: 0.75rem 1.5rem; border-radius: 8px; border: none; background: var(--primary-gradient); color: white; font-weight: bold; cursor: pointer;">Confirm
+          & Save Expense</button>
       </div>
     </div>
   </div>
 
+  <!-- OCR Loading Overlay -->
+  <div id="ocr-loading-overlay" class="modal" style="background: rgba(15, 15, 35, 0.95); z-index: 10001;">
+    <div
+      style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center;">
+      <div class="ai-loader"
+        style="width: 80px; height: 80px; border: 4px solid var(--accent-primary); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1.5rem;">
+      </div>
+      <h3 class="loading-text" style="color: var(--text-primary); margin-bottom: 0.5rem; font-size: 1.5rem;">AI is
+        scanning your receipt...</h3>
+      <p style="color: var(--text-secondary); font-size: 1rem;">Extracting amount, date, and merchant details using
+        Computer Vision.</p>
+    </div>
+  </div>
 
-  </footer>
+  <style>
+    @keyframes spin {
+      100% {
+        transform: rotate(360deg);
+      }
+    }
 
-  <script src="trackerscript.js"></script>
+    .progress-fill.high {
+      background: #4caf50 !important;
+    }
+
+    .progress-fill.medium {
+      background: #ffc107 !important;
+    }
+
+    .progress-fill.low {
+      background: #f44336 !important;
+    }
+  </style>
+
+  <!-- Workspace Modal -->
+  <div id="workspace-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3><i class="fas fa-users"></i> Create Shared Workspace</h3>
+        <span class="close-modal" onclick="closeWorkspaceModal()">&times;</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- API and Feature Scripts -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="auth-integration.js"></script>
+  <script src="api-integration.js"></script>
+  <script src="workspace-feature.js"></script>
+  <script src="budget-goals.js"></script>
+  <script src="receipt-upload.js"></script>
+  <script src="receipt-ocr.js"></script>
   <script src="analytics-dashboard.js"></script>
-  <script>
-    // Recurring Modal Control
-    function openRecurringModal() {
-      const modal = document.getElementById('recurring-modal');
-      if (modal) {
-        modal.style.display = 'flex';
-        modal.classList.add('active');
-        document.getElementById('recurring-modal-title').textContent = 'Add Recurring Expense';
-        document.getElementById('recurring-form').reset();
-      }
-    }
-
-    function closeRecurringModal() {
-      const modal = document.getElementById('recurring-modal');
-      if (modal) {
-        modal.style.display = 'none';
-        modal.classList.remove('active');
-      }
-    }
-
-    // Initialize recurring button
-    document.addEventListener('DOMContentLoaded', function () {
-      const addBtn = document.getElementById('add-recurring-btn');
-      if (addBtn) {
-        addBtn.addEventListener('click', openRecurringModal);
-      }
-
-      const closeBtn = document.getElementById('recurring-modal-close');
-      if (closeBtn) {
-        closeBtn.addEventListener('click', closeRecurringModal);
-      }
-
-      const cancelBtn = document.getElementById('recurring-cancel-btn');
-      if (cancelBtn) {
-        cancelBtn.addEventListener('click', closeRecurringModal);
-      }
-
-      // Close modal when clicking outside
-      const modal = document.getElementById('recurring-modal');
-      if (modal) {
-        modal.addEventListener('click', (e) => {
-          if (e.target === modal) {
-            closeRecurringModal();
-          }
-        });
-      }
-    });
-  </script>
-  <script>
-    // Currency Management Functions
-    let supportedCurrencies = [];
-    let currentUserCurrency = 'INR';
-
-    // Load supported currencies on page load
-    async function loadSupportedCurrencies() {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
-
-        const response = await fetch('/api/currency/supported', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        const data = await response.json();
-        if (data.success) {
-          supportedCurrencies = data.data.currencies;
-          populateCurrencySelects();
-        }
-      } catch (error) {
-        console.error('Error loading currencies:', error);
-      }
-    }
-
-    // Populate currency dropdowns
-    function populateCurrencySelects() {
-      const currencySelect = document.getElementById('currency');
-      const preferredCurrencySelect = document.getElementById('preferred-currency');
-
-      if (currencySelect && supportedCurrencies.length > 0) {
-        currencySelect.innerHTML = supportedCurrencies.map(curr =>
-          `<option value="${curr.code}">${curr.symbol} ${curr.code} - ${curr.name}</option>`
-        ).join('');
-        currencySelect.value = currentUserCurrency;
-      }
-
-      if (preferredCurrencySelect && supportedCurrencies.length > 0) {
-        preferredCurrencySelect.innerHTML = supportedCurrencies.map(curr =>
-          `<option value="${curr.code}">${curr.symbol} ${curr.code} - ${curr.name}</option>`
-        ).join('');
-        preferredCurrencySelect.value = currentUserCurrency;
-      }
-    }
-
-    // Load user's currency preference
-    async function loadUserCurrencyPreference() {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
-
-        const response = await fetch('/api/currency/preference', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        const data = await response.json();
-        if (data.success) {
-          currentUserCurrency = data.data.preferredCurrency;
-          document.getElementById('current-currency').textContent = currentUserCurrency;
-          populateCurrencySelects();
-        }
-      } catch (error) {
-        console.error('Error loading currency preference:', error);
-      }
-    }
-
-    // Open currency settings modal
-    function openCurrencyModal() {
-      document.getElementById('currency-modal').style.display = 'flex';
-      loadExchangeRateInfo();
-    }
-
-    // Close currency settings modal
-    function closeCurrencyModal() {
-      document.getElementById('currency-modal').style.display = 'none';
-    }
-
-    // Load exchange rate information
-    async function loadExchangeRateInfo() {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`/api/currency/rates?base=${currentUserCurrency}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        const data = await response.json();
-        if (data.success) {
-          const rateInfo = document.getElementById('exchange-rate-info');
-          const rates = data.data.rates;
-          const popularCurrencies = ['USD', 'EUR', 'GBP', 'JPY', 'AUD'];
-
-          let html = '<div class="rate-list">';
-          popularCurrencies.forEach(curr => {
-            if (rates[curr]) {
-              html += `<div class="rate-item">
-                <span class="rate-currency">${curr}</span>
-                <span class="rate-value">${rates[curr].toFixed(4)}</span>
-              </div>`;
-            }
-          });
-          html += '</div>';
-          html += `<small>Last updated: ${new Date(data.data.lastUpdated).toLocaleString()}</small>`;
-          rateInfo.innerHTML = html;
-        }
-      } catch (error) {
-        console.error('Error loading exchange rates:', error);
-      }
-    }
-
-    // Save currency preference
-    async function saveCurrencyPreference() {
-      try {
-        const token = localStorage.getItem('token');
-        const newCurrency = document.getElementById('preferred-currency').value;
-
-        const response = await fetch('/api/currency/preference', {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ currency: newCurrency })
-        });
-
-        const data = await response.json();
-        if (data.success) {
-          currentUserCurrency = newCurrency;
-          document.getElementById('current-currency').textContent = newCurrency;
-          closeCurrencyModal();
-          // Reload transactions to show in new currency
-          location.reload();
-        } else {
-          alert('Failed to update currency preference');
-        }
-      } catch (error) {
-        console.error('Error saving currency preference:', error);
-        alert('Error saving currency preference');
-      }
-    }
-
-    // Initialize currency features when page loads
-    document.addEventListener('DOMContentLoaded', function () {
-      loadSupportedCurrencies();
-      loadUserCurrencyPreference();
-    });
-
-    // Close modal when clicking outside
-    window.onclick = function (event) {
-      const modal = document.getElementById('currency-modal');
-      const goalModal = document.getElementById('add-goal-modal');
-      const contribModal = document.getElementById('contribution-modal');
-
-      if (event.target === modal) closeCurrencyModal();
-      if (event.target === goalModal) closeGoalModal();
-      if (event.target === contribModal) closeContributionModal();
-    }
-    document.addEventListener('DOMContentLoaded', () => {
-      const logoutLink = document.getElementById('logoutLink');
-
-      if (logoutLink) {
-        logoutLink.addEventListener('click', (e) => {
-          e.preventDefault();
-          logout();
-        });
-      }
-    });
-
-
-  </script>
+  <script src="realtime-sync.js"></script>
+  <script src="investment-portfolio.js"></script>
 
   <!-- PWA Installation Prompt -->
   <div id="install-prompt" class="install-prompt" style="display: none;">
@@ -1162,12 +1187,241 @@
       <button id="update-button" class="update-btn">Update Now</button>
     </div>
   </div>
-  <script src="auth-check.js"></script>
-  <script src="auth.js"></script>
-  <script src="trackerscript.js"></script>
+<script src="auth-check.js"></script>
+<script src="auth.js"></script>
+ <script src="trackerscript.js"></script>
   <script src="analytics-dashboard.js"></script>
 
 
+</body>
+
+</html>
+<script>
+  // Recurring Modal Control
+  function openRecurringModal() {
+    const modal = document.getElementById('recurring-modal');
+    if (modal) {
+      modal.style.display = 'flex';
+      modal.classList.add('active');
+      document.getElementById('recurring-modal-title').textContent = 'Add Recurring Expense';
+      document.getElementById('recurring-form').reset();
+    }
+  }
+
+  function closeRecurringModal() {
+    const modal = document.getElementById('recurring-modal');
+    if (modal) {
+      modal.style.display = 'none';
+      modal.classList.remove('active');
+    }
+  }
+
+  // Initialize recurring button
+  document.addEventListener('DOMContentLoaded', function () {
+    const addBtn = document.getElementById('add-recurring-btn');
+    if (addBtn) {
+      addBtn.addEventListener('click', openRecurringModal);
+    }
+
+    const closeBtn = document.getElementById('recurring-modal-close');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', closeRecurringModal);
+    }
+
+    const cancelBtn = document.getElementById('recurring-cancel-btn');
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', closeRecurringModal);
+    }
+
+    // Close modal when clicking outside
+    const modal = document.getElementById('recurring-modal');
+    if (modal) {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          closeRecurringModal();
+        }
+      });
+    }
+  });
+</script>
+<script>
+  // Currency Management Functions
+  let supportedCurrencies = [];
+  let currentUserCurrency = 'INR';
+
+  // Load supported currencies on page load
+  async function loadSupportedCurrencies() {
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) return;
+
+      const response = await fetch('/api/currency/supported', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        supportedCurrencies = data.data.currencies;
+        populateCurrencySelects();
+      }
+    } catch (error) {
+      console.error('Error loading currencies:', error);
+    }
+  }
+
+  // Populate currency dropdowns
+  function populateCurrencySelects() {
+    const currencySelect = document.getElementById('currency');
+    const preferredCurrencySelect = document.getElementById('preferred-currency');
+
+    if (currencySelect && supportedCurrencies.length > 0) {
+      currencySelect.innerHTML = supportedCurrencies.map(curr =>
+        `<option value="${curr.code}">${curr.symbol} ${curr.code} - ${curr.name}</option>`
+      ).join('');
+      currencySelect.value = currentUserCurrency;
+    }
+
+    if (preferredCurrencySelect && supportedCurrencies.length > 0) {
+      preferredCurrencySelect.innerHTML = supportedCurrencies.map(curr =>
+        `<option value="${curr.code}">${curr.symbol} ${curr.code} - ${curr.name}</option>`
+      ).join('');
+      preferredCurrencySelect.value = currentUserCurrency;
+    }
+  }
+
+  // Load user's currency preference
+  async function loadUserCurrencyPreference() {
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) return;
+
+      const response = await fetch('/api/currency/preference', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        currentUserCurrency = data.data.preferredCurrency;
+        const currentCurrencyEl = document.getElementById('current-currency');
+        if (currentCurrencyEl) currentCurrencyEl.textContent = currentUserCurrency;
+        populateCurrencySelects();
+      }
+    } catch (error) {
+      console.error('Error loading currency preference:', error);
+    }
+  }
+
+  // Open currency settings modal
+  function openCurrencyModal() {
+    const modal = document.getElementById('currency-modal');
+    if (modal) {
+      modal.style.display = 'flex';
+      loadExchangeRateInfo();
+    }
+  }
+
+  // Close currency settings modal
+  function closeCurrencyModal() {
+    const modal = document.getElementById('currency-modal');
+    if (modal) {
+      modal.style.display = 'none';
+    }
+  }
+
+  // Load exchange rate information
+  async function loadExchangeRateInfo() {
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await fetch(`/api/currency/rates?base=${currentUserCurrency}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        const rateInfo = document.getElementById('exchange-rate-info');
+        if (!rateInfo) return;
+
+        const rates = data.data.rates;
+        const popularCurrencies = ['USD', 'EUR', 'GBP', 'JPY', 'AUD'];
+
+        let html = '<div class="rate-list">';
+        popularCurrencies.forEach(curr => {
+          if (rates[curr]) {
+            html += `<div class="rate-item">
+                <span class="rate-currency">${curr}</span>
+                <span class="rate-value">${rates[curr].toFixed(4)}</span>
+              </div>`;
+          }
+        });
+        html += '</div>';
+        html += `<small>Last updated: ${new Date(data.data.lastUpdated).toLocaleString()}</small>`;
+        rateInfo.innerHTML = html;
+      }
+    } catch (error) {
+      console.error('Error loading exchange rates:', error);
+    }
+  }
+
+  // Save currency preference
+  async function saveCurrencyPreference() {
+    try {
+      const token = localStorage.getItem('authToken');
+      const prefSelect = document.getElementById('preferred-currency');
+      if (!prefSelect) return;
+
+      const newCurrency = prefSelect.value;
+
+      const response = await fetch('/api/currency/preference', {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ currency: newCurrency })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        currentUserCurrency = newCurrency;
+        const currentCurrencyEl = document.getElementById('current-currency');
+        if (currentCurrencyEl) currentCurrencyEl.textContent = newCurrency;
+        closeCurrencyModal();
+        // Reload transactions to show in new currency
+        location.reload();
+      } else {
+        alert('Failed to update currency preference');
+      }
+    } catch (error) {
+      console.error('Error saving currency preference:', error);
+      alert('Error saving currency preference');
+    }
+  }
+
+  // Initialize currency features when page loads
+  document.addEventListener('DOMContentLoaded', function () {
+    loadSupportedCurrencies();
+    loadUserCurrencyPreference();
+  });
+
+  // Close modal when clicking outside
+  window.onclick = function (event) {
+    const modal = document.getElementById('currency-modal');
+    const wsModal = document.getElementById('workspace-modal');
+    const recModal = document.getElementById('recurring-modal');
+    const ocrModal = document.getElementById('ocr-result-modal');
+
+    if (event.target === modal) closeCurrencyModal();
+    if (event.target === wsModal) if (typeof closeWorkspaceModal === 'function') closeWorkspaceModal();
+    if (event.target === recModal) closeRecurringModal();
+    if (event.target === ocrModal) if (typeof closeOCRModal === 'function') closeOCRModal();
+  }
+</script>
 </body>
 
 </html>
