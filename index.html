@@ -462,8 +462,6 @@
         </form>
       </div>
 
-      <!-- Recurring Expenses Section -->
-     <!-- Recurring Expense Modal -->
 <div class="recurring-modal" id="recurring-modal">
   <div class="recurring-modal-content">
 
@@ -474,6 +472,38 @@
 
   </div>
 </div>
+
+
+    <!-- Header -->
+    <header class="header">
+      <nav class="navbar">
+        <div class="nav-container">
+          <div class="nav-logo">
+            <i class="fas fa-wallet"></i>
+            <span>ExpenseFlow</span>
+          </div>
+          <div class="nav-menu" id="nav-menu">
+            <a href="#dashboard" class="nav-link active">Dashboard</a>
+            <a href="#analytics" class="nav-link">Analytics</a>
+            <a href="#goals" class="nav-link">Goals</a>
+            <a href="#settings" class="nav-link">Settings</a>
+          </div>
+          <div class="nav-toggle" id="nav-toggle">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+          </div>
+          <div class="user-profile">
+            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=250&fit=crop&crop=face" alt="User" class="profile-img" onclick="openPreview(this.src)">
+            <span class="username">John Doe</span>
+          </div>
+        </div>
+      </nav>
+    </header>
+    
+      <div id="imagePreviewModal" class="image-preview-modal" onclick="closePreview()">
+        <img id="previewImage" />
+      </div>
 
 
     <!--  FORM START -->
@@ -493,11 +523,56 @@
         </div>
       </div>
 
+
       <!-- Row 2 -->
       <div class="form-row">
         <div class="form-control">
           <label>Category *</label>
           <select id="recurring-category" required></select>
+
+
+      <div class="container">
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+          <!-- Balance Card -->
+          <div class="balance-card">
+            <div class="balance-header">
+              <i class="fas fa-chart-line"></i>
+              <h4>Your Balance</h4>
+            </div>
+            <h1 id="balance" class="balance-amount">&#8377;0.00</h1>
+            <div class="balance-trend">
+              <span class="trend-indicator positive">↗</span>
+              <span class="trend-text">+2.5% from last month</span>
+            </div>
+          </div>
+
+          <!-- Income Card -->
+          <div class="income-card">
+            <div class="card-icon income-icon">
+              <i class="fas fa-arrow-up"></i>
+            </div>
+            <div class="card-content">
+              <h4>Income</h4>
+              <p id="money-plus" class="money-plus">
+                +&#8377;0.00
+              </p>
+            </div>
+          </div>
+
+          <!-- Expense Card -->
+          <div class="expense-card">
+            <div class="card-icon expense-icon">
+              <i class="fas fa-arrow-down"></i>
+            </div>
+            <div class="card-content">
+              <h4>Expense</h4>
+              <p id="money-minus" class="money-minus">
+                -&#8377;0.00
+              </p>
+            </div>
+          </div>
+
         </div>
 
         <div class="form-control">
@@ -621,6 +696,222 @@
       <div class="footer-logo">
         <i class="fas fa-wallet"></i>
         <span>ExpenseFlow</span>
+
+
+  <script src="trackerscript.js"></script>
+    
+    <!-- PWA Installation Prompt -->
+    <div id="install-prompt" class="install-prompt" style="display: none;">
+      <div class="install-prompt-content">
+        <div class="install-prompt-header">
+          <i class="fas fa-download"></i>
+          <h3>Install ExpenseFlow</h3>
+        </div>
+        <p>Install ExpenseFlow for quick access and offline functionality!</p>
+        <div class="install-prompt-actions">
+          <button id="install-button" class="install-btn">
+            <i class="fas fa-plus"></i> Install
+          </button>
+          <button id="install-dismiss" class="dismiss-btn">
+            <i class="fas fa-times"></i> Not now
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div class="footer-container">
+        <p>&copy; 2026 ExpenseFlow. All rights reserved. Made with ❤️ for better financial management.</p>
+        <div class="footer-stats">
+          <span>🏆 Trusted by 10,000+ users</span>
+          <span>💰 ₹50M+ tracked</span>
+          <span>📊 99.9% uptime</span>
+        </div>
+      </div>
+    </div>
+
+  </footer>
+
+  <script src="trackerscript.js"></script>
+  <script src="analytics-dashboard.js"></script>
+  <script>
+    // Currency Management Functions
+    let supportedCurrencies = [];
+    let currentUserCurrency = 'INR';
+
+    // Load supported currencies on page load
+    async function loadSupportedCurrencies() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const response = await fetch('/api/currency/supported', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          supportedCurrencies = data.data.currencies;
+          populateCurrencySelects();
+        }
+      } catch (error) {
+        console.error('Error loading currencies:', error);
+      }
+    }
+
+    // Populate currency dropdowns
+    function populateCurrencySelects() {
+      const currencySelect = document.getElementById('currency');
+      const preferredCurrencySelect = document.getElementById('preferred-currency');
+
+      if (currencySelect && supportedCurrencies.length > 0) {
+        currencySelect.innerHTML = supportedCurrencies.map(curr => 
+          `<option value="${curr.code}">${curr.symbol} ${curr.code} - ${curr.name}</option>`
+        ).join('');
+        currencySelect.value = currentUserCurrency;
+      }
+
+      if (preferredCurrencySelect && supportedCurrencies.length > 0) {
+        preferredCurrencySelect.innerHTML = supportedCurrencies.map(curr => 
+          `<option value="${curr.code}">${curr.symbol} ${curr.code} - ${curr.name}</option>`
+        ).join('');
+        preferredCurrencySelect.value = currentUserCurrency;
+      }
+    }
+
+    // Load user's currency preference
+    async function loadUserCurrencyPreference() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const response = await fetch('/api/currency/preference', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          currentUserCurrency = data.data.preferredCurrency;
+          document.getElementById('current-currency').textContent = currentUserCurrency;
+          populateCurrencySelects();
+        }
+      } catch (error) {
+        console.error('Error loading currency preference:', error);
+      }
+    }
+
+    // Open currency settings modal
+    function openCurrencyModal() {
+      document.getElementById('currency-modal').style.display = 'flex';
+      loadExchangeRateInfo();
+    }
+
+    // Close currency settings modal
+    function closeCurrencyModal() {
+      document.getElementById('currency-modal').style.display = 'none';
+    }
+
+    // Load exchange rate information
+    async function loadExchangeRateInfo() {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/currency/rates?base=${currentUserCurrency}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          const rateInfo = document.getElementById('exchange-rate-info');
+          const rates = data.data.rates;
+          const popularCurrencies = ['USD', 'EUR', 'GBP', 'JPY', 'AUD'];
+          
+          let html = '<div class="rate-list">';
+          popularCurrencies.forEach(curr => {
+            if (rates[curr]) {
+              html += `<div class="rate-item">
+                <span class="rate-currency">${curr}</span>
+                <span class="rate-value">${rates[curr].toFixed(4)}</span>
+              </div>`;
+            }
+          });
+          html += '</div>';
+          html += `<small>Last updated: ${new Date(data.data.lastUpdated).toLocaleString()}</small>`;
+          rateInfo.innerHTML = html;
+        }
+      } catch (error) {
+        console.error('Error loading exchange rates:', error);
+      }
+    }
+
+    // Save currency preference
+    async function saveCurrencyPreference() {
+      try {
+        const token = localStorage.getItem('token');
+        const newCurrency = document.getElementById('preferred-currency').value;
+
+        const response = await fetch('/api/currency/preference', {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ currency: newCurrency })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          currentUserCurrency = newCurrency;
+          document.getElementById('current-currency').textContent = newCurrency;
+          closeCurrencyModal();
+          // Reload transactions to show in new currency
+          location.reload();
+        } else {
+          alert('Failed to update currency preference');
+        }
+      } catch (error) {
+        console.error('Error saving currency preference:', error);
+        alert('Error saving currency preference');
+      }
+    }
+
+    // Initialize currency features when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      loadSupportedCurrencies();
+      loadUserCurrencyPreference();
+    });
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+      const modal = document.getElementById('currency-modal');
+      if (event.target === modal) {
+        closeCurrencyModal();
+      }
+    }
+  </script>
+
+  <!-- PWA Installation Prompt -->
+  <div id="install-prompt" class="install-prompt" style="display: none;">
+    <div class="install-prompt-content">
+      <div class="install-prompt-header">
+        <i class="fas fa-download"></i>
+        <h3>Install ExpenseFlow</h3>
+      </div>
+      <p>Install ExpenseFlow for quick access and offline functionality!</p>
+      <div class="install-prompt-actions">
+        <button id="install-button" class="install-btn">
+          <i class="fas fa-plus"></i> Install
+        </button>
+        <button id="install-dismiss" class="dismiss-btn">
+          <i class="fas fa-times"></i> Not now
+        </button>
+
+
       </div>
     </div>
 
@@ -734,4 +1025,20 @@
 
 <script src="trackerscript.js"></script>
 </body>
+
+    <script>
+        function openPreview(src) {
+          const modal = document.getElementById("imagePreviewModal");
+          const img = document.getElementById("previewImage");
+          img.src = src;
+          modal.style.display = "flex";
+        }
+
+        function closePreview() {
+          document.getElementById("imagePreviewModal").style.display = "none";
+        }
+    </script>
+
+  </body>
+
 </html>
