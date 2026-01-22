@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#64ffda" />
+    <meta name="description" content="Take control of your finances with our intuitive expense tracker" />
+    <meta name="keywords" content="expense tracker, budget, finance, money management, PWA" />
+    <meta name="author" content="ExpenseFlow" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <!-- PWA Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="ExpenseFlow" />
+    <meta name="msapplication-TileColor" content="#0f0f23" />
+    <meta name="msapplication-navbutton-color" content="#64ffda" />
+
+    <!-- Manifest -->
+    <link rel="manifest" href="manifest.json" />
+
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon"
+        href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iNDIiIGZpbGw9InVybCgjZ3JhZGllbnQwX2xpbmVhclswXSkiLz4KPHBhdGggZD0iTTQ4IDY0SDQ4LjA0OEgxNDRWMTI4SDk2VjE0NEgxNDRDMTUyLjgzNyAxNDQgMTYwIDEzNi44MzcgMTYwIDEyOFY2NEM1OCA1Ni4xNjMgNTIuMDQzIDQ4IDQ4IEg0OEM0MC4wNzEgNDggMzIgNTYuMDcxIDMyIDY0VjEyOEMzMiAxMzUuOTI5IDQwLjA3MSAxNDQgNDggMTQ0SDgwVjEyOEg0OFY2NFoiIGZpbGw9IiM2NGZmZGEiLz4KPHBhdGggZD0iTTY0IDgwSDgwVjk2SDY0VjgwWiIgZmlsbD0iIzY0ZmZkYSIvPgo8cGF0aCBkPSJNOTYgODBIMTI4Vjk2SDk2VjgwWiIgZmlsbD0iIzY0ZmZkYSIvPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudDBfbGluZWFyWzBdIiB4MT0iMCIgeTE9IjAiIHgyPSIxOTIiIHkyPSIxOTIiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1jb2xvcj0iIzY2N2VlYSIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM3NjRiYTIiLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4K" />
+
+    <title>Contributors | ExpenseFlow</title>
+    <link rel="stylesheet" href="expensetracker.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        /* =========================
+   MOBILE RESPONSIVE STYLES
+   ========================= */
+        @media (max-width: 768px) {
+
+            /* General */
+            body {
+                overflow-x: hidden;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            /* Navbar */
+            .nav-menu {
+                position: absolute;
+                top: 70px;
+                left: 0;
+                width: 100%;
+                background: #0f0f23;
+                flex-direction: column;
+                align-items: center;
+                display: none;
+            }
+
+            .nav-menu.active {
+                display: flex;
+            }
+
+            .nav-link {
+                padding: 1rem;
+                width: 100%;
+                text-align: center;
+            }
+
+            .nav-toggle {
+                display: block;
+                cursor: pointer;
+            }
+
+            .user-profile {
+                display: none;
+            }
+
+            /* Footer */
+            .footer-container {
+                flex-direction: column;
+                gap: 2rem;
+                text-align: center;
+            }
+
+            .footer-stats {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+
+        #redirect {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-left: 12px;
+            border: 1px solid #64ffda;
+            background-color: #0f0f23;
+            padding: 6px 12px;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+
+        #redirect a {
+            color: #64ffda;
+            text-decoration: none;
+            font-weight: 500;
+            margin-right: 8px;
+        }
+
+        .footer-links {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(100px, 1fr));
+        }
+
+        /* contributors page css  */
+        .contributors-page {
+            text-align: center;
+            padding: 80px 20px;
+            max-width: 1100px;
+            margin: auto;
+            margin-top: 20px;
+        }
+
+        .contributors-page h1 {
+            font-size: 2.4rem;
+            margin-bottom: 10px;
+        }
+
+        .contributors-subtitle {
+            opacity: 0.8;
+            margin-bottom: 50px;
+        }
+
+        .contributors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 24px;
+        }
+
+        .contributor-card {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            padding: 24px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .contributor-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+        }
+
+        .contributor-card img {
+            width: 96px;
+            height: 96px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 12px;
+        }
+
+        .contributor-card h3 {
+            margin: 6px 0;
+            font-size: 1.2rem;
+        }
+
+        .contributor-links {
+            margin-top: 12px;
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        .contributor-role {
+            font-size: 0.95rem;
+            opacity: 0.8;
+        }
+
+        .contributor-links a {
+            color: #64ffda;
+            font-size: 1.4rem;
+            text-decoration: none;
+
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="nav-logo">
+                    <i class="fas fa-wallet"></i>
+                    <span>ExpenseFlow</span>
+                </div>
+                <div class="nav-menu" id="nav-menu">
+                    <a href="./index.html" class="nav-link">Dashboard</a>
+                    <a href="#analytics" class="nav-link">Analytics</a>
+                    <a href="#goals" class="nav-link">Goals</a>
+                    <a href="#settings" class="nav-link">Settings</a>
+                    <a href="#contributors" class="nav-link active">Contributors</a>
+                </div>
+                <div class="nav-toggle" id="nav-toggle">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
+                <div class="user-profile">
+                    <button class="currency-btn" onclick="openCurrencyModal()" title="Currency Settings">
+                        <i class="fas fa-coins"></i>
+                        <span id="current-currency">INR</span>
+                    </button>
+                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face"
+                        alt="User" class="profile-img" />
+                    <span class="username" id="navUsername"></span>
+                    <div id="redirect">
+                        <a href="#" id="logoutLink" onclick="logout()">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content contributors-page">
+        <h1>Our Contributors</h1>
+        <p class="contributors-subtitle">
+            The amazing people who help build and improve ExpenseFlow 💙
+        </p>
+        <div class="contributors-grid" id="contributorsGrid">
+            <!-- cards added by js -->
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-section">
+                <div class="footer-logo">
+                    <i class="fas fa-wallet"></i>
+                    <span>ExpenseFlow</span>
+                </div>
+
+                <p class="footer-description">
+                    Smart money management made simple. Track, analyze, and optimize
+                    your financial habits.
+                </p>
+
+                <div class="social-links">
+                    <a href="https://x.com/9504_renu" class="social-link" target="_blank" rel="noopener noreferrer"
+                        aria-label="X (Twitter)">
+                        <i class="fab fa-x-twitter"></i>
+                    </a>
+
+                    <a href="https://github.com/Renu-code123/ExpenseFlow" class="social-link" target="_blank"
+                        rel="noopener noreferrer" aria-label="Github">
+                        <i class="fab fa-github"></i>
+                    </a>
+
+                    <a href="mailto:renu89857@gmail.com" class="social-link" target="_blank" rel="noopener noreferrer"
+                        aria-label="Email">
+                        <i class="far fa-envelope"></i>
+                    </a>
+
+                    <a href="https://www.linkedin.com/in/renu-kumari-prajapati" class="social-link" target="_blank"
+                        rel="noopener noreferrer" aria-label="LinkedIn">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <h4>Company</h4>
+                <ul class="footer-links">
+                    <li><a href="AboutUs.html">About Us</a></li>
+                    <li><a href="PrivacyPolicy.html">Privacy Policy</a></li>
+                    <li><a href="terms_service.html">Terms of Service</a></li>
+                    <li><a href="Help-Center.html">Help Center</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div class="footer-container">
+                <p>
+                    &copy; 2026 ExpenseFlow. All rights reserved. Made with ❤️ for
+                    better financial management.
+                </p>
+                <div class="footer-stats">
+                    <span>🏆 Trusted by 10,000+ users</span>
+                    <span>💰 ₹50M+ tracked</span>
+                    <span>📊 99.9% uptime</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="auth-check.js"></script>
+    <script src="auth.js"></script>
+
+    <script>
+        const owner = "Renu-code123";
+        const repo = "ExpenseFlow";
+
+        const CACHE_KEY = "expenseflow_contributors";
+        const CACHE_TIME = 60 * 60 * 1000; // 1 hour
+
+        const contributorsGrid = document.getElementById('contributorsGrid');
+        async function renderContributors(contributors) {
+            try {
+                const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/contributors`);
+                const contributors = await response.json();
+                if (!contributors || contributors.length === 0) {
+                    contributorsGrid.innerHTML = "<p>No contributors found.</p>";
+                    return;
+                }
+                contributors.forEach(user => {
+                    const card = document.createElement('div');
+                    card.className = 'contributor-card';
+                    card.innerHTML = `
+                    <img src="${user.avatar_url}" alt="${user.login}" class="contributor-avatar">
+                    <h3 class="contributor-name">${user.login}</h3>
+                    <p class="contributor-role">
+                        ${user.contributions} contributions
+                    </p>
+                    <div class="contributor-links">
+                        <a href="${user.html_url}" target="_blank" aria-label="GitHub">
+                        <i class="fab fa-github"></i>
+                        </a>
+                    </div>
+                    `;
+                    contributorsGrid.appendChild(card);
+                });
+
+
+            }
+            catch (err) {
+                contributorsGrid.innerHTML = `
+                <p style="opacity:0.7">
+                Unable to load contributors right now.
+                </p>
+            `;
+                console.error(error);
+            }
+        }
+        async function fetchFromGitHub() {
+            const response = await fetch(
+                `https://api.github.com/repos/${owner}/${repo}/contributors`
+            );
+
+            if (!response.ok) {
+                throw new Error("GitHub API error");
+            }
+
+            return await response.json();
+        }
+        async function loadContributors() {
+            try {
+                // 1️⃣ Try cache
+                const cached = localStorage.getItem(CACHE_KEY);
+
+                if (cached) {
+                    const parsed = JSON.parse(cached);
+                    const isValid = Date.now() - parsed.timestamp < CACHE_TIME;
+
+                    if (isValid) {
+                        renderContributors(parsed.data);
+                        return;
+                    }
+                }
+
+                // 2️⃣ Fetch from GitHub
+                const contributors = await fetchFromGitHub();
+
+                // 3️⃣ Save to cache
+                localStorage.setItem(
+                    CACHE_KEY,
+                    JSON.stringify({
+                        timestamp: Date.now(),
+                        data: contributors
+                    })
+                );
+
+                renderContributors(contributors);
+
+            } catch (error) {
+                contributorsGrid.innerHTML = `
+        <p style="opacity:0.7">
+            Unable to load contributors right now.
+        </p>
+        `;
+                console.error("Contributor load failed:", error);
+            }
+        }
+
+
+        document.addEventListener('DOMContentLoaded', loadContributors);
+    </script>
+</body>
+
+</html>
