@@ -126,6 +126,8 @@ body {
   display: flex;
   gap: 2rem;
   list-style: none;
+  margin-right: 15px;
+  margin-left: 15px;
 }
 
 .nav-link {
