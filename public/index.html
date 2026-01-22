@@ -135,6 +135,23 @@
         gap: 0.5rem;
       }
     }
+        #redirect{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-left: 12px;
+        border: 1px solid #64ffda;
+        background-color: #0f0f23;
+        padding: 6px 12px;
+        border-radius: 8px;
+        transition: background-color 0.3s ease;
+    }
+    #redirect a{
+        color: #64ffda;
+        text-decoration: none;
+        font-weight: 500;
+        margin-right: 8px;
+    }
   </style>
 </head>
 
@@ -160,16 +177,16 @@
           <span class="bar"></span>
         </div>
         <div class="user-profile">
-          <div class="workspace-selector" id="workspace-selector">
-            <!-- Will be rendered by workspace-feature.js -->
-          </div>
           <button class="currency-btn" onclick="openCurrencyModal()" title="Currency Settings">
             <i class="fas fa-coins"></i>
             <span id="current-currency">INR</span>
           </button>
           <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face"
             alt="User" class="profile-img">
-          <span class="username">John Doe</span>
+          <span class="username" id="navUsername"></span>
+          <div id="redirect" >
+                <a href="#" id="logoutLink" onclick="logout()">Logout</a>
+              </div>
         </div>
       </div>
     </nav>
@@ -190,14 +207,12 @@
           <span>Trusted by 10,000+ users worldwide</span>
         </div>
         <h1 class="hero-title">Smart Money Management<br>Made Simple</h1>
-        <p class="hero-subtitle">Take control of your finances with our intelligent expense tracker.<br>Track, analyze,
-          and optimize your spending habits effortlessly.</p>
+        <p class="hero-subtitle">Take control of your finances with our intelligent expense tracker.<br>Track, analyze, and optimize your spending habits effortlessly.</p>
         <div class="hero-cta">
           <button class="cta-primary" onclick="document.getElementById('form').scrollIntoView({ behavior: 'smooth' })">
             <i class="fas fa-rocket"></i> Start Tracking Now
           </button>
-          <button class="cta-secondary"
-            onclick="document.getElementById('features-section').scrollIntoView({ behavior: 'smooth' })">
+          <button class="cta-secondary" onclick="document.getElementById('features-section').scrollIntoView({ behavior: 'smooth' })">
             <i class="fas fa-info-circle"></i> Learn More
           </button>
         </div>
@@ -600,8 +615,7 @@
               <input type="text" id="text" placeholder="Enter transaction description" required />
             </div>
             <div class="form-control">
-              <label for="category">Category <span id="category-confidence"
-                  class="confidence-badge hidden"></span></label>
+              <label for="category">Category <span id="category-confidence" class="confidence-badge hidden"></span></label>
               <select id="category" required>
                 <option value="">Select Category</option>
                 <option value="food">🍽️ Food & Dining</option>
@@ -648,23 +662,6 @@
             Add Transaction
           </button>
         </form>
-      </div>
-
-      <!-- Financial Goals Section -->
-      <div class="goals-section" id="goals-section">
-        <div class="section-header">
-          <h3><i class="fas fa-bullseye"></i> Financial Goals & Savings</h3>
-          <button class="add-goal-btn" onclick="openGoalModal()">
-            <i class="fas fa-plus"></i> New Goal
-          </button>
-        </div>
-
-        <div id="goals-dashboard-container" class="goals-dashboard-container">
-          <div class="widget-loading">
-            <i class="fas fa-spinner fa-spin"></i>
-            <span>Loading your goals...</span>
-          </div>
-        </div>
       </div>
 
       <!-- Recurring Expenses Section -->
@@ -992,61 +989,13 @@
   </div>
 
   <footer class="footer">
-    <div class="footer-container">
+  <div class="footer-container">
 
-      <div class="footer-section">
-        <div class="footer-logo">
-          <i class="fas fa-wallet"></i>
-          <span>ExpenseFlow</span>
-        </div>
-
-        <p class="footer-description">
-          Smart money management made simple. Track, analyze, and optimize your financial habits.
-        </p>
-
-        <div class="social-links">
-          <a href="https://x.com/9504_renu" class="social-link" target="_blank" rel="noopener noreferrer"
-            aria-label="X (Twitter)">
-            <i class="fab fa-x-twitter"></i>
-          </a>
-
-          <a href="https://github.com/Renu-code123/ExpenseFlow" class="social-link" target="_blank"
-            rel="noopener noreferrer" aria-label="Github">
-            <i class="fab fa-github"></i>
-          </a>
-
-          <a href="mailto:renu89857@gmail.com" class="social-link" target="_blank" rel="noopener noreferrer"
-            aria-label="Email">
-            <i class="far fa-envelope"></i>
-          </a>
-
-          <a href="https://www.linkedin.com/in/renu-kumari-prajapati" class="social-link" target="_blank"
-            rel="noopener noreferrer" aria-label="LinkedIn">
-            <i class="fab fa-linkedin-in"></i>
-          </a>
-        </div>
-      </div>
-
-
-      <div class="footer-section">
-        <h4>Company</h4>
-        <ul class="footer-links">
-          <li><a href="AboutUs.html">About Us</a></li>
-          <li><a href="PrivacyPolicy.html">Privacy Policy</a></li>
-          <li><a href="terms_service.html">Terms of Service</a></li>
-          <li><a href="#">Contact</a></li>
-        </ul>
-      </div>
-
-      <div class="footer-section">
-        <h4>Features</h4>
-        <ul class="footer-links">
-          <li><a href="#">Expense Tracking</a></li>
-          <li><a href="#">Budget Planning</a></li>
-          <li><a href="#">Analytics Dashboard</a></li>
-          <li><a href="#">Goal Setting</a></li>
-        </ul>
-      </div>
+    <div class="footer-section">
+  <div class="footer-logo">
+    <i class="fas fa-wallet"></i>
+    <span>ExpenseFlow</span>
+  </div>
 
     </div>
 
@@ -1178,25 +1127,6 @@
         <h3><i class="fas fa-users"></i> Create Shared Workspace</h3>
         <span class="close-modal" onclick="closeWorkspaceModal()">&times;</span>
       </div>
-      <form id="create-workspace-form">
-        <div class="modal-body">
-          <div class="form-control">
-            <label for="workspace-name-input">Workspace Name *</label>
-            <input type="text" id="workspace-name-input" placeholder="e.g., Family, Hackathon Team" required>
-          </div>
-          <div class="form-control">
-            <label for="workspace-desc-input">Description (Optional)</label>
-            <textarea id="workspace-desc-input" rows="3" placeholder="What is this workspace for?"></textarea>
-          </div>
-          <p class="info-text">
-            <i class="fas fa-info-circle"></i> After creating, you can invite members from the workspace settings.
-          </p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn-cancel" onclick="closeWorkspaceModal()">Cancel</button>
-          <button type="submit" class="btn-submit">Create Workspace</button>
-        </div>
-      </form>
     </div>
   </div>
 
@@ -1245,6 +1175,12 @@
       <button id="update-button" class="update-btn">Update Now</button>
     </div>
   </div>
+<script src="auth-check.js"></script>
+<script src="auth.js"></script>
+ <script src="trackerscript.js"></script>
+  <script src="analytics-dashboard.js"></script>
+
+
 </body>
 
 </html>

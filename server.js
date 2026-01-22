@@ -28,23 +28,42 @@ const io = socketIo(server, {
 const PORT = process.env.PORT || 3000;
 
 // Security middleware
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrcAttr: ["'unsafe-inline'"],
-      imgSrc: ["'self'", "data:", "https:", "https://res.cloudinary.com"],
-      connectSrc: ["'self'", "https://fonts.googleapis.com", "https://fonts.gstatic.com", "https://api.exchangerate-api.com", "https://api.frankfurter.app", "https://res.cloudinary.com"],
-      fontSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com"],
-      objectSrc: ["'none'"],
-      mediaSrc: ["'self'"],
-      frameSrc: ["'none'"]
-    }
-  },
-  crossOriginEmbedderPolicy: false
-}));
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          "https://fonts.googleapis.com",
+          "https://cdnjs.cloudflare.com"
+        ],
+        fontSrc: [
+          "'self'",
+          "https://fonts.gstatic.com",
+          "https://cdnjs.cloudflare.com"
+        ],
+        scriptSrc: [
+          "'self'",
+          "'unsafe-inline'"
+        ],
+        connectSrc: [
+          "'self'",
+          "http://localhost:3000"
+        ],
+        imgSrc: [
+          "'self'",
+          "data:",
+          "https:"
+        ]
+      }
+    },
+    crossOriginEmbedderPolicy: false
+  })
+);
+
+
 
 // CORS configuration
 app.use(cors({
@@ -82,7 +101,6 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Static files
 app.use(express.static('public'));
-app.use(express.static('.'));
 
 // Security logging middleware
 app.use((req, res, next) => {
