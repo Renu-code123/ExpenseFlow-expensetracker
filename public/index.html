@@ -159,6 +159,9 @@
           <span class="bar"></span>
         </div>
         <div class="user-profile">
+          <div class="workspace-selector" id="workspace-selector">
+            <!-- Will be rendered by workspace-feature.js -->
+          </div>
           <button class="currency-btn" onclick="openCurrencyModal()" title="Currency Settings">
             <i class="fas fa-coins"></i>
             <span id="current-currency">INR</span>
@@ -186,12 +189,14 @@
           <span>Trusted by 10,000+ users worldwide</span>
         </div>
         <h1 class="hero-title">Smart Money Management<br>Made Simple</h1>
-        <p class="hero-subtitle">Take control of your finances with our intelligent expense tracker.<br>Track, analyze, and optimize your spending habits effortlessly.</p>
+        <p class="hero-subtitle">Take control of your finances with our intelligent expense tracker.<br>Track, analyze,
+          and optimize your spending habits effortlessly.</p>
         <div class="hero-cta">
           <button class="cta-primary" onclick="document.getElementById('form').scrollIntoView({ behavior: 'smooth' })">
             <i class="fas fa-rocket"></i> Start Tracking Now
           </button>
-          <button class="cta-secondary" onclick="document.getElementById('features-section').scrollIntoView({ behavior: 'smooth' })">
+          <button class="cta-secondary"
+            onclick="document.getElementById('features-section').scrollIntoView({ behavior: 'smooth' })">
             <i class="fas fa-info-circle"></i> Learn More
           </button>
         </div>
@@ -577,7 +582,8 @@
               <input type="text" id="text" placeholder="Enter transaction description" required />
             </div>
             <div class="form-control">
-              <label for="category">Category <span id="category-confidence" class="confidence-badge hidden"></span></label>
+              <label for="category">Category <span id="category-confidence"
+                  class="confidence-badge hidden"></span></label>
               <select id="category" required>
                 <option value="">Select Category</option>
                 <option value="food">🍽️ Food & Dining</option>
@@ -624,6 +630,23 @@
             Add Transaction
           </button>
         </form>
+      </div>
+
+      <!-- Financial Goals Section -->
+      <div class="goals-section" id="goals-section">
+        <div class="section-header">
+          <h3><i class="fas fa-bullseye"></i> Financial Goals & Savings</h3>
+          <button class="add-goal-btn" onclick="openGoalModal()">
+            <i class="fas fa-plus"></i> New Goal
+          </button>
+        </div>
+
+        <div id="goals-dashboard-container" class="goals-dashboard-container">
+          <div class="widget-loading">
+            <i class="fas fa-spinner fa-spin"></i>
+            <span>Loading your goals...</span>
+          </div>
+        </div>
       </div>
 
       <!-- Recurring Expenses Section -->
@@ -785,60 +808,40 @@
   </div>
 
   <footer class="footer">
-  <div class="footer-container">
+    <div class="footer-container">
 
-    <div class="footer-section">
-  <div class="footer-logo">
-    <i class="fas fa-wallet"></i>
-    <span>ExpenseFlow</span>
-  </div>
+      <div class="footer-section">
+        <div class="footer-logo">
+          <i class="fas fa-wallet"></i>
+          <span>ExpenseFlow</span>
+        </div>
 
-  <p class="footer-description">
-    Smart money management made simple. Track, analyze, and optimize your financial habits.
-  </p>
+        <p class="footer-description">
+          Smart money management made simple. Track, analyze, and optimize your financial habits.
+        </p>
 
-  <div class="social-links">
-    <a
-      href="https://x.com/9504_renu"
-      class="social-link"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="X (Twitter)"
-    >
-      <i class="fab fa-x-twitter"></i>
-    </a>
+        <div class="social-links">
+          <a href="https://x.com/9504_renu" class="social-link" target="_blank" rel="noopener noreferrer"
+            aria-label="X (Twitter)">
+            <i class="fab fa-x-twitter"></i>
+          </a>
 
-    <a
-      href="https://github.com/Renu-code123/ExpenseFlow"
-      class="social-link"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Github"
-    >
-      <i class="fab fa-github"></i>
-    </a>
+          <a href="https://github.com/Renu-code123/ExpenseFlow" class="social-link" target="_blank"
+            rel="noopener noreferrer" aria-label="Github">
+            <i class="fab fa-github"></i>
+          </a>
 
-    <a
-      href="mailto:renu89857@gmail.com"
-      class="social-link"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Email"
-    >
-      <i class="far fa-envelope"></i>
-    </a>
+          <a href="mailto:renu89857@gmail.com" class="social-link" target="_blank" rel="noopener noreferrer"
+            aria-label="Email">
+            <i class="far fa-envelope"></i>
+          </a>
 
-    <a
-      href="https://www.linkedin.com/in/renu-kumari-prajapati"
-      class="social-link"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="LinkedIn"
-    >
-      <i class="fab fa-linkedin-in"></i>
-    </a>
-  </div>
-</div>
+          <a href="https://www.linkedin.com/in/renu-kumari-prajapati" class="social-link" target="_blank"
+            rel="noopener noreferrer" aria-label="LinkedIn">
+            <i class="fab fa-linkedin-in"></i>
+          </a>
+        </div>
+      </div>
 
 
     <div class="footer-section">
@@ -852,60 +855,50 @@
       </ul>
     </div>
 
-    <div class="footer-section">
-      <h4>Features</h4>
-      <ul class="footer-links">
-        <li><a href="#">Expense Tracking</a></li>
-        <li><a href="#">Budget Planning</a></li>
-        <li><a href="#">Analytics Dashboard</a></li>
-        <li><a href="#">Goal Setting</a></li>
-      </ul>
-    </div>
-
-  </div>
-
-  <div class="footer-bottom">
-    <p>&copy; 2026 ExpenseFlow. All rights reserved. Made with ❤️ for better financial management.</p>
-    <div class="footer-stats">
-      <span>🏆 Trusted by 10,000+ users</span>
-      <span>💰 ₹50M+ tracked</span>
-      <span>📊 99.9% uptime</span>
-    </div>
-  </div>
-</footer>
-
-
-  <script src="trackerscript.js"></script>
-    
-    <!-- PWA Installation Prompt -->
-    <div id="install-prompt" class="install-prompt" style="display: none;">
-      <div class="install-prompt-content">
-        <div class="install-prompt-header">
-          <i class="fas fa-download"></i>
-          <h3>Install ExpenseFlow</h3>
-        </div>
-        <p>Install ExpenseFlow for quick access and offline functionality!</p>
-        <div class="install-prompt-actions">
-          <button id="install-button" class="install-btn">
-            <i class="fas fa-plus"></i> Install
-          </button>
-          <button id="install-dismiss" class="dismiss-btn">
-            <i class="fas fa-times"></i> Not now
-          </button>
-        </div>
-      </div>
     </div>
 
     <div class="footer-bottom">
-      <div class="footer-container">
-        <p>&copy; 2026 ExpenseFlow. All rights reserved. Made with ❤️ for better financial management.</p>
-        <div class="footer-stats">
-          <span>🏆 Trusted by 10,000+ users</span>
-          <span>💰 ₹50M+ tracked</span>
-          <span>📊 99.9% uptime</span>
-        </div>
+      <p>&copy; 2026 ExpenseFlow. All rights reserved. Made with ❤️ for better financial management.</p>
+      <div class="footer-stats">
+        <span>🏆 Trusted by 10,000+ users</span>
+        <span>💰 ₹50M+ tracked</span>
+        <span>📊 99.9% uptime</span>
       </div>
     </div>
+  </footer>
+
+
+  <script src="trackerscript.js"></script>
+
+  <!-- PWA Installation Prompt -->
+  <div id="install-prompt" class="install-prompt" style="display: none;">
+    <div class="install-prompt-content">
+      <div class="install-prompt-header">
+        <i class="fas fa-download"></i>
+        <h3>Install ExpenseFlow</h3>
+      </div>
+      <p>Install ExpenseFlow for quick access and offline functionality!</p>
+      <div class="install-prompt-actions">
+        <button id="install-button" class="install-btn">
+          <i class="fas fa-plus"></i> Install
+        </button>
+        <button id="install-dismiss" class="dismiss-btn">
+          <i class="fas fa-times"></i> Not now
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <div class="footer-container">
+      <p>&copy; 2026 ExpenseFlow. All rights reserved. Made with ❤️ for better financial management.</p>
+      <div class="footer-stats">
+        <span>🏆 Trusted by 10,000+ users</span>
+        <span>💰 ₹50M+ tracked</span>
+        <span>📊 99.9% uptime</span>
+      </div>
+    </div>
+  </div>
   </footer>
 
   <script src="trackerscript.js"></script>
@@ -931,7 +924,7 @@
     }
 
     // Initialize recurring button
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       const addBtn = document.getElementById('add-recurring-btn');
       if (addBtn) {
         addBtn.addEventListener('click', openRecurringModal);
@@ -966,7 +959,7 @@
     // Load supported currencies on page load
     async function loadSupportedCurrencies() {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('authToken');
         if (!token) return;
 
         const response = await fetch('/api/currency/supported', {
@@ -991,14 +984,14 @@
       const preferredCurrencySelect = document.getElementById('preferred-currency');
 
       if (currencySelect && supportedCurrencies.length > 0) {
-        currencySelect.innerHTML = supportedCurrencies.map(curr => 
+        currencySelect.innerHTML = supportedCurrencies.map(curr =>
           `<option value="${curr.code}">${curr.symbol} ${curr.code} - ${curr.name}</option>`
         ).join('');
         currencySelect.value = currentUserCurrency;
       }
 
       if (preferredCurrencySelect && supportedCurrencies.length > 0) {
-        preferredCurrencySelect.innerHTML = supportedCurrencies.map(curr => 
+        preferredCurrencySelect.innerHTML = supportedCurrencies.map(curr =>
           `<option value="${curr.code}">${curr.symbol} ${curr.code} - ${curr.name}</option>`
         ).join('');
         preferredCurrencySelect.value = currentUserCurrency;
@@ -1008,7 +1001,7 @@
     // Load user's currency preference
     async function loadUserCurrencyPreference() {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('authToken');
         if (!token) return;
 
         const response = await fetch('/api/currency/preference', {
@@ -1020,7 +1013,8 @@
         const data = await response.json();
         if (data.success) {
           currentUserCurrency = data.data.preferredCurrency;
-          document.getElementById('current-currency').textContent = currentUserCurrency;
+          const currentCurrencyEl = document.getElementById('current-currency');
+          if (currentCurrencyEl) currentCurrencyEl.textContent = currentUserCurrency;
           populateCurrencySelects();
         }
       } catch (error) {
@@ -1030,19 +1024,25 @@
 
     // Open currency settings modal
     function openCurrencyModal() {
-      document.getElementById('currency-modal').style.display = 'flex';
-      loadExchangeRateInfo();
+      const modal = document.getElementById('currency-modal');
+      if (modal) {
+        modal.style.display = 'flex';
+        loadExchangeRateInfo();
+      }
     }
 
     // Close currency settings modal
     function closeCurrencyModal() {
-      document.getElementById('currency-modal').style.display = 'none';
+      const modal = document.getElementById('currency-modal');
+      if (modal) {
+        modal.style.display = 'none';
+      }
     }
 
     // Load exchange rate information
     async function loadExchangeRateInfo() {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('authToken');
         const response = await fetch(`/api/currency/rates?base=${currentUserCurrency}`, {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -1052,9 +1052,11 @@
         const data = await response.json();
         if (data.success) {
           const rateInfo = document.getElementById('exchange-rate-info');
+          if (!rateInfo) return;
+
           const rates = data.data.rates;
           const popularCurrencies = ['USD', 'EUR', 'GBP', 'JPY', 'AUD'];
-          
+
           let html = '<div class="rate-list">';
           popularCurrencies.forEach(curr => {
             if (rates[curr]) {
@@ -1076,8 +1078,11 @@
     // Save currency preference
     async function saveCurrencyPreference() {
       try {
-        const token = localStorage.getItem('token');
-        const newCurrency = document.getElementById('preferred-currency').value;
+        const token = localStorage.getItem('authToken');
+        const prefSelect = document.getElementById('preferred-currency');
+        if (!prefSelect) return;
+
+        const newCurrency = prefSelect.value;
 
         const response = await fetch('/api/currency/preference', {
           method: 'PUT',
@@ -1091,7 +1096,8 @@
         const data = await response.json();
         if (data.success) {
           currentUserCurrency = newCurrency;
-          document.getElementById('current-currency').textContent = newCurrency;
+          const currentCurrencyEl = document.getElementById('current-currency');
+          if (currentCurrencyEl) currentCurrencyEl.textContent = newCurrency;
           closeCurrencyModal();
           // Reload transactions to show in new currency
           location.reload();
@@ -1105,19 +1111,118 @@
     }
 
     // Initialize currency features when page loads
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       loadSupportedCurrencies();
       loadUserCurrencyPreference();
     });
 
     // Close modal when clicking outside
-    window.onclick = function(event) {
+    window.onclick = function (event) {
       const modal = document.getElementById('currency-modal');
-      if (event.target === modal) {
-        closeCurrencyModal();
-      }
+      const goalModal = document.getElementById('add-goal-modal');
+      const contribModal = document.getElementById('contribution-modal');
+
+      if (event.target === modal) closeCurrencyModal();
+      if (event.target === goalModal) closeGoalModal();
+      if (event.target === contribModal) closeContributionModal();
     }
   </script>
+
+  <!-- Add Goal Modal -->
+  <div id="add-goal-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3><i class="fas fa-bullseye"></i> Create New Financial Goal</h3>
+        <span class="close-modal" onclick="closeGoalModal()">&times;</span>
+      </div>
+      <form id="add-goal-form">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-control">
+              <label for="goal-title">Goal Title *</label>
+              <input type="text" id="goal-title" placeholder="e.g., New Laptop, Emergency Fund" required>
+            </div>
+            <div class="form-control">
+              <label for="goal-target">Target Amount (₹) *</label>
+              <input type="number" id="goal-target" placeholder="50000" step="0.01" min="1" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-control">
+              <label for="goal-date">Target Date *</label>
+              <input type="date" id="goal-date" required>
+            </div>
+            <div class="form-control">
+              <label for="goal-category">Category *</label>
+              <select id="goal-category" required>
+                <option value="savings">💰 Savings</option>
+                <option value="emergency">🚑 Emergency Fund</option>
+                <option value="travel">✈️ Travel</option>
+                <option value="car">🚗 Car</option>
+                <option value="house">🏠 House</option>
+                <option value="education">🎓 Education</option>
+                <option value="purchase">🛒 Major Purchase</option>
+                <option value="other">🎯 Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-control">
+              <label for="goal-priority">Priority *</label>
+              <select id="goal-priority" required>
+                <option value="low">Low</option>
+                <option value="medium" selected>Medium</option>
+                <option value="high">High</option>
+                <option value="critical">Critical</option>
+              </select>
+            </div>
+            <div class="form-control">
+              <label for="goal-color">Theme Color</label>
+              <input type="color" id="goal-color" value="#64ffda">
+            </div>
+          </div>
+          <div class="form-control full-width">
+            <label for="goal-description">Description (Optional)</label>
+            <textarea id="goal-description" rows="2" placeholder="Tell us more about this goal..."></textarea>
+          </div>
+          <div class="form-control checkbox-control" style="flex-direction: row; align-items: center; gap: 10px;">
+            <input type="checkbox" id="goal-auto-allocate">
+            <label for="goal-auto-allocate" style="margin: 0;">Enable Auto-Allocation from savings</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" onclick="closeGoalModal()">Cancel</button>
+          <button type="submit" class="btn-submit">Create Goal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Contribution Modal -->
+  <div id="contribution-modal" class="modal">
+    <div class="modal-content" style="max-width: 400px;">
+      <div class="modal-header">
+        <h3><i class="fas fa-piggy-bank"></i> Add Contribution</h3>
+        <span class="close-modal" onclick="closeContributionModal()">&times;</span>
+      </div>
+      <form id="contribution-form">
+        <div class="modal-body">
+          <p>Add funds to: <strong id="contrib-goal-name">Goal Name</strong></p>
+          <div class="form-control" style="margin-top: 15px;">
+            <label for="contrib-amount-input">Amount (₹)</label>
+            <input type="number" id="contrib-amount-input" placeholder="Enter amount" step="0.01" min="1" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" onclick="closeContributionModal()">Cancel</button>
+          <button type="submit" class="btn-submit">Add Funds</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="api-integration.js"></script>
+  <script src="goal-feature.js"></script>
 
   <!-- PWA Installation Prompt -->
   <div id="install-prompt" class="install-prompt" style="display: none;">
@@ -1135,8 +1240,28 @@
           <i class="fas fa-times"></i> Not now
         </button>
       </div>
+      <form id="create-workspace-form">
+        <div class="modal-body">
+          <div class="form-control">
+            <label for="workspace-name-input">Workspace Name *</label>
+            <input type="text" id="workspace-name-input" placeholder="e.g., Family, Hackathon Team" required>
+          </div>
+          <div class="form-control">
+            <label for="workspace-desc-input">Description (Optional)</label>
+            <textarea id="workspace-desc-input" rows="3" placeholder="What is this workspace for?"></textarea>
+          </div>
+          <p class="info-text">
+            <i class="fas fa-info-circle"></i> After creating, you can invite members from the workspace settings.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" onclick="closeWorkspaceModal()">Cancel</button>
+          <button type="submit" class="btn-submit">Create Workspace</button>
+        </div>
+      </form>
     </div>
-.7  </div>
+    .7
+  </div>
 
   <!-- Offline Indicator -->
   <div id="offline-indicator" class="offline-indicator" style="display: none;">

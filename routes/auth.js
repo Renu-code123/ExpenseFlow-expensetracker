@@ -53,6 +53,7 @@ router.post('/register', validateUser, async (req, res) => {
       user: { id: user._id, name: user.name, email: user.email }
     });
   } catch (error) {
+    console.error('Registration error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -91,6 +92,7 @@ router.post('/login', async (req, res) => {
       user: { id: user._id, name: user.name, email: user.email }
     });
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({ error: error.message });
   }
 });
