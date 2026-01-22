@@ -70,6 +70,14 @@ ExpenseFlow serves as:
 
 By using ExpenseFlow, users can build financial awareness while developers can
 strengthen their frontend and project-structuring skills.
+---
+## ✨ Features
+- Expense tracking & splitting
+- Budget goals
+- AI-based categorization
+- Email notifications
+- Real-time sync
+- Receipt management
 
 ## 🛠️ Tech Stack
 
