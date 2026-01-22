@@ -27,6 +27,27 @@ document.addEventListener("DOMContentLoaded", () => {
   let selectedSuggestion = null;
 
   /* =====================
+     I18N & CURRENCY HELPERS
+  ====================== */
+  const getActiveLocale = () => (window.i18n?.getLocale?.() && window.i18n.getLocale()) || 'en-US';
+  const getActiveCurrency = () => (window.i18n?.getCurrency?.() && window.i18n.getCurrency()) || window.currentUserCurrency || 'INR';
+
+  function formatCurrency(amount, options = {}) {
+    const currency = options.currency || getActiveCurrency();
+    if (window.i18n?.formatCurrency) {
+      return window.i18n.formatCurrency(amount, {
+        currency,
+        locale: getActiveLocale(),
+        minimumFractionDigits: options.minimumFractionDigits ?? 2,
+        maximumFractionDigits: options.maximumFractionDigits ?? 2
+      });
+    }
+
+    const symbol = window.i18n?.getCurrencySymbol?.(currency) || currency;
+    return `${symbol}${Number(amount || 0).toFixed(options.minimumFractionDigits ?? 2)}`;
+  }
+
+  /* =====================
      AI CATEGORIZATION
   ====================== */
 
@@ -241,7 +262,7 @@ document.addEventListener("DOMContentLoaded", () => {
     item.innerHTML = `
       <div>
         <strong>${transaction.text}</strong>
-        <span>₹${Math.abs(transaction.amount).toFixed(2)}</span>
+        <span>${formatCurrency(Math.abs(transaction.amount))}</span>
       </div>
       <button class="delete-btn" onclick="removeTransaction(${transaction.id})">
         <i class="fas fa-trash"></i>
@@ -257,9 +278,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const income = amounts.filter((v) => v > 0).reduce((a, b) => a + b, 0);
     const expense = amounts.filter((v) => v < 0).reduce((a, b) => a + b, 0) * -1;
 
-    if (balance) balance.innerHTML = `₹${total.toFixed(2)}`;
-    if (moneyPlus) moneyPlus.innerHTML = `+₹${income.toFixed(2)}`;
-    if (moneyMinus) moneyMinus.innerHTML = `-₹${expense.toFixed(2)}`;
+    if (balance) balance.innerHTML = formatCurrency(total);
+    if (moneyPlus) moneyPlus.innerHTML = `+${formatCurrency(income)}`;
+    if (moneyMinus) moneyMinus.innerHTML = `-${formatCurrency(expense)}`;
   }
 
   function removeTransaction(id) {
