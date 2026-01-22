@@ -4227,22 +4227,6 @@ button {
   }
 }
 
-/* Finance Tips Layout Enhancements */
-.hero-section+.container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1.5rem;
-  align-items: stretch;
-}
-
-.hero-section+.container .data-management-section {
-  grid-column: 1 / -1;
-}
-
-.hero-section+.container .balance-card {
-  margin: 0;
-}
-
 /* Budget Goals Dashboard */
 #budget-goals-dashboard {
   max-width: 1200px;
@@ -4545,9 +4529,6 @@ button {
     width: 100%;
   }
 
-  .hero-section+.container {
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  }
 
   #budget-goals-dashboard {
     margin: 4.5rem 1rem;
@@ -4576,10 +4557,8 @@ button {
   }
 }
 
-/* ========================
-<<<<<<< HEAD
-   FINANCIAL GOALS STYLES
-   ======================== */
+
+
 
 .goals-section {
   background: rgba(255, 255, 255, 0.05);
@@ -5008,6 +4987,7 @@ button {
   .workspace-dropdown {
     width: 100%;
     left: 0;
+<<<<<<< HEAD
   }
 }
 
@@ -5429,5 +5409,29 @@ button {
 
   .inv-delete-btn {
     align-self: flex-start;
+=======
+>>>>>>> 751f816 (Fix alignment issues on Help Center page)
+  }
+}
+
+
+.main-content .hero-section + .container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 2rem;
+}
+
+.main-content .hero-section + .container .balance-card {
+  margin: 0;
+  max-width: 100%;
+}
+
+.main-content .hero-section + .container .data-management-section {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 768px) {
+  .main-content .hero-section + .container {
+    gap: 1.5rem;
   }
 }
