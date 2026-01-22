@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const cors = require('cors');
 const socketAuth = require('./middleware/socketAuth');
 const CronJobs = require('./services/cronJobs');
+const backupScheduler = require('./services/backupScheduler');
 const { generalLimiter } = require('./middleware/rateLimiter');
 const { sanitizeInput, mongoSanitizeMiddleware } = require('./middleware/sanitization');
 const securityMonitor = require('./services/securityMonitor');
@@ -131,6 +132,10 @@ mongoose.connect(process.env.MONGODB_URI)
     // Initialize cron jobs after DB connection
     CronJobs.init();
     console.log('Email cron jobs initialized');
+    
+    // Initialize backup scheduler
+    backupScheduler.init();
+    console.log('Backup scheduler initialized');
   })
   .catch(err => console.error('MongoDB connection error:', err));
 
@@ -173,15 +178,24 @@ app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/receipts', require('./middleware/rateLimiter').uploadLimiter, require('./routes/receipts'));
 app.use('/api/budgets', require('./routes/budgets'));
 app.use('/api/goals', require('./routes/goals'));
-app.use('/api/analytics', require('./routes/analytics'));
-app.use('/api/currency', require('./routes/currency'));
-app.use('/api/groups', require('./routes/groups'));
-app.use('/api/splits', require('./routes/splits'));
-app.use('/api/workspaces', require('./routes/workspaces'));
+app.use('/api/security', require('./routes/security'));
+app.use('/api/backup', require('./routes/backup'));
 
-// Root route to serve the UI
-app.get('/', (req, res) => {
-  res.sendFile(require('path').join(__dirname, 'public', 'index.html'));
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error('Global error:', err);
+  
+  // Log security-related errors
+  if (err.message.includes('CORS') || err.message.includes('rate limit')) {
+    securityMonitor.logSecurityEvent(req, 'suspicious_activity', {
+      error: err.message,
+      statusCode: 403
+    });
+  }
+  
+  res.status(err.status || 500).json({
+    error: process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message
+  });
 });
 
 server.listen(PORT, () => {
