@@ -1,13 +1,13 @@
 // Analytics Dashboard Feature for ExpenseFlow
-const ANALYTICS_API_URL = 'http://localhost:3000/api/analytics';
+var ANALYTICS_API_URL = '/api/analytics';
 
 // State management
 let analyticsData = {
-    trends: null,
-    categoryBreakdown: null,
-    insights: null,
-    predictions: null,
-    velocity: null
+  trends: null,
+  categoryBreakdown: null,
+  insights: null,
+  predictions: null,
+  velocity: null
 };
 
 // ========================
@@ -15,138 +15,141 @@ let analyticsData = {
 // ========================
 
 async function getAuthHeaders() {
-    const token = localStorage.getItem('token');
-    return {
-        'Content-Type': 'application/json',
-        'Authorization': token ? `Bearer ${token}` : ''
-    };
+  const token = localStorage.getItem('authToken');
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': token ? `Bearer ${token}` : ''
+  };
 }
 
 /**
  * Fetch spending trends
  */
 async function fetchSpendingTrends(period = 'monthly', months = 6) {
-    try {
-        const response = await fetch(
-            `${ANALYTICS_API_URL}/spending-trends?period=${period}&months=${months}`,
-            { headers: await getAuthHeaders() }
-        );
-        if (!response.ok) throw new Error('Failed to fetch trends');
-        const data = await response.json();
-        analyticsData.trends = data.data;
-        return data.data;
-    } catch (error) {
-        console.error('Error fetching spending trends:', error);
-        throw error;
-    }
+  try {
+    const token = localStorage.getItem('authToken');
+    if (!token) return { data: [] };
+
+    const response = await fetch(
+      `${ANALYTICS_API_URL}/spending-trends?period=${period}&months=${months}`,
+      { headers: await getAuthHeaders() }
+    );
+    if (!response.ok) throw new Error('Failed to fetch trends');
+    const data = await response.json();
+    analyticsData.trends = data.data;
+    return data.data;
+  } catch (error) {
+    console.error('Error fetching spending trends:', error);
+    throw error;
+  }
 }
 
 /**
  * Fetch category breakdown
  */
 async function fetchCategoryBreakdown(type = 'expense', startDate = null, endDate = null) {
-    try {
-        let url = `${ANALYTICS_API_URL}/category-breakdown?type=${type}`;
-        if (startDate) url += `&startDate=${startDate}`;
-        if (endDate) url += `&endDate=${endDate}`;
+  try {
+    let url = `${ANALYTICS_API_URL}/category-breakdown?type=${type}`;
+    if (startDate) url += `&startDate=${startDate}`;
+    if (endDate) url += `&endDate=${endDate}`;
 
-        const response = await fetch(url, { headers: await getAuthHeaders() });
-        if (!response.ok) throw new Error('Failed to fetch category breakdown');
-        const data = await response.json();
-        analyticsData.categoryBreakdown = data.data;
-        return data.data;
-    } catch (error) {
-        console.error('Error fetching category breakdown:', error);
-        throw error;
-    }
+    const response = await fetch(url, { headers: await getAuthHeaders() });
+    if (!response.ok) throw new Error('Failed to fetch category breakdown');
+    const data = await response.json();
+    analyticsData.categoryBreakdown = data.data;
+    return data.data;
+  } catch (error) {
+    console.error('Error fetching category breakdown:', error);
+    throw error;
+  }
 }
 
 /**
  * Fetch insights
  */
 async function fetchInsights() {
-    try {
-        const response = await fetch(`${ANALYTICS_API_URL}/insights`, {
-            headers: await getAuthHeaders()
-        });
-        if (!response.ok) throw new Error('Failed to fetch insights');
-        const data = await response.json();
-        analyticsData.insights = data.data;
-        return data.data;
-    } catch (error) {
-        console.error('Error fetching insights:', error);
-        throw error;
-    }
+  try {
+    const response = await fetch(`${ANALYTICS_API_URL}/insights`, {
+      headers: await getAuthHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to fetch insights');
+    const data = await response.json();
+    analyticsData.insights = data.data;
+    return data.data;
+  } catch (error) {
+    console.error('Error fetching insights:', error);
+    throw error;
+  }
 }
 
 /**
  * Fetch predictions
  */
 async function fetchPredictions() {
-    try {
-        const response = await fetch(`${ANALYTICS_API_URL}/predictions`, {
-            headers: await getAuthHeaders()
-        });
-        if (!response.ok) throw new Error('Failed to fetch predictions');
-        const data = await response.json();
-        analyticsData.predictions = data.data;
-        return data.data;
-    } catch (error) {
-        console.error('Error fetching predictions:', error);
-        throw error;
-    }
+  try {
+    const response = await fetch(`${ANALYTICS_API_URL}/predictions`, {
+      headers: await getAuthHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to fetch predictions');
+    const data = await response.json();
+    analyticsData.predictions = data.data;
+    return data.data;
+  } catch (error) {
+    console.error('Error fetching predictions:', error);
+    throw error;
+  }
 }
 
 /**
  * Fetch spending velocity
  */
 async function fetchSpendingVelocity() {
-    try {
-        const response = await fetch(`${ANALYTICS_API_URL}/velocity`, {
-            headers: await getAuthHeaders()
-        });
-        if (!response.ok) throw new Error('Failed to fetch velocity');
-        const data = await response.json();
-        analyticsData.velocity = data.data;
-        return data.data;
-    } catch (error) {
-        console.error('Error fetching velocity:', error);
-        throw error;
-    }
+  try {
+    const response = await fetch(`${ANALYTICS_API_URL}/velocity`, {
+      headers: await getAuthHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to fetch velocity');
+    const data = await response.json();
+    analyticsData.velocity = data.data;
+    return data.data;
+  } catch (error) {
+    console.error('Error fetching velocity:', error);
+    throw error;
+  }
 }
 
 /**
  * Fetch month-over-month comparison
  */
 async function fetchComparison(months = 3) {
-    try {
-        const response = await fetch(`${ANALYTICS_API_URL}/comparison?months=${months}`, {
-            headers: await getAuthHeaders()
-        });
-        if (!response.ok) throw new Error('Failed to fetch comparison');
-        const data = await response.json();
-        return data.data;
-    } catch (error) {
-        console.error('Error fetching comparison:', error);
-        throw error;
-    }
+  try {
+    const response = await fetch(`${ANALYTICS_API_URL}/comparison?months=${months}`, {
+      headers: await getAuthHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to fetch comparison');
+    const data = await response.json();
+    return data.data;
+  } catch (error) {
+    console.error('Error fetching comparison:', error);
+    throw error;
+  }
 }
 
 /**
  * Fetch complete analytics summary
  */
 async function fetchAnalyticsSummary() {
-    try {
-        const response = await fetch(`${ANALYTICS_API_URL}/summary`, {
-            headers: await getAuthHeaders()
-        });
-        if (!response.ok) throw new Error('Failed to fetch summary');
-        const data = await response.json();
-        return data.data;
-    } catch (error) {
-        console.error('Error fetching summary:', error);
-        throw error;
-    }
+  try {
+    const response = await fetch(`${ANALYTICS_API_URL}/summary`, {
+      headers: await getAuthHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to fetch summary');
+    const data = await response.json();
+    return data.data;
+  } catch (error) {
+    console.error('Error fetching summary:', error);
+    throw error;
+  }
 }
 
 // ========================
@@ -157,12 +160,12 @@ async function fetchAnalyticsSummary() {
  * Render spending velocity widget
  */
 function renderVelocityWidget(velocity) {
-    const container = document.getElementById('velocity-widget');
-    if (!container) return;
+  const container = document.getElementById('velocity-widget');
+  if (!container) return;
 
-    const progressPercent = Math.min(100, (velocity.dayOfMonth / 30) * 100);
+  const progressPercent = Math.min(100, (velocity.dayOfMonth / 30) * 100);
 
-    container.innerHTML = `
+  container.innerHTML = `
     <div class="velocity-header">
       <h4><i class="fas fa-tachometer-alt"></i> Spending Velocity</h4>
       <span class="velocity-date">Day ${velocity.dayOfMonth} of month</span>
@@ -296,13 +299,13 @@ function renderCategoryChart(breakdown) {
  * Render spending trends chart
  */
 function renderTrendsChart(trends) {
-    const container = document.getElementById('trends-chart');
-    if (!container) return;
+  const container = document.getElementById('trends-chart');
+  if (!container) return;
 
-    if (!trends || trends.data.length === 0) {
-        container.innerHTML = '<div class="no-data">Not enough data for trends</div>';
-        return;
-    }
+  if (!trends || trends.data.length === 0) {
+    container.innerHTML = '<div class="no-data">Not enough data for trends</div>';
+    return;
+  }
 
     // Clear previous chart
     container.innerHTML = '';
@@ -453,30 +456,30 @@ function renderTrendsChart(trends) {
  * Render insights cards
  */
 function renderInsights(insights) {
-    const container = document.getElementById('insights-container');
-    if (!container) return;
+  const container = document.getElementById('insights-container');
+  if (!container) return;
 
-    if (!insights || insights.insights.length === 0) {
-        container.innerHTML = '<div class="no-data">No insights available yet</div>';
-        return;
-    }
+  if (!insights || insights.insights.length === 0) {
+    container.innerHTML = '<div class="no-data">No insights available yet</div>';
+    return;
+  }
 
-    const insightIcons = {
-        savings: 'piggy-bank',
-        category: 'tags',
-        trend: 'chart-line',
-        anomaly: 'exclamation-triangle',
-        info: 'info-circle'
-    };
+  const insightIcons = {
+    savings: 'piggy-bank',
+    category: 'tags',
+    trend: 'chart-line',
+    anomaly: 'exclamation-triangle',
+    info: 'info-circle'
+  };
 
-    const statusClasses = {
-        good: 'success',
-        moderate: 'warning',
-        warning: 'warning',
-        critical: 'danger'
-    };
+  const statusClasses = {
+    good: 'success',
+    moderate: 'warning',
+    warning: 'warning',
+    critical: 'danger'
+  };
 
-    container.innerHTML = `
+  container.innerHTML = `
     <div class="insights-header">
       <h4><i class="fas fa-lightbulb"></i> Smart Insights</h4>
     </div>
@@ -501,19 +504,19 @@ function renderInsights(insights) {
  * Render predictions widget
  */
 function renderPredictions(predictions) {
-    const container = document.getElementById('predictions-widget');
-    if (!container) return;
+  const container = document.getElementById('predictions-widget');
+  if (!container) return;
 
-    if (!predictions || !predictions.nextMonthPrediction) {
-        container.innerHTML = '<div class="no-data">Need more data for predictions</div>';
-        return;
-    }
+  if (!predictions || !predictions.nextMonthPrediction) {
+    container.innerHTML = '<div class="no-data">Need more data for predictions</div>';
+    return;
+  }
 
-    const trendIcon = predictions.trend === 'increasing' ? 'arrow-up' :
-        predictions.trend === 'decreasing' ? 'arrow-down' : 'minus';
-    const trendClass = predictions.trend === 'decreasing' ? 'positive' : 'negative';
+  const trendIcon = predictions.trend === 'increasing' ? 'arrow-up' :
+    predictions.trend === 'decreasing' ? 'arrow-down' : 'minus';
+  const trendClass = predictions.trend === 'decreasing' ? 'positive' : 'negative';
 
-    container.innerHTML = `
+  container.innerHTML = `
     <div class="predictions-header">
       <h4><i class="fas fa-crystal-ball"></i> Spending Predictions</h4>
       <span class="confidence-badge">Confidence: ${predictions.confidence}%</span>
@@ -548,29 +551,29 @@ function renderPredictions(predictions) {
 // ========================
 
 function capitalizeFirst(str) {
-    if (!str) return '';
-    return str.charAt(0).toUpperCase() + str.slice(1);
+  if (!str) return '';
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 function formatPeriodLabel(period) {
-    // Format: 2024-01 to Jan
-    if (period.includes('-W')) {
-        return `W${period.split('-W')[1]}`;
-    }
-    const parts = period.split('-');
-    if (parts.length === 2) {
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        return months[parseInt(parts[1]) - 1] || period;
-    }
-    return period;
+  // Format: 2024-01 to Jan
+  if (period.includes('-W')) {
+    return `W${period.split('-W')[1]}`;
+  }
+  const parts = period.split('-');
+  if (parts.length === 2) {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return months[parseInt(parts[1]) - 1] || period;
+  }
+  return period;
 }
 
 function showAnalyticsNotification(message, type = 'info') {
-    if (typeof showNotification === 'function') {
-        showNotification(message, type);
-        return;
-    }
-    console.log(`[${type}] ${message}`);
+  if (typeof showNotification === 'function') {
+    showNotification(message, type);
+    return;
+  }
+  console.log(`[${type}] ${message}`);
 }
 
 // ========================
@@ -578,35 +581,38 @@ function showAnalyticsNotification(message, type = 'info') {
 // ========================
 
 async function loadAnalyticsDashboard() {
-    const dashboardContainer = document.getElementById('analytics-dashboard');
-    if (!dashboardContainer) return;
+  const dashboardContainer = document.getElementById('analytics-dashboard');
+  if (!dashboardContainer) return;
 
-    try {
-        // Show loading state
-        dashboardContainer.classList.add('loading');
+  const token = localStorage.getItem('authToken');
+  if (!token) return;
 
-        // Fetch all analytics data in parallel
-        const [velocity, breakdown, trends, insights, predictions] = await Promise.all([
-            fetchSpendingVelocity().catch(() => null),
-            fetchCategoryBreakdown().catch(() => null),
-            fetchSpendingTrends().catch(() => null),
-            fetchInsights().catch(() => null),
-            fetchPredictions().catch(() => null)
-        ]);
+  try {
+    // Show loading state
+    dashboardContainer.classList.add('loading');
 
-        // Render all widgets
-        if (velocity) renderVelocityWidget(velocity);
-        if (breakdown) renderCategoryChart(breakdown);
-        if (trends) renderTrendsChart(trends);
-        if (insights) renderInsights(insights);
-        if (predictions) renderPredictions(predictions);
+    // Fetch all analytics data in parallel
+    const [velocity, breakdown, trends, insights, predictions] = await Promise.all([
+      fetchSpendingVelocity().catch(() => null),
+      fetchCategoryBreakdown().catch(() => null),
+      fetchSpendingTrends().catch(() => null),
+      fetchInsights().catch(() => null),
+      fetchPredictions().catch(() => null)
+    ]);
 
-        dashboardContainer.classList.remove('loading');
-    } catch (error) {
-        console.error('Error loading analytics dashboard:', error);
-        showAnalyticsNotification('Failed to load analytics', 'error');
-        dashboardContainer.classList.remove('loading');
-    }
+    // Render all widgets
+    if (velocity) renderVelocityWidget(velocity);
+    if (breakdown) renderCategoryChart(breakdown);
+    if (trends) renderTrendsChart(trends);
+    if (insights) renderInsights(insights);
+    if (predictions) renderPredictions(predictions);
+
+    dashboardContainer.classList.remove('loading');
+  } catch (error) {
+    console.error('Error loading analytics dashboard:', error);
+    showAnalyticsNotification('Failed to load analytics', 'error');
+    dashboardContainer.classList.remove('loading');
+  }
 }
 
 // ========================
@@ -614,45 +620,45 @@ async function loadAnalyticsDashboard() {
 // ========================
 
 function initAnalyticsDashboard() {
-    const dashboardContainer = document.getElementById('analytics-dashboard');
-    if (!dashboardContainer) return;
+  const dashboardContainer = document.getElementById('analytics-dashboard');
+  if (!dashboardContainer) return;
 
-    // Refresh button
-    const refreshBtn = document.getElementById('refresh-analytics');
-    if (refreshBtn) {
-        refreshBtn.addEventListener('click', loadAnalyticsDashboard);
-    }
+  // Refresh button
+  const refreshBtn = document.getElementById('refresh-analytics');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', loadAnalyticsDashboard);
+  }
 
-    // Period selector for trends
-    const periodSelect = document.getElementById('trends-period');
-    if (periodSelect) {
-        periodSelect.addEventListener('change', async (e) => {
-            const trends = await fetchSpendingTrends(e.target.value);
-            renderTrendsChart(trends);
-        });
-    }
+  // Period selector for trends
+  const periodSelect = document.getElementById('trends-period');
+  if (periodSelect) {
+    periodSelect.addEventListener('change', async (e) => {
+      const trends = await fetchSpendingTrends(e.target.value);
+      renderTrendsChart(trends);
+    });
+  }
 
-    // Load initial data
-    loadAnalyticsDashboard();
+  // Load initial data
+  loadAnalyticsDashboard();
 }
 
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initAnalyticsDashboard);
+  document.addEventListener('DOMContentLoaded', initAnalyticsDashboard);
 } else {
-    initAnalyticsDashboard();
+  initAnalyticsDashboard();
 }
 
 // Export for use in other modules
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {
-        fetchSpendingTrends,
-        fetchCategoryBreakdown,
-        fetchInsights,
-        fetchPredictions,
-        fetchSpendingVelocity,
-        fetchComparison,
-        fetchAnalyticsSummary,
-        loadAnalyticsDashboard
-    };
+  module.exports = {
+    fetchSpendingTrends,
+    fetchCategoryBreakdown,
+    fetchInsights,
+    fetchPredictions,
+    fetchSpendingVelocity,
+    fetchComparison,
+    fetchAnalyticsSummary,
+    loadAnalyticsDashboard
+  };
 }

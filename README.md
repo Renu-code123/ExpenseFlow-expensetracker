@@ -15,7 +15,8 @@ With a clean and elegant dark-themed UI, it allows users to monitor spending, an
 ## 🧭 Table of Contents
 
 - [✨ Features](#-features)  
-- [🖥️ Overview](#-overview)  
+- [🖥️ Overview](#-overview)
+- [🤔 Why to use ExpenseFlow?](#-Why to use ExpenseFlow?)  
 - [🛠️ Tech Stack](#-tech-stack)  
 - [📂 Folder Structure](#-folder-structure)  
 - [🚀 How to Run Locally](#-how-to-run-locally)  
@@ -199,8 +200,6 @@ This project is licensed under the **MIT License** – see the [LICENSE](./LICEN
 📫 **Connect with me:**
 
 * **GitHub:** [@Renu-code123](https://github.com/Renu-code123)
-* **LinkedIn:** [Your LinkedIn Profile Link Here]
-
 ---
 
 ## 💬 Quote

@@ -135,6 +135,23 @@
         gap: 0.5rem;
       }
     }
+        #redirect{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-left: 12px;
+        border: 1px solid #64ffda;
+        background-color: #0f0f23;
+        padding: 6px 12px;
+        border-radius: 8px;
+        transition: background-color 0.3s ease;
+    }
+    #redirect a{
+        color: #64ffda;
+        text-decoration: none;
+        font-weight: 500;
+        margin-right: 8px;
+    }
   </style>
 </head>
 
@@ -165,7 +182,10 @@
           </button>
           <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face"
             alt="User" class="profile-img">
-          <span class="username">John Doe</span>
+          <span class="username" id="navUsername"></span>
+          <div id="redirect" >
+                <a href="#" id="logoutLink" onclick="logout()">Logout</a>
+              </div>
         </div>
       </div>
     </nav>
@@ -173,12 +193,184 @@
 
   <!-- Main Content -->
   <main class="main-content">
-    <div class="hero-section">
-      <h1 class="hero-title">Smart Money Management</h1>
-      <p class="hero-subtitle">Take control of your finances with our intuitive expense tracker</p>
+    <!-- Full Hero Section -->
+    <div class="hero-section-full">
+      <div class="hero-background-animation">
+        <div class="floating-shape shape-1"></div>
+        <div class="floating-shape shape-2"></div>
+        <div class="floating-shape shape-3"></div>
+      </div>
+      <div class="hero-content-wrapper">
+        <div class="hero-badge">
+          <i class="fas fa-star"></i>
+          <span>Trusted by 10,000+ users worldwide</span>
+        </div>
+        <h1 class="hero-title">Smart Money Management<br>Made Simple</h1>
+        <p class="hero-subtitle">Take control of your finances with our intelligent expense tracker.<br>Track, analyze, and optimize your spending habits effortlessly.</p>
+        <div class="hero-cta">
+          <button class="cta-primary" onclick="document.getElementById('form').scrollIntoView({ behavior: 'smooth' })">
+            <i class="fas fa-rocket"></i> Start Tracking Now
+          </button>
+          <button class="cta-secondary" onclick="document.getElementById('features-section').scrollIntoView({ behavior: 'smooth' })">
+            <i class="fas fa-info-circle"></i> Learn More
+          </button>
+        </div>
+        <div class="hero-features">
+          <div class="feature-pill">
+            <i class="fas fa-robot"></i>
+            <span>AI-Powered</span>
+          </div>
+          <div class="feature-pill">
+            <i class="fas fa-lock"></i>
+            <span>Secure & Private</span>
+          </div>
+          <div class="feature-pill">
+            <i class="fas fa-mobile-alt"></i>
+            <span>Works Offline</span>
+          </div>
+          <div class="feature-pill">
+            <i class="fas fa-globe"></i>
+            <span>Multi-Currency</span>
+          </div>
+        </div>
+        <div class="scroll-indicator">
+          <i class="fas fa-chevron-down"></i>
+          <span>Scroll to explore</span>
+        </div>
+      </div>
     </div>
 
+    <!-- Features Section -->
+    <section id="features-section" class="features-showcase">
+      <div class="container">
+        <div class="section-header-center">
+          <h2 class="section-title">Powerful Features for Smart Finance</h2>
+          <p class="section-subtitle">Everything you need to manage your money effectively</p>
+        </div>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-brain"></i>
+            </div>
+            <h3>AI Categorization</h3>
+            <p>Automatically categorize your expenses with intelligent machine learning algorithms</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-chart-pie"></i>
+            </div>
+            <h3>Visual Analytics</h3>
+            <p>Beautiful charts and insights to understand your spending patterns at a glance</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-sync-alt"></i>
+            </div>
+            <h3>Recurring Expenses</h3>
+            <p>Track subscriptions and recurring bills automatically with smart reminders</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-file-export"></i>
+            </div>
+            <h3>Export & Reports</h3>
+            <p>Generate detailed reports in CSV or PDF format for tax season</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-bullseye"></i>
+            </div>
+            <h3>Budget Goals</h3>
+            <p>Set financial goals and track your progress with intuitive dashboards</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-shield-alt"></i>
+            </div>
+            <h3>Secure & Private</h3>
+            <p>Bank-level encryption keeps your financial data safe and private</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="how-it-works">
+      <div class="container">
+        <div class="section-header-center">
+          <h2 class="section-title">How It Works</h2>
+          <p class="section-subtitle">Get started in three simple steps</p>
+        </div>
+        <div class="steps-grid">
+          <div class="step-card">
+            <div class="step-number">1</div>
+            <div class="step-icon">
+              <i class="fas fa-plus-circle"></i>
+            </div>
+            <h3>Add Expenses</h3>
+            <p>Quickly log your daily expenses with our simple form. AI suggests categories automatically.</p>
+          </div>
+          <div class="step-card">
+            <div class="step-number">2</div>
+            <div class="step-icon">
+              <i class="fas fa-chart-line"></i>
+            </div>
+            <h3>Track & Analyze</h3>
+            <p>Watch your spending patterns emerge through beautiful visualizations and insights.</p>
+          </div>
+          <div class="step-card">
+            <div class="step-number">3</div>
+            <div class="step-icon">
+              <i class="fas fa-piggy-bank"></i>
+            </div>
+            <h3>Save More</h3>
+            <p>Make informed decisions based on data and achieve your financial goals faster.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <div class="container">
+      <!-- Quick Stats Overview -->
+      <div class="quick-stats">
+        <div class="stat-card">
+          <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <i class="fas fa-wallet"></i>
+          </div>
+          <div class="stat-content">
+            <p class="stat-label">Total Balance</p>
+            <h3 class="stat-value" id="quick-balance">₹0.00</h3>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+            <i class="fas fa-arrow-up"></i>
+          </div>
+          <div class="stat-content">
+            <p class="stat-label">This Month Income</p>
+            <h3 class="stat-value income" id="quick-income">₹0.00</h3>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+            <i class="fas fa-arrow-down"></i>
+          </div>
+          <div class="stat-content">
+            <p class="stat-label">This Month Expenses</p>
+            <h3 class="stat-value expense" id="quick-expense">₹0.00</h3>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+            <i class="fas fa-piggy-bank"></i>
+          </div>
+          <div class="stat-content">
+            <p class="stat-label">Savings Rate</p>
+            <h3 class="stat-value" id="quick-savings">0%</h3>
+          </div>
+        </div>
+      </div>
+
       <!-- Balance Card -->
       <div class="balance-card">
         <div class="balance-header">
@@ -675,52 +867,11 @@
         <li><a href="AboutUs.html">About Us</a></li>
         <li><a href="PrivacyPolicy.html">Privacy Policy</a></li>
         <li><a href="terms_service.html">Terms of Service</a></li>
+        <li><a href="Help-Center.html">Help Center</a></li>
         <li><a href="#">Contact</a></li>
       </ul>
     </div>
 
-    <div class="footer-section">
-      <h4>Features</h4>
-      <ul class="footer-links">
-        <li><a href="#">Expense Tracking</a></li>
-        <li><a href="#">Budget Planning</a></li>
-        <li><a href="#">Analytics Dashboard</a></li>
-        <li><a href="#">Goal Setting</a></li>
-      </ul>
-    </div>
-
-  </div>
-
-  <div class="footer-bottom">
-    <p>&copy; 2026 ExpenseFlow. All rights reserved. Made with ❤️ for better financial management.</p>
-    <div class="footer-stats">
-      <span>🏆 Trusted by 10,000+ users</span>
-      <span>💰 ₹50M+ tracked</span>
-      <span>📊 99.9% uptime</span>
-    </div>
-  </div>
-</footer>
-
-
-  <script src="trackerscript.js"></script>
-    
-    <!-- PWA Installation Prompt -->
-    <div id="install-prompt" class="install-prompt" style="display: none;">
-      <div class="install-prompt-content">
-        <div class="install-prompt-header">
-          <i class="fas fa-download"></i>
-          <h3>Install ExpenseFlow</h3>
-        </div>
-        <p>Install ExpenseFlow for quick access and offline functionality!</p>
-        <div class="install-prompt-actions">
-          <button id="install-button" class="install-btn">
-            <i class="fas fa-plus"></i> Install
-          </button>
-          <button id="install-dismiss" class="dismiss-btn">
-            <i class="fas fa-times"></i> Not now
-          </button>
-        </div>
-      </div>
     </div>
 
     <div class="footer-bottom">
@@ -741,6 +892,54 @@
   <script src="api-integration.js"></script>
   <script src="realtime-sync.js"></script>
   <script src="analytics-dashboard.js"></script>
+  <script>
+    // Recurring Modal Control
+    function openRecurringModal() {
+      const modal = document.getElementById('recurring-modal');
+      if (modal) {
+        modal.style.display = 'flex';
+        modal.classList.add('active');
+        document.getElementById('recurring-modal-title').textContent = 'Add Recurring Expense';
+        document.getElementById('recurring-form').reset();
+      }
+    }
+
+    function closeRecurringModal() {
+      const modal = document.getElementById('recurring-modal');
+      if (modal) {
+        modal.style.display = 'none';
+        modal.classList.remove('active');
+      }
+    }
+
+    // Initialize recurring button
+    document.addEventListener('DOMContentLoaded', function() {
+      const addBtn = document.getElementById('add-recurring-btn');
+      if (addBtn) {
+        addBtn.addEventListener('click', openRecurringModal);
+      }
+
+      const closeBtn = document.getElementById('recurring-modal-close');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', closeRecurringModal);
+      }
+
+      const cancelBtn = document.getElementById('recurring-cancel-btn');
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeRecurringModal);
+      }
+
+      // Close modal when clicking outside
+      const modal = document.getElementById('recurring-modal');
+      if (modal) {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) {
+            closeRecurringModal();
+          }
+        });
+      }
+    });
+  </script>
   <script>
     // Currency Management Functions
     let supportedCurrencies = [];
@@ -896,10 +1095,25 @@
     // Close modal when clicking outside
     window.onclick = function(event) {
       const modal = document.getElementById('currency-modal');
-      if (event.target === modal) {
-        closeCurrencyModal();
-      }
+      const goalModal = document.getElementById('add-goal-modal');
+      const contribModal = document.getElementById('contribution-modal');
+
+      if (event.target === modal) closeCurrencyModal();
+      if (event.target === goalModal) closeGoalModal();
+      if (event.target === contribModal) closeContributionModal();
     }
+document.addEventListener('DOMContentLoaded', () => {
+  const logoutLink = document.getElementById('logoutLink');
+
+  if (logoutLink) {
+    logoutLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      logout();
+    });
+  }
+});
+
+
   </script>
 
   <!-- PWA Installation Prompt -->
@@ -919,7 +1133,7 @@
         </button>
       </div>
     </div>
-.7  </div>
+  </div>
 
   <!-- Offline Indicator -->
   <div id="offline-indicator" class="offline-indicator" style="display: none;">
@@ -935,6 +1149,12 @@
       <button id="update-button" class="update-btn">Update Now</button>
     </div>
   </div>
+<script src="auth-check.js"></script>
+<script src="auth.js"></script>
+ <script src="trackerscript.js"></script>
+  <script src="analytics-dashboard.js"></script>
+
+
 </body>
 
 </html>

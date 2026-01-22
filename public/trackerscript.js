@@ -178,7 +178,6 @@ document.addEventListener("DOMContentLoaded", () => {
      AI CATEGORIZATION
   ====================== */
 
-  // Category emoji mapping
   const categoryEmojis = {
     food: '🍽️',
     transport: '🚗',
@@ -195,7 +194,6 @@ document.addEventListener("DOMContentLoaded", () => {
     other: '📋'
   };
 
-  // Category labels mapping
   const categoryLabels = {
     food: 'Food & Dining',
     transport: 'Transportation',
@@ -212,17 +210,12 @@ document.addEventListener("DOMContentLoaded", () => {
     other: 'Other'
   };
 
-  // Fetch category suggestions from API
   async function fetchCategorySuggestions(description) {
-    if (!description || description.trim().length < 3) {
-      return null;
-    }
-
+    if (!description || description.trim().length < 3) return null;
     try {
       const response = await fetch(`${API_BASE_URL}/categorization/suggest?description=${encodeURIComponent(description)}`, {
         headers: getAuthHeaders()
       });
-
       if (response.ok) {
         const data = await response.json();
         return data.data;
@@ -230,11 +223,9 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (error) {
       console.error('Error fetching suggestions:', error);
     }
-
     return null;
   }
 
-  // Show category suggestions
   function showSuggestions(suggestions) {
     if (!suggestions || !suggestions.suggestions || suggestions.suggestions.length === 0) {
       hideSuggestions();
@@ -244,16 +235,11 @@ document.addEventListener("DOMContentLoaded", () => {
     currentSuggestions = suggestions.suggestions;
     categorySuggestions.innerHTML = '';
 
-    // Add header
     const header = document.createElement('div');
     header.className = 'suggestions-header';
-    header.innerHTML = `
-      <i class="fas fa-brain"></i>
-      <span>AI Suggestions</span>
-    `;
+    header.innerHTML = `<i class="fas fa-brain"></i><span>AI Suggestions</span>`;
     categorySuggestions.appendChild(header);
 
-    // Add suggestions
     suggestions.suggestions.forEach((suggestion, index) => {
       const item = document.createElement('div');
       item.className = `suggestion-item ${index === 0 ? 'primary' : ''}`;
@@ -267,16 +253,11 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="suggestion-category-icon">${categoryEmojis[suggestion.category] || '📋'}</span>
             <span>${categoryLabels[suggestion.category] || suggestion.category}</span>
           </div>
-          <div class="suggestion-reason">
-            <i class="fas fa-info-circle"></i>
-            <span>${suggestion.reason}</span>
-          </div>
+          <div class="suggestion-reason"><i class="fas fa-info-circle"></i><span>${suggestion.reason}</span></div>
         </div>
         <div class="suggestion-confidence confidence-${confidenceLevel}">
           <span class="confidence-value">${(suggestion.confidence * 100).toFixed(0)}%</span>
-          <div class="confidence-bar">
-            <div class="confidence-fill" style="width: ${suggestion.confidence * 100}%"></div>
-          </div>
+          <div class="confidence-bar"><div class="confidence-fill" style="width: ${suggestion.confidence * 100}%"></div></div>
         </div>
       `;
 
@@ -284,7 +265,6 @@ document.addEventListener("DOMContentLoaded", () => {
         selectSuggestion(suggestion);
         hideSuggestions();
       });
-
       categorySuggestions.appendChild(item);
     });
 
@@ -292,15 +272,11 @@ document.addEventListener("DOMContentLoaded", () => {
     categorySuggestions.classList.add('visible');
   }
 
-  // Hide suggestions
   function hideSuggestions() {
     categorySuggestions.classList.remove('visible');
-    setTimeout(() => {
-      categorySuggestions.classList.add('hidden');
-    }, 300);
+    setTimeout(() => { categorySuggestions.classList.add('hidden'); }, 300);
   }
 
-  // Select a suggestion
   function selectSuggestion(suggestion) {
     selectedSuggestion = suggestion;
     category.value = suggestion.category;
@@ -312,20 +288,12 @@ document.addEventListener("DOMContentLoaded", () => {
     categoryConfidence.classList.remove('hidden');
   }
 
-  // Handle description input
   text.addEventListener('input', (e) => {
     const description = e.target.value;
-
-    // Clear previous timeout
-    if (suggestionTimeout) {
-      clearTimeout(suggestionTimeout);
-    }
-
-    // Clear confidence badge when typing
+    if (suggestionTimeout) clearTimeout(suggestionTimeout);
     categoryConfidence.classList.add('hidden');
     selectedSuggestion = null;
 
-    // Debounce API call
     if (description.trim().length >= 3) {
       categorySuggestions.innerHTML = '<div class="suggestions-loading"><i class="fas fa-spinner"></i> <span>Getting suggestions...</span></div>';
       categorySuggestions.classList.remove('hidden');
@@ -340,20 +308,13 @@ document.addEventListener("DOMContentLoaded", () => {
           if (suggestions.primarySuggestion && suggestions.primarySuggestion.confidence > 0.8) {
             selectSuggestion(suggestions.primarySuggestion);
           }
-        } else {
-          hideSuggestions();
-        }
+        } else hideSuggestions();
       }, 500);
-    } else {
-      hideSuggestions();
-    }
+    } else hideSuggestions();
   });
 
-  // Close suggestions when clicking outside
   document.addEventListener('click', (e) => {
-    if (!e.target.closest('.description-input-wrapper')) {
-      hideSuggestions();
-    }
+    if (!e.target.closest('.description-input-wrapper')) hideSuggestions();
   });
 
   /* =====================
