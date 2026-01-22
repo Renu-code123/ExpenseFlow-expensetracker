@@ -50,7 +50,8 @@ app.use(
         ],
         connectSrc: [
           "'self'",
-          "http://localhost:3000"
+          "http://localhost:3000",
+          "https://api.github.com"
         ],
         imgSrc: [
           "'self'",
