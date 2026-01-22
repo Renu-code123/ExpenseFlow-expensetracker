@@ -1,7 +1,7 @@
 // Budget and Goals Management
 class BudgetGoalsManager {
   constructor() {
-    this.apiUrl = 'http://localhost:3000/api';
+    this.apiUrl = '/api';
     this.authToken = localStorage.getItem('authToken');
     this.initializeDashboard();
   }
@@ -138,24 +138,34 @@ class BudgetGoalsManager {
     `;
 
     document.body.insertAdjacentHTML('beforeend', dashboardHTML);
-    this.setupEventListeners();
     this.addDashboardStyles();
+    this.setupEventListeners();
   }
+
+
 
   // Setup event listeners
   setupEventListeners() {
     // Dashboard toggle
     document.getElementById('add-budget-btn').addEventListener('click', () => this.showBudgetModal());
     document.getElementById('add-goal-btn').addEventListener('click', () => this.showGoalModal());
-    
+
     // Modal controls
     document.getElementById('close-budget-modal').addEventListener('click', () => this.hideBudgetModal());
     document.getElementById('close-goal-modal').addEventListener('click', () => this.hideGoalModal());
-    
+
+    window.addEventListener('hashchange', () => {
+      if (location.hash === '#goals') this.showDashboard();
+      else if (location.hash === '#dashboard' || location.hash === '') this.hideDashboard();
+    });
+
+    // Check initial hash
+    if (location.hash === '#goals') this.showDashboard();
+
     // Form submissions
     document.getElementById('budget-form').addEventListener('submit', (e) => this.handleBudgetSubmit(e));
     document.getElementById('goal-form').addEventListener('submit', (e) => this.handleGoalSubmit(e));
-    
+
     // Alert threshold slider
     document.getElementById('alert-threshold').addEventListener('input', (e) => {
       document.getElementById('threshold-value').textContent = e.target.value;
@@ -175,6 +185,9 @@ class BudgetGoalsManager {
 
   // Load dashboard data
   async loadDashboardData() {
+    this.authToken = localStorage.getItem('authToken');
+    if (!this.authToken) return;
+
     try {
       await Promise.all([
         this.loadBudgetSummary(),
@@ -194,10 +207,10 @@ class BudgetGoalsManager {
       const response = await fetch(`${this.apiUrl}/budgets/summary`, {
         headers: { 'Authorization': `Bearer ${this.authToken}` }
       });
-      
+
       if (!response.ok) throw new Error('Failed to load budget summary');
       const summary = await response.json();
-      
+
       document.getElementById('total-budget').textContent = `₹${summary.totalBudget.toFixed(2)}`;
       document.getElementById('total-spent').textContent = `₹${summary.totalSpent.toFixed(2)}`;
       document.getElementById('remaining-budget').textContent = `₹${summary.remainingBudget.toFixed(2)}`;
@@ -212,10 +225,10 @@ class BudgetGoalsManager {
       const response = await fetch(`${this.apiUrl}/goals/summary`, {
         headers: { 'Authorization': `Bearer ${this.authToken}` }
       });
-      
+
       if (!response.ok) throw new Error('Failed to load goals summary');
       const summary = await response.json();
-      
+
       document.getElementById('active-goals').textContent = summary.active;
       document.getElementById('completed-goals').textContent = summary.completed;
       document.getElementById('overall-progress').textContent = `${summary.overallProgress.toFixed(1)}%`;
@@ -230,10 +243,10 @@ class BudgetGoalsManager {
       const response = await fetch(`${this.apiUrl}/budgets?active=true`, {
         headers: { 'Authorization': `Bearer ${this.authToken}` }
       });
-      
+
       if (!response.ok) throw new Error('Failed to load budgets');
       const budgets = await response.json();
-      
+
       this.displayBudgets(budgets);
     } catch (error) {
       console.error('Budgets loading error:', error);
@@ -244,11 +257,11 @@ class BudgetGoalsManager {
   displayBudgets(budgets) {
     const container = document.getElementById('budgets-list');
     container.innerHTML = '';
-    
+
     budgets.forEach(budget => {
       const percentage = (budget.spent / budget.amount) * 100;
       const isOverBudget = percentage > 100;
-      
+
       const budgetItem = document.createElement('div');
       budgetItem.className = `budget-item ${isOverBudget ? 'over-budget' : ''}`;
       budgetItem.innerHTML = `
@@ -266,7 +279,7 @@ class BudgetGoalsManager {
           <span class="remaining">₹${(budget.amount - budget.spent).toFixed(2)} remaining</span>
         </div>
       `;
-      
+
       container.appendChild(budgetItem);
     });
   }
@@ -277,10 +290,10 @@ class BudgetGoalsManager {
       const response = await fetch(`${this.apiUrl}/goals?status=active`, {
         headers: { 'Authorization': `Bearer ${this.authToken}` }
       });
-      
+
       if (!response.ok) throw new Error('Failed to load goals');
       const goals = await response.json();
-      
+
       this.displayGoals(goals);
     } catch (error) {
       console.error('Goals loading error:', error);
@@ -291,11 +304,11 @@ class BudgetGoalsManager {
   displayGoals(goals) {
     const container = document.getElementById('goals-list');
     container.innerHTML = '';
-    
+
     goals.forEach(goal => {
       const progress = (goal.currentAmount / goal.targetAmount) * 100;
       const daysLeft = Math.ceil((new Date(goal.targetDate) - new Date()) / (1000 * 60 * 60 * 24));
-      
+
       const goalItem = document.createElement('div');
       goalItem.className = 'goal-item';
       goalItem.innerHTML = `
@@ -314,7 +327,7 @@ class BudgetGoalsManager {
           <span class="days-left">${daysLeft > 0 ? `${daysLeft} days left` : 'Overdue'}</span>
         </div>
       `;
-      
+
       container.appendChild(goalItem);
     });
   }
@@ -325,10 +338,10 @@ class BudgetGoalsManager {
       const response = await fetch(`${this.apiUrl}/budgets/alerts`, {
         headers: { 'Authorization': `Bearer ${this.authToken}` }
       });
-      
+
       if (!response.ok) throw new Error('Failed to load alerts');
       const alerts = await response.json();
-      
+
       this.displayAlerts(alerts);
     } catch (error) {
       console.error('Alerts loading error:', error);
@@ -339,12 +352,12 @@ class BudgetGoalsManager {
   displayAlerts(alerts) {
     const container = document.getElementById('budget-alerts');
     container.innerHTML = '';
-    
+
     if (alerts.length === 0) {
       container.innerHTML = '<p class="no-alerts">✅ No budget alerts</p>';
       return;
     }
-    
+
     alerts.forEach(alert => {
       const alertItem = document.createElement('div');
       alertItem.className = `alert-item ${alert.isOverBudget ? 'critical' : 'warning'}`;
@@ -356,7 +369,7 @@ class BudgetGoalsManager {
           <span>₹${alert.spent.toFixed(2)} / ₹${alert.amount.toFixed(2)}</span>
         </div>
       `;
-      
+
       container.appendChild(alertItem);
     });
   }
@@ -386,12 +399,12 @@ class BudgetGoalsManager {
   // Handle budget form submission
   async handleBudgetSubmit(e) {
     e.preventDefault();
-    
+
     const formData = new FormData(e.target);
     const now = new Date();
     const startDate = new Date(now.getFullYear(), now.getMonth(), 1);
     const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    
+
     const budgetData = {
       name: document.getElementById('budget-name').value,
       category: document.getElementById('budget-category').value,
@@ -401,7 +414,7 @@ class BudgetGoalsManager {
       endDate: endDate.toISOString(),
       alertThreshold: parseInt(document.getElementById('alert-threshold').value)
     };
-    
+
     try {
       const response = await fetch(`${this.apiUrl}/budgets`, {
         method: 'POST',
@@ -411,9 +424,9 @@ class BudgetGoalsManager {
         },
         body: JSON.stringify(budgetData)
       });
-      
+
       if (!response.ok) throw new Error('Failed to create budget');
-      
+
       this.showNotification('Budget created successfully! 💰', 'success');
       this.hideBudgetModal();
       this.loadDashboardData();
@@ -425,7 +438,7 @@ class BudgetGoalsManager {
   // Handle goal form submission
   async handleGoalSubmit(e) {
     e.preventDefault();
-    
+
     const goalData = {
       title: document.getElementById('goal-title').value,
       description: document.getElementById('goal-description').value,
@@ -434,7 +447,7 @@ class BudgetGoalsManager {
       targetDate: document.getElementById('goal-date').value,
       priority: document.getElementById('goal-priority').value
     };
-    
+
     try {
       const response = await fetch(`${this.apiUrl}/goals`, {
         method: 'POST',
@@ -444,9 +457,9 @@ class BudgetGoalsManager {
         },
         body: JSON.stringify(goalData)
       });
-      
+
       if (!response.ok) throw new Error('Failed to create goal');
-      
+
       this.showNotification('Goal created successfully! 🎯', 'success');
       this.hideGoalModal();
       this.loadDashboardData();
@@ -459,147 +472,23 @@ class BudgetGoalsManager {
   addDashboardStyles() {
     const style = document.createElement('style');
     style.textContent = `
-      .dashboard {
-        padding: 20px;
-        background: #f8f9fa;
-        border-radius: 10px;
+      #budget-goals-dashboard {
+        padding: 40px;
+        background: #f8fafc;
+        border-radius: 12px;
         margin: 20px 0;
       }
-      
-      .dashboard-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-      }
-      
-      .dashboard-actions {
-        display: flex;
-        gap: 10px;
-      }
-      
-      .btn {
-        padding: 10px 20px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-weight: bold;
-      }
-      
-      .btn-primary {
-        background: #667eea;
-        color: white;
-      }
-      
-      .btn-secondary {
-        background: #28a745;
-        color: white;
-      }
-      
-      .dashboard-summary {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-        margin-bottom: 30px;
-      }
-      
-      .summary-card {
-        background: white;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      }
-      
-      .metric {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 10px;
-      }
-      
-      .budget-item, .goal-item {
-        background: white;
-        padding: 15px;
-        border-radius: 8px;
-        margin-bottom: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      }
-      
-      .budget-item.over-budget {
-        border-left: 4px solid #dc3545;
-      }
-      
-      .progress-bar {
-        width: 100%;
-        height: 8px;
-        background: #e9ecef;
-        border-radius: 4px;
-        overflow: hidden;
-        margin: 10px 0;
-      }
-      
-      .progress-fill {
-        height: 100%;
-        background: #28a745;
-        transition: width 0.3s ease;
-      }
-      
-      .budget-item.over-budget .progress-fill {
-        background: #dc3545;
-      }
-      
-      .modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.5);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-      }
-      
-      .modal-content {
-        background: white;
-        padding: 30px;
-        border-radius: 10px;
-        width: 90%;
-        max-width: 500px;
-      }
-      
-      .modal-content input, .modal-content select, .modal-content textarea {
-        width: 100%;
-        padding: 10px;
-        margin-bottom: 15px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-      }
-      
-      .modal-actions {
-        display: flex;
-        gap: 10px;
-        justify-content: flex-end;
-        margin-top: 20px;
-      }
-      
-      .alert-item {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        padding: 15px;
-        background: white;
-        border-radius: 8px;
-        margin-bottom: 10px;
-      }
-      
-      .alert-item.warning {
-        border-left: 4px solid #ffc107;
-      }
-      
-      .alert-item.critical {
-        border-left: 4px solid #dc3545;
-      }
+      #budget-goals-dashboard h2 { font-size: 2.5rem; margin-bottom: 2rem; color: #0f172a; font-weight: 800; letter-spacing: -0.025em; }
+      .dashboard-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 50px; }
+      .summary-card { background: white; padding: 30px; border-radius: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); border: 1px solid #f1f5f9; }
+      .summary-card h3 { font-size: 1.5rem; margin-bottom: 1.5rem; color: #334155; }
+      .metric { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
+      .label { color: #64748b; font-weight: 600; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.05em; }
+      .value { font-weight: 800; color: #0f172a; font-size: 1.4rem; }
+      .progress-bar { height: 16px; background: #e2e8f0; border-radius: 8px; margin-top: 10px; overflow: hidden; }
+      .progress-fill { height: 100%; background: linear-gradient(90deg, #4f46e5, #9333ea); border-radius: 8px; }
+      .goal-item { background: white; padding: 25px; border-radius: 20px; margin-bottom: 20px; border-left: 8px solid #4f46e5; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+      .goal-item h4 { font-size: 1.25rem; margin-bottom: 10px; color: #1e293b; }
     `;
     document.head.appendChild(style);
   }
