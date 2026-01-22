@@ -8,10 +8,30 @@ const {
     checkAnalyticsAvailable
 } = require('../middleware/analyticsValidator');
 const analyticsService = require('../services/analyticsService');
+const forecastingService = require('../services/forecastingService');
+
+/**
+ * @route   GET /api/analytics/forecast
+ * @desc    Get predictive cash flow and safe-to-spend forecast
+ * @access  Private
+ */
+router.get('/forecast', auth, checkAnalyticsAvailable, async (req, res) => {
+    try {
+        const forecast = await forecastingService.getForecast(req.user._id);
+
+        res.json({
+            success: true,
+            data: forecast
+        });
+    } catch (error) {
+        console.error('[Analytics] Forecast error:', error);
+        res.status(500).json({ error: 'Failed to generate financial forecast' });
+    }
+});
 
 /**
  * @route   GET /api/analytics/spending-trends
- * @desc    Get spending trends over time (daily, weekly, monthly)
+ * @desc    Get spending trends over time(daily, weekly, monthly)
  * @access  Private
  */
 router.get('/spending-trends', auth, validateTrends, checkAnalyticsAvailable, async (req, res) => {

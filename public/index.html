@@ -792,6 +792,73 @@
           </form>
         </div>
       </div>
+
+      <!-- Analytics Dashboard Section -->
+      <section id="analytics" class="analytics-section">
+        <div class="section-header">
+          <h3><i class="fas fa-chart-bar"></i> Financial Analytics & Forecasting</h3>
+          <div class="analytics-actions">
+            <select id="trends-period" class="period-select">
+              <option value="monthly">Monthly</option>
+              <option value="weekly">Weekly</option>
+              <option value="daily">Daily</option>
+            </select>
+            <button id="refresh-analytics" class="refresh-btn">
+              <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+          </div>
+        </div>
+
+        <div id="analytics-dashboard" class="analytics-grid">
+          <!-- Top Row: Velocity and Forecast -->
+          <div class="analytics-row top-row">
+            <div id="velocity-widget" class="analytics-card velocity-card">
+              <div class="widget-loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>Calculating velocity...</span>
+              </div>
+            </div>
+            <div id="forecast-widget" class="analytics-card forecast-card">
+              <div class="widget-loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>Generating forecast...</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Middle Row: Trends and Category Breakdown -->
+          <div class="analytics-row main-charts">
+            <div id="trends-chart" class="analytics-card trends-card">
+              <div class="widget-loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>Loading trends...</span>
+              </div>
+            </div>
+            <div id="category-chart" class="analytics-card category-card">
+              <div class="widget-loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>Loading distribution...</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Row: Insights and Predictions -->
+          <div class="analytics-row details-row">
+            <div id="insights-container" class="analytics-card insights-card">
+              <div class="widget-loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>Gathering insights...</span>
+              </div>
+            </div>
+            <div id="predictions-widget" class="analytics-card predictions-card">
+              <div class="widget-loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>Predicting spending...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   </main>
 
