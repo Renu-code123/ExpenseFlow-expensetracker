@@ -135,27 +135,30 @@
         gap: 0.5rem;
       }
     }
-        #redirect{
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-left: 12px;
-        border: 1px solid #64ffda;
-        background-color: #0f0f23;
-        padding: 6px 12px;
-        border-radius: 8px;
-        transition: background-color 0.3s ease;
+
+    #redirect {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-left: 12px;
+      border: 1px solid #64ffda;
+      background-color: #0f0f23;
+      padding: 6px 12px;
+      border-radius: 8px;
+      transition: background-color 0.3s ease;
     }
-    #redirect a{
-        color: #64ffda;
-        text-decoration: none;
-        font-weight: 500;
-        margin-right: 8px;
+
+    #redirect a {
+      color: #64ffda;
+      text-decoration: none;
+      font-weight: 500;
+      margin-right: 8px;
     }
-      .footer-links {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(100px, 1fr));
-        }
+
+    .footer-links {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(100px, 1fr));
+    }
   </style>
 </head>
 
@@ -174,6 +177,7 @@
           <a href="#goals" class="nav-link">Goals</a>
           <a href="#settings" class="nav-link">Settings</a>
           <a href="./contributor.html" class="nav-link">Contributors</a>
+          <a href="contact.html" class="nav-link">Contact</a>
         </div>
         <div class="nav-toggle" id="nav-toggle">
           <span class="bar"></span>
@@ -188,9 +192,9 @@
           <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face"
             alt="User" class="profile-img">
           <span class="username" id="navUsername"></span>
-          <div id="redirect" >
-                <a href="#" id="logoutLink" onclick="logout()">Logout</a>
-              </div>
+          <div id="redirect">
+            <a href="#" id="logoutLink" onclick="logout()">Logout</a>
+          </div>
         </div>
       </div>
     </nav>
@@ -211,12 +215,14 @@
           <span>Trusted by 10,000+ users worldwide</span>
         </div>
         <h1 class="hero-title">Smart Money Management<br>Made Simple</h1>
-        <p class="hero-subtitle">Take control of your finances with our intelligent expense tracker.<br>Track, analyze, and optimize your spending habits effortlessly.</p>
+        <p class="hero-subtitle">Take control of your finances with our intelligent expense tracker.<br>Track, analyze,
+          and optimize your spending habits effortlessly.</p>
         <div class="hero-cta">
           <button class="cta-primary" onclick="document.getElementById('form').scrollIntoView({ behavior: 'smooth' })">
             <i class="fas fa-rocket"></i> Start Tracking Now
           </button>
-          <button class="cta-secondary" onclick="document.getElementById('features-section').scrollIntoView({ behavior: 'smooth' })">
+          <button class="cta-secondary"
+            onclick="document.getElementById('features-section').scrollIntoView({ behavior: 'smooth' })">
             <i class="fas fa-info-circle"></i> Learn More
           </button>
         </div>
@@ -602,7 +608,8 @@
               <input type="text" id="text" placeholder="Enter transaction description" required />
             </div>
             <div class="form-control">
-              <label for="category">Category <span id="category-confidence" class="confidence-badge hidden"></span></label>
+              <label for="category">Category <span id="category-confidence"
+                  class="confidence-badge hidden"></span></label>
               <select id="category" required>
                 <option value="">Select Category</option>
                 <option value="food">🍽️ Food & Dining</option>
@@ -810,72 +817,52 @@
   </div>
 
   <footer class="footer">
-  <div class="footer-container">
+    <div class="footer-container">
 
-    <div class="footer-section">
-  <div class="footer-logo">
-    <i class="fas fa-wallet"></i>
-    <span>ExpenseFlow</span>
-  </div>
+      <div class="footer-section">
+        <div class="footer-logo">
+          <i class="fas fa-wallet"></i>
+          <span>ExpenseFlow</span>
+        </div>
 
-  <p class="footer-description">
-    Smart money management made simple. Track, analyze, and optimize your financial habits.
-  </p>
+        <p class="footer-description">
+          Smart money management made simple. Track, analyze, and optimize your financial habits.
+        </p>
 
-  <div class="social-links">
-    <a
-      href="https://x.com/9504_renu"
-      class="social-link"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="X (Twitter)"
-    >
-      <i class="fab fa-x-twitter"></i>
-    </a>
+        <div class="social-links">
+          <a href="https://x.com/9504_renu" class="social-link" target="_blank" rel="noopener noreferrer"
+            aria-label="X (Twitter)">
+            <i class="fab fa-x-twitter"></i>
+          </a>
 
-    <a
-      href="https://github.com/Renu-code123/ExpenseFlow"
-      class="social-link"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Github"
-    >
-      <i class="fab fa-github"></i>
-    </a>
+          <a href="https://github.com/Renu-code123/ExpenseFlow" class="social-link" target="_blank"
+            rel="noopener noreferrer" aria-label="Github">
+            <i class="fab fa-github"></i>
+          </a>
 
-    <a
-      href="mailto:renu89857@gmail.com"
-      class="social-link"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Email"
-    >
-      <i class="far fa-envelope"></i>
-    </a>
+          <a href="mailto:renu89857@gmail.com" class="social-link" target="_blank" rel="noopener noreferrer"
+            aria-label="Email">
+            <i class="far fa-envelope"></i>
+          </a>
 
-    <a
-      href="https://www.linkedin.com/in/renu-kumari-prajapati"
-      class="social-link"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="LinkedIn"
-    >
-      <i class="fab fa-linkedin-in"></i>
-    </a>
-  </div>
-</div>
+          <a href="https://www.linkedin.com/in/renu-kumari-prajapati" class="social-link" target="_blank"
+            rel="noopener noreferrer" aria-label="LinkedIn">
+            <i class="fab fa-linkedin-in"></i>
+          </a>
+        </div>
+      </div>
 
 
-    <div class="footer-section">
-      <h4>Company</h4>
-      <ul class="footer-links">
-        <li><a href="AboutUs.html">About Us</a></li>
-        <li><a href="PrivacyPolicy.html">Privacy Policy</a></li>
-        <li><a href="terms_service.html">Terms of Service</a></li>
-        <li><a href="Help-Center.html">Help Center</a></li>
-        <li><a href="#">Contact</a></li>
-      </ul>
-    </div>
+      <div class="footer-section">
+        <h4>Company</h4>
+        <ul class="footer-links">
+          <li><a href="AboutUs.html">About Us</a></li>
+          <li><a href="PrivacyPolicy.html">Privacy Policy</a></li>
+          <li><a href="terms_service.html">Terms of Service</a></li>
+          <li><a href="Help-Center.html">Help Center</a></li>
+          <li><a href="contact.html">Contact Us</a></li>
+        </ul>
+      </div>
 
     </div>
 
@@ -913,7 +900,7 @@
     </div>
   </div>
 
-  
+
   </footer>
 
   <script src="trackerscript.js"></script>
@@ -939,7 +926,7 @@
     }
 
     // Initialize recurring button
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       const addBtn = document.getElementById('add-recurring-btn');
       if (addBtn) {
         addBtn.addEventListener('click', openRecurringModal);
@@ -999,14 +986,14 @@
       const preferredCurrencySelect = document.getElementById('preferred-currency');
 
       if (currencySelect && supportedCurrencies.length > 0) {
-        currencySelect.innerHTML = supportedCurrencies.map(curr => 
+        currencySelect.innerHTML = supportedCurrencies.map(curr =>
           `<option value="${curr.code}">${curr.symbol} ${curr.code} - ${curr.name}</option>`
         ).join('');
         currencySelect.value = currentUserCurrency;
       }
 
       if (preferredCurrencySelect && supportedCurrencies.length > 0) {
-        preferredCurrencySelect.innerHTML = supportedCurrencies.map(curr => 
+        preferredCurrencySelect.innerHTML = supportedCurrencies.map(curr =>
           `<option value="${curr.code}">${curr.symbol} ${curr.code} - ${curr.name}</option>`
         ).join('');
         preferredCurrencySelect.value = currentUserCurrency;
@@ -1062,7 +1049,7 @@
           const rateInfo = document.getElementById('exchange-rate-info');
           const rates = data.data.rates;
           const popularCurrencies = ['USD', 'EUR', 'GBP', 'JPY', 'AUD'];
-          
+
           let html = '<div class="rate-list">';
           popularCurrencies.forEach(curr => {
             if (rates[curr]) {
@@ -1113,13 +1100,13 @@
     }
 
     // Initialize currency features when page loads
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       loadSupportedCurrencies();
       loadUserCurrencyPreference();
     });
 
     // Close modal when clicking outside
-    window.onclick = function(event) {
+    window.onclick = function (event) {
       const modal = document.getElementById('currency-modal');
       const goalModal = document.getElementById('add-goal-modal');
       const contribModal = document.getElementById('contribution-modal');
@@ -1128,16 +1115,16 @@
       if (event.target === goalModal) closeGoalModal();
       if (event.target === contribModal) closeContributionModal();
     }
-document.addEventListener('DOMContentLoaded', () => {
-  const logoutLink = document.getElementById('logoutLink');
+    document.addEventListener('DOMContentLoaded', () => {
+      const logoutLink = document.getElementById('logoutLink');
 
-  if (logoutLink) {
-    logoutLink.addEventListener('click', (e) => {
-      e.preventDefault();
-      logout();
+      if (logoutLink) {
+        logoutLink.addEventListener('click', (e) => {
+          e.preventDefault();
+          logout();
+        });
+      }
     });
-  }
-});
 
 
   </script>
@@ -1175,9 +1162,9 @@ document.addEventListener('DOMContentLoaded', () => {
       <button id="update-button" class="update-btn">Update Now</button>
     </div>
   </div>
-<script src="auth-check.js"></script>
-<script src="auth.js"></script>
- <script src="trackerscript.js"></script>
+  <script src="auth-check.js"></script>
+  <script src="auth.js"></script>
+  <script src="trackerscript.js"></script>
   <script src="analytics-dashboard.js"></script>
 
 
