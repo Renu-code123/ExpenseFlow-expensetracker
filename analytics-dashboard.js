@@ -7,7 +7,8 @@ let analyticsData = {
   categoryBreakdown: null,
   insights: null,
   predictions: null,
-  velocity: null
+  velocity: null,
+  forecast: null
 };
 
 const getAnalyticsLocale = () => (window.i18n?.getLocale?.() && window.i18n.getLocale()) || 'en-US';
@@ -132,6 +133,24 @@ async function fetchSpendingVelocity() {
     return data.data;
   } catch (error) {
     console.error('Error fetching velocity:', error);
+    throw error;
+  }
+}
+
+/**
+ * Fetch financial forecast
+ */
+async function fetchForecast() {
+  try {
+    const response = await fetch(`${ANALYTICS_API_URL}/forecast`, {
+      headers: await getAuthHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to fetch forecast');
+    const data = await response.json();
+    analyticsData.forecast = data.data;
+    return data.data;
+  } catch (error) {
+    console.error('Error fetching forecast:', error);
     throw error;
   }
 }
@@ -420,6 +439,56 @@ function renderPredictions(predictions) {
   `;
 }
 
+/**
+ * Render forecast widget (Safe-to-Spend)
+ */
+function renderForecastWidget(forecast) {
+  const container = document.getElementById('forecast-widget');
+  if (!container) return;
+
+  const sts = forecast.safe_to_spend || forecast.safeToSpend;
+
+  container.innerHTML = `
+    <div class="forecast-header">
+      <h4><i class="fas fa-shield-alt"></i> Safe-to-Spend</h4>
+      <span class="forecast-days">${sts.remainingDays} days left in month</span>
+    </div>
+    <div class="sts-main">
+      <div class="sts-daily">
+        <span class="sts-label">Daily Limit</span>
+        <span class="sts-value">₹${sts.daily.toLocaleString()}</span>
+      </div>
+      <div class="sts-total">
+        <span class="sts-label">Total Available</span>
+        <span class="sts-value">₹${sts.total.toLocaleString()}</span>
+      </div>
+    </div>
+    <div class="sts-commitments">
+      <div class="commitment-item shadow-none">
+        <span class="comm-label">Recurring Bills</span>
+        <span class="comm-value">₹${sts.commitments.recurring.toLocaleString()}</span>
+      </div>
+      <div class="commitment-item shadow-none">
+        <span class="comm-label">Goal Targets</span>
+        <span class="comm-value">₹${sts.commitments.goals.toLocaleString()}</span>
+      </div>
+    </div>
+    <div class="anomalies-section" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed rgba(255,255,255,0.1);">
+      ${forecast.anomalies && forecast.anomalies.length > 0 ? `
+        <div class="anomaly-alert" style="color: #ffca28; display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem;">
+          <i class="fas fa-exclamation-triangle"></i>
+          <span class="anomaly-text">${forecast.anomalies[0].message}</span>
+        </div>
+      ` : `
+        <div class="anomaly-ok" style="color: #64ffda; display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem;">
+          <i class="fas fa-check-circle"></i>
+          <span>No spending anomalies detected this week</span>
+        </div>
+      `}
+    </div>
+  `;
+}
+
 // ========================
 // Helper Functions
 // ========================
@@ -466,12 +535,13 @@ async function loadAnalyticsDashboard() {
     dashboardContainer.classList.add('loading');
 
     // Fetch all analytics data in parallel
-    const [velocity, breakdown, trends, insights, predictions] = await Promise.all([
+    const [velocity, breakdown, trends, insights, predictions, forecast] = await Promise.all([
       fetchSpendingVelocity().catch(() => null),
       fetchCategoryBreakdown().catch(() => null),
       fetchSpendingTrends().catch(() => null),
       fetchInsights().catch(() => null),
-      fetchPredictions().catch(() => null)
+      fetchPredictions().catch(() => null),
+      fetchForecast().catch(() => null)
     ]);
 
     // Render all widgets
@@ -480,6 +550,7 @@ async function loadAnalyticsDashboard() {
     if (trends) renderTrendsChart(trends);
     if (insights) renderInsights(insights);
     if (predictions) renderPredictions(predictions);
+    if (forecast) renderForecastWidget(forecast);
 
     dashboardContainer.classList.remove('loading');
   } catch (error) {
