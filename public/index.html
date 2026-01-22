@@ -150,6 +150,7 @@
         <div class="nav-menu" id="nav-menu">
           <a href="#dashboard" class="nav-link active">Dashboard</a>
           <a href="#analytics" class="nav-link">Analytics</a>
+          <a href="#investments" class="nav-link">Investments</a>
           <a href="#goals" class="nav-link">Goals</a>
           <a href="#settings" class="nav-link">Settings</a>
         </div>
@@ -862,6 +863,105 @@
     </div>
   </main>
 
+  <!-- Investment Portfolio Section -->
+  <section id="investments" class="investments-section container" style="display: none; padding-top: 100px;">
+    <div class="section-header">
+      <h3><i class="fas fa-chart-line"></i> Investment Portfolio</h3>
+      <button class="add-goal-btn" onclick="openInvestmentModal()">
+        <i class="fas fa-plus"></i> Add Holding
+      </button>
+    </div>
+
+    <!-- Portfolio Summary -->
+    <div class="quick-stats">
+      <div class="stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+          <i class="fas fa-coins"></i>
+        </div>
+        <div class="stat-content">
+          <p class="stat-label">Total Portfolio Value</p>
+          <h3 class="stat-value" id="portfolio-total-value">₹0.00</h3>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+          <i class="fas fa-arrow-trend-up"></i>
+        </div>
+        <div class="stat-content">
+          <p class="stat-label">Total Profit/Loss</p>
+          <h3 class="stat-value" id="portfolio-total-pl">₹0.00</h3>
+          <small id="portfolio-pl-percent" class="trend-text">0.00%</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Holdings List -->
+    <div class="investments-list-container">
+      <div class="list-header">
+        <h4>Your Holdings</h4>
+        <button class="refresh-btn-sm" title="Refresh Prices" onclick="loadInvestments()">
+          <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+      </div>
+      <div id="investments-list" class="investments-grid">
+        <!-- Investments will be rendered here -->
+        <div class="widget-loading">
+          <i class="fas fa-spinner fa-spin"></i>
+          <span>Loading portfolio...</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Add Investment Modal -->
+  <div id="investment-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3><i class="fas fa-chart-pie"></i> Add Investment</h3>
+        <span class="close-modal" onclick="closeInvestmentModal()">&times;</span>
+      </div>
+      <form id="investment-form">
+        <div class="modal-body">
+          <div class="form-control">
+            <label for="inv-type">Asset Type</label>
+            <select id="inv-type" required onchange="updateSymbolPlaceholder()">
+              <option value="crypto">Cryptocurrency</option>
+              <option value="stock">Stock</option>
+              <option value="fund">Mutual Fund</option>
+              <option value="gold">Gold/Silver</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="form-control">
+              <label for="inv-symbol">Symbol/Ticker</label>
+              <input type="text" id="inv-symbol" placeholder="e.g., BTC, AAPL" required uppercase>
+              <small id="symbol-hint">For crypto, use ticker (BTC, ETH)</small>
+            </div>
+            <div class="form-control">
+              <label for="inv-name">Asset Name</label>
+              <input type="text" id="inv-name" placeholder="e.g., Bitcoin, Apple Inc." required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-control">
+              <label for="inv-quantity">Quantity</label>
+              <input type="number" id="inv-quantity" placeholder="0.00" step="any" required>
+            </div>
+            <div class="form-control">
+              <label for="inv-buy-price">Buy Price (Per Unit)</label>
+              <input type="number" id="inv-buy-price" placeholder="₹0.00" step="any" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" onclick="closeInvestmentModal()">Cancel</button>
+          <button type="submit" class="btn-submit">Add to Portfolio</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Currency Settings Modal -->
   <div id="currency-modal" class="modal">
     <div class="modal-content">
@@ -1110,6 +1210,7 @@
   <script src="receipt-ocr.js"></script>
   <script src="analytics-dashboard.js"></script>
   <script src="realtime-sync.js"></script>
+  <script src="investment-portfolio.js"></script>
 
   <!-- PWA Installation Prompt -->
   <div id="install-prompt" class="install-prompt" style="display: none;">

@@ -5254,3 +5254,178 @@ button {
   font-size: 2rem;
   color: var(--accent-primary);
 }
+
+
+/* =========================
+   INVESTMENT PORTFOLIO
+   ========================= */
+.investments-section {
+  min-height: 80vh;
+}
+
+.investments-list-container {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1.5rem;
+  margin-top: 2rem;
+}
+
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.refresh-btn-sm {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: var(--text-secondary);
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.85rem;
+}
+
+.refresh-btn-sm:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.investments-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.investment-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.investment-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  /* Slightly lighter on hover */
+  transform: translateX(4px);
+}
+
+.inv-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: #fff;
+}
+
+.inv-icon-wrapper.crypto {
+  background: linear-gradient(135deg, #f7931a 0%, #f06a19 100%);
+}
+
+.inv-icon-wrapper.stock {
+  background: linear-gradient(135deg, #2980b9 0%, #2c3e50 100%);
+}
+
+.inv-icon-wrapper.fund {
+  background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+}
+
+.inv-icon-wrapper.gold {
+  background: linear-gradient(135deg, #f1c40f 0%, #f39c12 100%);
+}
+
+.inv-icon-wrapper.other {
+  background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%);
+}
+
+.inv-details {
+  flex: 1;
+}
+
+.inv-top {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
+.inv-symbol {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.inv-price {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.inv-name-qty {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.inv-performance {
+  text-align: right;
+  min-width: 120px;
+}
+
+.inv-value {
+  display: block;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.inv-pl {
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.inv-pl.positive {
+  color: var(--success);
+}
+
+.inv-pl.negative {
+  color: var(--error);
+}
+
+.inv-delete-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  padding: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.inv-delete-btn:hover {
+  color: var(--error);
+}
+
+/* Mobile Responsive */
+@media (max-width: 600px) {
+  .investment-item {
+    flex-wrap: wrap;
+  }
+
+  .inv-performance {
+    margin-left: auto;
+    /* Push to right */
+    text-align: right;
+  }
+
+  .inv-delete-btn {
+    align-self: flex-start;
+  }
+}
