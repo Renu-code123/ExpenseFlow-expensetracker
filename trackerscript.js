@@ -81,6 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function showSuggestions(suggestions) {
+     if (!categorySuggestions) return;
     if (!suggestions || !suggestions.suggestions || suggestions.suggestions.length === 0) {
       hideSuggestions();
       return;
@@ -125,6 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function hideSuggestions() {
+    if (!categorySuggestions) return; 
     categorySuggestions.classList.remove('visible');
     setTimeout(() => { categorySuggestions.classList.add('hidden'); }, 300);
   }

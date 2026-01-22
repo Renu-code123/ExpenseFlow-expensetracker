@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#64ffda">
+  <meta name="description" content="Take control of your finances with our intuitive expense tracker">
+  <meta name="keywords" content="expense tracker, budget, finance, money management, PWA">
+  <meta name="author" content="ExpenseFlow">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <!-- PWA Meta Tags -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ExpenseFlow">
+  <meta name="msapplication-TileColor" content="#0f0f23">
+  <meta name="msapplication-navbutton-color" content="#64ffda">
+
+  <!-- Manifest -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Apple Touch Icons -->
+  <link rel="apple-touch-icon"
+    href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iNDIiIGZpbGw9InVybCgjZ3JhZGllbnQwX2xpbmVhclswXSkiLz4KPHBhdGggZD0iTTQ4IDY0SDQ4LjA0OEgxNDRWMTI4SDk2VjE0NEgxNDRDMTUyLjgzNyAxNDQgMTYwIDEzNi44MzcgMTYwIDEyOFY2NEM1OCA1Ni4xNjMgNTIuMDQzIDQ4IDQ4IEg0OEM0MC4wNzEgNDggMzIgNTYuMDcxIDMyIDY0VjEyOEMzMiAxMzUuOTI5IDQwLjA3MSAxNDQgNDggMTQ0SDgwVjEyOEg0OFY2NFoiIGZpbGw9IiM2NGZmZGEiLz4KPHBhdGggZD0iTTY0IDgwSDgwVjk2SDY0VjgwWiIgZmlsbD0iIzY0ZmZkYSIvPgo8cGF0aCBkPSJNOTYgODBIMTI4Vjk2SDk2VjgwWiIgZmlsbD0iIzY0ZmZkYSIvPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudDBfbGluZWFyWzBdIiB4MT0iMCIgeTE9IjAiIHgyPSIxOTIiIHkyPSIxOTIiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1jb2xvcj0iIzY2N2VlYSIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM3NjRiYTIiLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4K">
+
+  <title>ExpenseFlow - Smart Money Management</title>
+  <link rel="stylesheet" href="expensetracker.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* =========================
+   MOBILE RESPONSIVE STYLES
+   ========================= */
+@media (max-width: 768px) {
+
+  /* General */
+  body {
+    overflow-x: hidden;
+  }
+
+  .container {
+    padding: 1rem;
+  }
+
+  /* Navbar */
+  .nav-menu {
+    position: absolute;
+    top: 70px;
+    left: 0;
+    width: 100%;
+    background: #0f0f23;
+    flex-direction: column;
+    align-items: center;
+    display: none;
+  }
+
+  .nav-menu.active {
+    display: flex;
+  }
+
+  .nav-link {
+    padding: 1rem;
+    width: 100%;
+    text-align: center;
+  }
+
+  .nav-toggle {
+    display: block;
+    cursor: pointer;
+  }
+
+  .user-profile {
+    display: none;
+  }
+
+  /* Hero */
+  .hero-title {
+    font-size: 1.8rem;
+    text-align: center;
+  }
+
+  .hero-subtitle {
+    text-align: center;
+    font-size: 1rem;
+  }
+
+  /* Balance & Cards */
+  /* Styles moved to expensetracker.css */
+
+
+  /* Filters */
+  .filter-controls {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .advanced-filters {
+    flex-direction: column;
+  }
+
+  .date-filters,
+  .amount-filters {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  /* Transaction Form */
+  .form-row {
+    flex-direction: column;
+  }
+
+  .form-control {
+    width: 100%;
+  }
+
+  /* Footer */
+  .footer-container {
+    flex-direction: column;
+    gap: 2rem;
+    text-align: center;
+  }
+
+  .footer-stats {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+    </style>
+  </head>
+  
+
+<body>
+
+  <!-- Global Loader -->
+  <div id="global-loader" class="global-loader hidden">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="header">
+    <nav class="navbar">
+      <div class="nav-container">
+
+        <!-- Logo -->
+        <div class="nav-logo">
+          <i class="fas fa-wallet"></i>
+          <span>ExpenseFlow</span>
+        </div>
+
+        <!-- Menu -->
+        <ul class="nav-menu" id="nav-menu">
+          <li><a href="#dashboard" class="nav-link">Dashboard</a></li>
+          <li><a href="#transactions" class="nav-link">Transactions</a></li>
+          <li><a href="#recurring-section" class="nav-link">Recurring</a></li>
+          <li><a href="#reports" class="nav-link">Reports</a></li>
+        </ul>
+
+        <!-- Right actions -->
+        <div class="nav-actions">
+                    <!-- Navbar Profile / Sample Image -->
+                      <!-- Navbar Avatar -->
+            <div class="nav-avatar" onclick="openImagePreview()">
+              <img src="data:image/jpeg;base64,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" alt="Avatar">
+            </div>
+
+
+
+          
+
+      </div>
+    </nav>
+  </header>
+
+
+      <!-- Transaction History -->
+    <div class="history-section">
+
+  <div class="section-header">
+    <h3>
+      <i class="fas fa-history"></i>
+      Transaction History
+    </h3>
+
+    <div class="filter-controls">
+
+      <!-- Search -->
+      <div class="search-container">
+        <input
+          type="text"
+          id="search-input"
+          class="search-input"
+          placeholder="Search transactions..."
+        />
+        <i class="fas fa-search search-icon"></i>
+      </div>
+
+      <!-- Filter Buttons -->
+      <div class="filter-buttons">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="income">Income</button>
+        <button class="filter-btn" data-filter="expense">Expense</button>
+      </div>
+
+      <!-- Advanced Filters -->
+          <div class="advanced-filters">
+
+            <select id="category-filter" class="category-select">
+              <option value="all">All Categories</option>
+              <option value="food">🍽️ Food & Dining</option>
+              <option value="transport">🚗 Transportation</option>
+              <option value="shopping">🛒 Shopping</option>
+              <option value="entertainment">🎬 Entertainment</option>
+              <option value="bills">💡 Bills & Utilities</option>
+              <option value="healthcare">🏥 Healthcare</option>
+              <option value="education">📚 Education</option>
+              <option value="travel">✈️ Travel</option>
+              <option value="salary">💼 Salary</option>
+              <option value="freelance">💻 Freelance</option>
+              <option value="investment">📈 Investment</option>
+              <option value="other">📋 Other</option>
+            </select>
+
+            <div class="date-filters">
+              <input type="date" id="date-from" class="date-input" />
+              <input type="date" id="date-to" class="date-input" />
+            </div>
+
+            <div class="amount-filters">
+              <input
+                type="number"
+                id="amount-min"
+                class="amount-input"
+                placeholder="Min Amount"
+                step="0.01"
+              />
+              <input
+                type="number"
+                id="amount-max"
+                class="amount-input"
+                placeholder="Max Amount"
+                step="0.01"
+              />
+            </div>
+
+            <button class="clear-filters-btn" id="clear-filters">
+              <i class="fas fa-times"></i>
+              Clear Filters
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+      <ul id="list" class="list">
+        <!-- Transactions will be added here -->
+      </ul>
+
+    </div>
+         <div id="image-preview-modal" class="image-preview-modal hidden">
+            <div class="image-preview-overlay" onclick="closeImagePreview()"></div>
+              <div class="image-preview-content">
+                <span class="image-preview-close" onclick="closeImagePreview()">&times;</span>
+                <img id="image-preview-full">
+            </div>
+          </div>
+
+
+
+
+      
+
+
+
+      <!-- Data Management Section -->
+      <div class="data-management-section">
+        <h3><i class="fas fa-database"></i> Data Management</h3>
+        <div class="data-actions">
+          <div class="export-section">
+            <h4>Export Data</h4>
+            <div class="export-buttons">
+              <button class="export-btn" id="export-csv">
+                <i class="fas fa-file-csv"></i> Quick CSV
+              </button>
+              <button class="export-btn pdf-btn" id="export-pdf">
+                <i class="fas fa-file-pdf"></i> Quick PDF
+              </button>
+              <button class="export-btn advanced-btn" id="open-export-modal">
+                <i class="fas fa-cog"></i> Advanced Export
+              </button>
+            </div>
+          </div>
+          <div class="import-section">
+            <h4>Import Data</h4>
+            <div class="import-controls">
+              <input type="file" id="import-file" accept=".csv,.json" class="file-input">
+              <label for="import-file" class="file-label">
+                <i class="fas fa-upload"></i> Choose File
+              </label>
+              <button class="import-btn" id="import-data" disabled>
+                <i class="fas fa-download"></i> Import Data
+              </button>
+            </div>
+            <div class="import-options">
+              <label class="checkbox-label">
+                <input type="checkbox" id="merge-data" checked>
+                <span class="checkmark"></span>
+                Merge with existing data
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Export Modal -->
+      <div class="export-modal" id="export-modal">
+        <div class="export-modal-content">
+          <div class="export-modal-header">
+            <h3><i class="fas fa-download"></i> Export Expenses</h3>
+            <button class="modal-close-btn" id="export-modal-close">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+
+          <div class="export-modal-body">
+            <!-- Format Selection -->
+            <div class="export-format-section">
+              <h4>Export Format</h4>
+              <div class="format-options">
+                <label class="format-option">
+                  <input type="radio" name="export-format" id="export-format" value="csv" checked>
+                  <div class="format-card">
+                    <i class="fas fa-file-csv"></i>
+                    <span class="format-name">CSV</span>
+                    <span class="format-desc">Excel compatible</span>
+                  </div>
+                </label>
+                <label class="format-option">
+                  <input type="radio" name="export-format" value="pdf">
+                  <div class="format-card">
+                    <i class="fas fa-file-pdf"></i>
+                    <span class="format-name">PDF Report</span>
+                    <span class="format-desc">With charts & summary</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="export-filters-section">
+              <h4>Filter Options</h4>
+              <div class="filter-grid">
+                <div class="form-control">
+                  <label for="export-start-date">Start Date</label>
+                  <input type="date" id="export-start-date">
+                </div>
+                <div class="form-control">
+                  <label for="export-end-date">End Date</label>
+                  <input type="date" id="export-end-date">
+                </div>
+                <div class="form-control">
+                  <label for="export-category-filter">Category</label>
+                  <select id="export-category-filter">
+                    <option value="all">All Categories</option>
+                    <option value="food">🍽️ Food & Dining</option>
+                    <option value="transport">🚗 Transportation</option>
+                    <option value="shopping">🛒 Shopping</option>
+                    <option value="entertainment">🎬 Entertainment</option>
+                    <option value="utilities">💡 Bills & Utilities</option>
+                    <option value="healthcare">🏥 Healthcare</option>
+                    <option value="other">📋 Other</option>
+                  </select>
+                </div>
+                <div class="form-control">
+                  <label for="export-type-filter">Type</label>
+                  <select id="export-type-filter">
+                    <option value="all">All Types</option>
+                    <option value="income">💰 Income Only</option>
+                    <option value="expense">💸 Expenses Only</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Preview -->
+            <div class="export-preview-section">
+              <h4>Export Preview</h4>
+              <div class="export-preview" id="export-preview">
+                <div class="export-preview-loading">Loading preview...</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="export-modal-footer">
+            <button type="button" class="btn-cancel" id="export-cancel-btn">Cancel</button>
+            <button type="button" class="btn-submit" id="export-submit-btn">
+              <i class="fas fa-download"></i> Export
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Transaction Form -->
+      <div class="form-section">
+        <h3><i class="fas fa-plus-circle"></i> Add New Transaction</h3>
+        <form id="form" class="transaction-form">
+          <div class="form-row">
+            <div class="form-control">
+              <label for="text">Description</label>
+              <input type="text" id="text" placeholder="Enter transaction description" required />
+            </div>
+            <div class="form-control">
+              <label for="category">Category <span id="category-confidence" class="confidence-badge hidden"></span></label>
+              <select id="category" required>
+                <option value="">Select Category</option>
+                <option value="food">🍽️ Food & Dining</option>
+                <option value="transport">🚗 Transportation</option>
+                <option value="shopping">🛒 Shopping</option>
+                <option value="entertainment">🎬 Entertainment</option>
+                <option value="bills">💡 Bills & Utilities</option>
+                <option value="healthcare">🏥 Healthcare</option>
+                <option value="education">📚 Education</option>
+                <option value="travel">✈️ Travel</option>
+                <option value="salary">💼 Salary</option>
+                <option value="freelance">💻 Freelance</option>
+                <option value="investment">📈 Investment</option>
+                <option value="other">📋 Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-control">
+              <label for="amount">Amount</label>
+              <input type="number" id="amount" placeholder="Enter amount" step="0.01" required>
+              <small>Tip: Use negative values for expenses, positive for income</small>
+            </div>
+            <div class="form-control">
+              <label for="currency">Currency</label>
+              <select id="currency" required>
+                <option value="">Loading currencies...</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-control">
+              <label for="type">Transaction Type</label>
+              <select id="type" required>
+                <option value="">Select Type</option>
+                <option value="income">💰 Income</option>
+                <option value="expense">💸 Expense</option>
+              </select>
+            </div>
+            <div class="form-control"></div>
+          </div>
+          <button type="submit" class="btn-submit">
+            <i class="fas fa-plus"></i>
+            Add Transaction
+          </button>
+        </form>
+      </div>
+
+      <!-- Recurring Expenses Section -->
+     <!-- Recurring Expense Modal -->
+<div class="recurring-modal" id="recurring-modal">
+  <div class="recurring-modal-content">
+
+    <div class="recurring-modal-header">
+      <h3 id="recurring-modal-title">
+        Add Recurring Expense
+      </h3>
+
+  </div>
+</div>
+
+
+    <!--  FORM START -->
+    <form id="recurring-form" class="recurring-form">
+      <input type="hidden" id="recurring-id" />
+
+      <!-- Row 1 -->
+      <div class="form-row">
+        <div class="form-control">
+          <label>Description *</label>
+          <input type="text" id="recurring-description" required />
+        </div>
+
+        <div class="form-control">
+          <label>Amount (₹) *</label>
+          <input type="number" id="recurring-amount" required />
+        </div>
+      </div>
+
+      <!-- Row 2 -->
+      <div class="form-row">
+        <div class="form-control">
+          <label>Category *</label>
+          <select id="recurring-category" required></select>
+        </div>
+
+        <div class="form-control">
+          <label>Type *</label>
+          <select id="recurring-type" required></select>
+        </div>
+      </div>
+
+      <!-- Row 3 -->
+      <div class="form-row">
+        <div class="form-control">
+          <label>Frequency *</label>
+          <select id="recurring-frequency" required></select>
+        </div>
+
+        <div class="form-control">
+          <label>Remind Before (days)</label>
+          <input type="number" id="recurring-reminder-days" />
+        </div>
+      </div>
+
+      <!-- ✅ Row 4 (THIS WAS OUTSIDE BEFORE) -->
+      <div class="form-row">
+        <div class="form-control">
+          <label>Start Date *</label>
+          <input type="date" id="recurring-start-date" required />
+        </div>
+
+        <div class="form-control">
+          <label>Next Due Date *</label>
+          <input type="date" id="recurring-next-due" required />
+        </div>
+      </div>
+
+      <!-- Row 5 -->
+      <div class="form-row">
+        <div class="form-control">
+          <label>End Date (optional)</label>
+          <input type="date" id="recurring-end-date" />
+        </div>
+
+        <div class="form-control checkbox-control">
+          <label class="checkbox-label">
+            <input type="checkbox" id="recurring-auto-create" checked />
+            <span class="checkmark"></span>
+            Auto-create expense on due date
+          </label>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="form-control full-width">
+        <label>Notes (optional)</label>
+        <textarea id="recurring-notes" rows="3"></textarea>
+      </div>
+
+      <!-- Actions -->
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" id="recurring-cancel-btn">
+          Cancel
+        </button>
+        <button type="submit" class="btn-submit">
+          <i class="fas fa-save"></i> Save
+        </button>
+      </div>
+
+    </form>
+    <!-- ✅ FORM END -->
+
+  </div>
+</div>
+
+
+<!-- ================= Currency Settings Modal ================= -->
+<div id="currency-modal" class="modal">
+  <div class="modal-content">
+
+    <div class="modal-header">
+      <h3>
+        <i class="fas fa-money-bill-wave"></i>
+        Currency Settings
+      </h3>
+      <span class="close-modal" onclick="closeCurrencyModal()">&times;</span>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-control">
+        <label for="preferred-currency">Preferred Currency</label>
+        <select id="preferred-currency" class="currency-select">
+          <option value="">Loading currencies...</option>
+        </select>
+        <small>
+          All expenses will be converted to this currency for display
+        </small>
+      </div>
+
+      <div class="form-control">
+        <label>Exchange Rate Info</label>
+        <div class="exchange-rate-info" id="exchange-rate-info">
+          <p>Select a currency to see current exchange rates</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeCurrencyModal()">Cancel</button>
+      <button class="btn-submit" onclick="saveCurrencyPreference()">
+        Save Settings
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================= Footer ================= -->
+<footer class="footer">
+
+  <div class="footer-container">
+
+    <div class="footer-section">
+      <div class="footer-logo">
+        <i class="fas fa-wallet"></i>
+        <span>ExpenseFlow</span>
+      </div>
+    </div>
+
+    <div class="footer-section">
+      <h4>Company</h4>
+      <ul class="footer-links">
+        <li><a href="AboutUs.html">About Us</a></li>
+        <li><a href="PrivacyPolicy.html">Privacy Policy</a></li>
+        <li><a href="terms_service.html">Terms of Service</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-section">
+      <h4>Features</h4>
+      <ul class="footer-links">
+        <li><a href="#">Expense Tracking</a></li>
+        <li><a href="#">Budget Planning</a></li>
+        <li><a href="#">Analytics Dashboard</a></li>
+        <li><a href="#">Goal Setting</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-section">
+      <h4>Resources</h4>
+      <ul class="footer-links">
+        <li><a href="#">Help Center</a></li>
+        <li><a href="#">Financial Tips</a></li>
+        <li><a href="#">Video Tutorials</a></li>
+        <li><a href="#">Community</a></li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div class="footer-bottom">
+    <div class="footer-container">
+      <p>
+        &copy; 2026 ExpenseFlow. All rights reserved.
+        Made with ❤️ for better financial management.
+      </p>
+
+      <div class="footer-stats">
+        <span>🏆 Trusted by 10,000+ users</span>
+        <span>💰 ₹50M+ tracked</span>
+        <span>📊 99.9% uptime</span>
+      </div>
+    </div>
+  </div>
+
+</footer>
+
+<script src="trackerscript.js"></script>
+<script src="export-feature.js"></script>
+
+<!-- ================= PWA Install Prompt ================= -->
+<div id="install-prompt" class="install-prompt" style="display: none;">
+  <div class="install-prompt-content">
+    <div class="install-prompt-header">
+      <i class="fas fa-download"></i>
+      <h3>Install ExpenseFlow</h3>
+    </div>
+
+    <p>Install ExpenseFlow for quick access and offline functionality!</p>
+
+    <div class="install-prompt-actions">
+      <button id="install-button" class="install-btn">
+        <i class="fas fa-plus"></i> Install
+      </button>
+      <button id="install-dismiss" class="dismiss-btn">
+        <i class="fas fa-times"></i> Not now
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Offline Indicator -->
+<div id="offline-indicator" class="offline-indicator" style="display: none;">
+  <i class="fas fa-wifi-slash"></i>
+  <span>You're offline. Changes will be saved locally.</span>
+</div>
+
+<!-- Update Notification -->
+<div id="update-notification" class="update-notification" style="display: none;">
+  <div class="update-content">
+    <i class="fas fa-sync-alt"></i>
+    <span>A new version is available!</span>
+    <button id="update-button" class="update-btn">Update Now</button>
+  </div>
+</div>
+<script>
+  function openImagePreview() {
+    var avatarImg = document.querySelector(".nav-avatar img");
+    var modal = document.getElementById("image-preview-modal");
+    var previewImg = document.getElementById("image-preview-full");
+
+    if (!avatarImg || !modal || !previewImg) {
+      console.error("Preview elements missing");
+      return;
+    }
+
+    previewImg.src = avatarImg.src;
+    modal.classList.remove("hidden");
+  }
+
+  function closeImagePreview() {
+    var modal = document.getElementById("image-preview-modal");
+    if (modal) modal.classList.add("hidden");
+  }
+</script>
+
+<script src="trackerscript.js"></script>
+</body>
+</html>
