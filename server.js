@@ -180,6 +180,7 @@ app.use('/api/groups', require('./routes/groups'));
 app.use('/api/splits', require('./routes/splits'));
 app.use('/api/workspaces', require('./routes/workspaces'));
 app.use('/api/investments', require('./routes/investments'));
+app.use('/api/gamification', require('./routes/gamification'));
 
 // Root route to serve the UI
 app.get('/', (req, res) => {
