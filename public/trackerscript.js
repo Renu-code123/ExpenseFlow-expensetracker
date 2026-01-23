@@ -175,6 +175,27 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* =====================
+     I18N & CURRENCY HELPERS
+  ====================== */
+  const getActiveLocale = () => (window.i18n?.getLocale?.() && window.i18n.getLocale()) || 'en-US';
+  const getActiveCurrency = () => (window.i18n?.getCurrency?.() && window.i18n.getCurrency()) || window.currentUserCurrency || 'INR';
+
+  function formatCurrency(amount, options = {}) {
+    const currency = options.currency || getActiveCurrency();
+    if (window.i18n?.formatCurrency) {
+      return window.i18n.formatCurrency(amount, {
+        currency,
+        locale: getActiveLocale(),
+        minimumFractionDigits: options.minimumFractionDigits ?? 2,
+        maximumFractionDigits: options.maximumFractionDigits ?? 2
+      });
+    }
+
+    const symbol = window.i18n?.getCurrencySymbol?.(currency) || currency;
+    return `${symbol}${Number(amount || 0).toFixed(options.minimumFractionDigits ?? 2)}`;
+  }
+
+  /* =====================
      AI CATEGORIZATION
   ====================== */
 
@@ -532,7 +553,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const categoryInfo = categories[transaction.category] || categories.other;
 
     item.innerHTML = `
-      <div class="transaction-content">
+    
+    
+    <div class="transaction-content">
         <div class="transaction-main">
           <span class="transaction-text">${transaction.text}</span>
           <span class="transaction-amount">₹${Math.abs(transaction.amount).toFixed(2)}</span>
