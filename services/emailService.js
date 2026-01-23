@@ -277,6 +277,31 @@ class EmailService {
 
     return await this.transporter.sendMail(mailOptions);
   }
+
+  async sendContactNotification(contactData) {
+    const { name, email, subject, message } = contactData;
+
+    const mailOptions = {
+      from: process.env.EMAIL_FROM,
+      to: process.env.SUPPORT_EMAIL || process.env.EMAIL_USER,
+      subject: `New Contact Form Submission: ${subject}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px; border-radius: 10px;">
+          <h2 style="color: #667eea; border-bottom: 1px solid #eee; padding-bottom: 10px;">New Contact Message</h2>
+          <p><strong>From:</strong> ${name} (&lt;${email}&gt;)</p>
+          <p><strong>Subject:</strong> ${subject}</p>
+          <div style="background: #f9f9f9; padding: 15px; border-radius: 5px; margin-top: 15px;">
+            <p style="white-space: pre-wrap;">${message}</p>
+          </div>
+          <p style="font-size: 12px; color: #888; margin-top: 20px;">
+            This email was generated automatically by the ExpenseFlow Contact Form.
+          </p>
+        </div>
+      `
+    };
+
+    return await this.transporter.sendMail(mailOptions);
+  }
 }
 
 module.exports = new EmailService();
