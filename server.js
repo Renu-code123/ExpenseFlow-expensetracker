@@ -10,6 +10,7 @@ const aiService = require('./services/aiService');
 const currencyService = require('./services/currencyService');
 const internationalizationService = require('./services/internationalizationService');
 const taxService = require('./services/taxService');
+const collaborationService = require('./services/collaborationService');
 const { generalLimiter } = require('./middleware/rateLimiter');
 const { sanitizeInput, mongoSanitizeMiddleware } = require('./middleware/sanitization');
 const securityMonitor = require('./services/securityMonitor');
@@ -164,6 +165,12 @@ io.on('connection', (socket) => {
 
   // Join user-specific room
   socket.join(`user_${socket.userId}`);
+  
+  // Join workspace rooms
+  const workspaces = await collaborationService.getUserWorkspaces(socket.userId);
+  workspaces.forEach(workspace => {
+    socket.join(`workspace_${workspace._id}`);
+  });
 
   // Handle sync requests
   socket.on('sync_request', async (data) => {
@@ -202,6 +209,7 @@ app.use('/api/workspaces', require('./routes/workspaces'));
 app.use('/api/investments', require('./routes/investments'));
 app.use('/api/ai', require('./routes/ai'));
 app.use('/api/multicurrency', require('./routes/multicurrency'));
+app.use('/api/collaboration', require('./routes/collaboration'));
 
 // Root route to serve the UI
 app.get('/', (req, res) => {
