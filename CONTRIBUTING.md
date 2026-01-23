@@ -120,12 +120,33 @@ git clone https://github.com/Renu-code123/ExpenseFlow-expensetracker.git
 # 2️⃣ Navigate into the project directory
 cd ExpenseFlow-expensetracker
 
-# 3️⃣ Open the HTML file in a browser
-open expenseTracker.html
+# 3️⃣ Install dependencies
+npm install
 
-# OR run it using live server
-npx live-server
+# 4️⃣ Set up environment variables
+# Copy .env.example to .env and fill in your configuration
+
+# 5️⃣ Start the development server
+npm run dev
+
+# OR start the production server
+npm start
 ```
+
+> 📝 **Note:** Ensure you have Node.js (v14+) and MongoDB installed locally or use a cloud instance.
+
+---
+
+## 🧪 Testing Guidelines
+
+We strive for high-quality code. Before submitting a pull request, ensure your changes are tested:
+
+- **Unit Tests:** Write tests for individual functions and modules using Jest or Mocha.
+- **Integration Tests:** Test API endpoints and database interactions.
+- **Manual Testing:** Verify functionality in the browser or via API clients like Postman.
+- **Run Tests:** Execute `npm test` to run the test suite.
+
+> 📋 **Tip:** Aim for at least 80% code coverage. Add tests for new features and bug fixes.
 
 ---
 
