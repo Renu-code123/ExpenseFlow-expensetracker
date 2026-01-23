@@ -2,6 +2,22 @@ const PDFDocument = require('pdfkit');
 const Expense = require('../models/Expense');
 
 class ExportService {
+    formatCurrency(amount, user, options = {}) {
+        const currency = user?.preferredCurrency || 'INR';
+        const locale = user?.locale || 'en-US';
+
+        try {
+            return new Intl.NumberFormat(locale, {
+                style: 'currency',
+                currency,
+                minimumFractionDigits: options.minimumFractionDigits ?? 2,
+                maximumFractionDigits: options.maximumFractionDigits ?? 2
+            }).format(Number(amount) || 0);
+        } catch (err) {
+            return `${currency} ${Number(amount || 0).toFixed(options.minimumFractionDigits ?? 2)}`;
+        }
+    }
+
     /**
      * Generate CSV content from expenses
      * @param {Array} expenses - Array of expense objects
@@ -9,16 +25,15 @@ class ExportService {
      * @returns {String} CSV content
      */
     generateCSV(expenses, options = {}) {
-        const { includeHeaders = true, dateFormat = 'en-IN' } = options;
+        const { includeHeaders = true, dateFormat = 'en-US' } = options;
 
         // CSV Headers
         const headers = [
             'Date',
-            'Description',
+            'Amount',
             'Category',
-            'Type',
-            'Amount (₹)',
-            'Created At'
+            'Description',
+            'Merchant'
         ];
 
         const rows = [];
@@ -29,16 +44,14 @@ class ExportService {
 
         // Generate rows
         expenses.forEach(expense => {
-            const date = new Date(expense.date).toLocaleDateString(dateFormat);
-            const createdAt = new Date(expense.createdAt).toLocaleDateString(dateFormat);
+            const date = new Date(expense.date).toISOString().split('T')[0]; // YYYY-MM-DD format
 
             const row = [
-                `"${date}"`,
+                date,
+                expense.amount.toFixed(2),
+                expense.category,
                 `"${this.escapeCSV(expense.description)}"`,
-                `"${expense.category}"`,
-                `"${expense.type}"`,
-                expense.type === 'expense' ? -expense.amount : expense.amount,
-                `"${createdAt}"`
+                `"${this.escapeCSV(expense.merchant || '')}"`
             ];
 
             rows.push(row.join(','));
@@ -77,19 +90,19 @@ class ExportService {
 
                 // Calculate summary statistics
                 const stats = this.calculateStatistics(expenses);
-                const dateRange = this.getDateRangeText(options.startDate, options.endDate);
+                const dateRange = this.getDateRangeText(options.startDate, options.endDate, user?.locale || 'en-US');
 
                 // Header
                 this.addPDFHeader(doc, user, dateRange);
 
                 // Summary Section
-                this.addPDFSummary(doc, stats);
+                this.addPDFSummary(doc, stats, user);
 
                 // Category Breakdown
-                this.addPDFCategoryBreakdown(doc, stats.categoryBreakdown);
+                this.addPDFCategoryBreakdown(doc, stats.categoryBreakdown, user);
 
                 // Transaction Table
-                this.addPDFTransactionTable(doc, expenses);
+                this.addPDFTransactionTable(doc, expenses, user);
 
                 // Footer
                 this.addPDFFooter(doc);
@@ -119,7 +132,7 @@ class ExportService {
             .fillColor('#333333')
             .text(`Generated for: ${user.name}`, 350, 50, { align: 'right' })
             .text(`Email: ${user.email}`, 350, 65, { align: 'right' })
-            .text(`Date: ${new Date().toLocaleDateString('en-IN')}`, 350, 80, { align: 'right' });
+            .text(`Date: ${new Date().toLocaleDateString(user?.locale || 'en-US')}`, 350, 80, { align: 'right' });
 
         // Date range
         doc.fontSize(12)
@@ -138,7 +151,7 @@ class ExportService {
     /**
      * Add summary section to PDF
      */
-    addPDFSummary(doc, stats) {
+    addPDFSummary(doc, stats, user) {
         doc.fontSize(14)
             .fillColor('#333333')
             .text('Summary', 50, doc.y);
@@ -159,7 +172,7 @@ class ExportService {
             .text('Total Income', startX + 10, startY + 10);
         doc.fontSize(16)
             .fillColor('#1b5e20')
-            .text(`₹${stats.totalIncome.toFixed(2)}`, startX + 10, startY + 30);
+            .text(this.formatCurrency(stats.totalIncome, user), startX + 10, startY + 30);
 
         // Total Expense Box
         doc.rect(startX + boxWidth + 20, startY, boxWidth, boxHeight)
@@ -169,7 +182,7 @@ class ExportService {
             .text('Total Expenses', startX + boxWidth + 30, startY + 10);
         doc.fontSize(16)
             .fillColor('#b71c1c')
-            .text(`₹${stats.totalExpense.toFixed(2)}`, startX + boxWidth + 30, startY + 30);
+            .text(this.formatCurrency(stats.totalExpense, user), startX + boxWidth + 30, startY + 30);
 
         // Net Balance Box
         const balanceColor = stats.netBalance >= 0 ? '#e3f2fd' : '#fff3e0';
@@ -182,7 +195,7 @@ class ExportService {
             .fillColor(balanceTextColor)
             .text('Net Balance', startX + (boxWidth + 20) * 2 + 10, startY + 10);
         doc.fontSize(16)
-            .text(`₹${stats.netBalance.toFixed(2)}`, startX + (boxWidth + 20) * 2 + 10, startY + 30);
+            .text(this.formatCurrency(stats.netBalance, user), startX + (boxWidth + 20) * 2 + 10, startY + 30);
 
         doc.y = startY + boxHeight + 25;
     }
@@ -190,7 +203,7 @@ class ExportService {
     /**
      * Add category breakdown chart to PDF
      */
-    addPDFCategoryBreakdown(doc, categoryBreakdown) {
+    addPDFCategoryBreakdown(doc, categoryBreakdown, user) {
         if (Object.keys(categoryBreakdown).length === 0) return;
 
         doc.fontSize(14)
@@ -238,7 +251,7 @@ class ExportService {
             // Amount
             doc.fontSize(9)
                 .fillColor('#666666')
-                .text(`₹${amount.toFixed(2)} (${percentage}%)`, 360, yPos);
+                .text(`${this.formatCurrency(amount, user)} (${percentage}%)`, 360, yPos);
 
             yPos += 22;
         });
@@ -249,7 +262,7 @@ class ExportService {
     /**
      * Add transaction table to PDF
      */
-    addPDFTransactionTable(doc, expenses) {
+    addPDFTransactionTable(doc, expenses, user) {
         if (expenses.length === 0) {
             doc.fontSize(12)
                 .fillColor('#666666')
@@ -298,12 +311,13 @@ class ExportService {
                 .fillColor(bgColor)
                 .fill();
 
-            const date = new Date(expense.date).toLocaleDateString('en-IN');
+            const date = new Date(expense.date).toLocaleDateString(user?.locale || 'en-US');
             const description = expense.description.length > 30
                 ? expense.description.substring(0, 27) + '...'
                 : expense.description;
             const amountColor = expense.type === 'income' ? '#4caf50' : '#f44336';
             const amountPrefix = expense.type === 'income' ? '+' : '-';
+            const formattedAmount = this.formatCurrency(Math.abs(expense.amount), user);
 
             doc.fontSize(8)
                 .fillColor('#333333')
@@ -313,7 +327,7 @@ class ExportService {
                 .text(this.capitalizeFirst(expense.type), 395, yPos);
 
             doc.fillColor(amountColor)
-                .text(`${amountPrefix}₹${expense.amount.toFixed(2)}`, 455, yPos);
+                .text(`${amountPrefix}${formattedAmount}`, 455, yPos);
 
             yPos += 18;
         });
@@ -450,12 +464,12 @@ class ExportService {
     /**
      * Helper: Get date range text
      */
-    getDateRangeText(startDate, endDate) {
+    getDateRangeText(startDate, endDate, locale = 'en-US') {
         if (!startDate && !endDate) {
             return 'All Time';
         }
 
-        const formatDate = (date) => new Date(date).toLocaleDateString('en-IN', {
+        const formatDate = (date) => new Date(date).toLocaleDateString(locale, {
             day: 'numeric',
             month: 'short',
             year: 'numeric'
