@@ -60,6 +60,39 @@
         --shadow-card: 0 8px 16px rgba(0, 0, 0, 0.3);
       }
 
+      /* Light Mode Theme */
+      [data-theme="light"] {
+        /* Color Palette */
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        --dark-gradient: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+        
+        /* Background Colors */
+        --bg-primary: #ffffff;
+        --bg-secondary: #f5f5f5;
+        --bg-tertiary: #efefef;
+        --bg-glass: rgba(0, 0, 0, 0.05);
+        
+        /* Text Colors */
+        --text-primary: #1a1a1a;
+        --text-secondary: #666666;
+        --text-accent: #667eea;
+        
+        /* Accent Colors */
+        --accent-primary: #667eea;
+        --accent-secondary: #764ba2;
+        --success: #00c853;
+        --error: #d32f2f;
+        --warning: #ffa000;
+        
+        /* Shadows */
+        --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+        --shadow-hover: 0 15px 35px rgba(0, 0, 0, 0.15);
+        --shadow-card: 0 8px 16px rgba(0, 0, 0, 0.1);
+      }
+
       * {
         margin: 0;
         padding: 0;
@@ -93,6 +126,14 @@
         color: var(--text-primary);
         line-height: 1.6;
         overflow-x: hidden;
+        transition: background-color 0.3s ease, color 0.3s ease;
+      }
+
+      [data-theme="light"] body {
+        background-image: 
+          radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+          radial-gradient(circle at 80% 20%, rgba(240, 147, 251, 0.1) 0%, transparent 50%),
+          radial-gradient(circle at 40% 40%, rgba(102, 126, 234, 0.05) 0%, transparent 50%);
       }
 
       /* Header Styles */
@@ -104,6 +145,12 @@
         backdrop-filter: blur(20px);
         background: rgba(15, 15, 35, 0.8);
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        transition: background 0.3s ease, border-color 0.3s ease;
+      }
+
+      [data-theme="light"] .header {
+        background: rgba(255, 255, 255, 0.9);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
       }
 
       .navbar {
@@ -198,7 +245,7 @@
         padding-top: 100px;
         min-height: 100vh;
       }
-
+      
       .hero-section {
         text-align: center;
         padding: 3rem 2rem;
@@ -1644,6 +1691,9 @@
             <span class="bar"></span>
             <span class="bar"></span>
           </div>
+          <button id="theme-toggle-btn" class="theme-toggle-btn dark-mode" title="Switch to Light Mode">
+            <i class="fas fa-sun"></i>
+          </button>
           <div class="user-profile">
             <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face" alt="User" class="profile-img">
             <span class="username">John Doe</span>
@@ -1903,6 +1953,7 @@
     <i data-lucide="arrow-up-circle"></i>
   </button>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="theme.js"></script>
     <script src="trackerscript.js"></script>
     
     <!-- PWA Installation Prompt -->
