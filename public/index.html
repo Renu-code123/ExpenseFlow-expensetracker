@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#64ffda">
   <meta name="description" content="Take control of your finances with our intuitive expense tracker">
   <meta name="keywords" content="expense tracker, budget, finance, money management, PWA">
@@ -30,7 +30,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     /* =========================
    MOBILE RESPONSIVE STYLES
@@ -163,8 +162,11 @@
             <i class="fas fa-coins"></i>
             <span id="current-currency">INR</span>
           </button>
-          <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face"
-            alt="User" class="profile-img">
+          <img
+  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face"
+  alt="User Profile Picture"
+  class="profile-img">
+
           <span class="username">John Doe</span>
         </div>
       </div>
@@ -323,7 +325,7 @@
               <h4>Export Format</h4>
               <div class="format-options">
                 <label class="format-option">
-                  <input type="radio" name="export-format" id="export-format" value="csv" checked>
+                  <input type="radio" name="export-format" id="export-format-csv" value="csv" checked>
                   <div class="format-card">
                     <i class="fas fa-file-csv"></i>
                     <span class="format-name">CSV</span>
@@ -331,7 +333,7 @@
                   </div>
                 </label>
                 <label class="format-option">
-                  <input type="radio" name="export-format" value="pdf">
+                  <input type="radio" name="export-format" id="export-format-pdf" value="pdf">
                   <div class="format-card">
                     <i class="fas fa-file-pdf"></i>
                     <span class="format-name">PDF Report</span>
@@ -398,7 +400,7 @@
       <!-- Add Transaction Form -->
       <div class="form-section">
         <h3><i class="fas fa-plus-circle"></i> Add New Transaction</h3>
-        <form id="form" class="transaction-form">
+        <form id="transaction-form" class="transaction-form">
           <div class="form-row">
             <div class="form-control">
               <label for="text">Description</label>
@@ -427,7 +429,7 @@
             <div class="form-control">
               <label for="amount">Amount</label>
               <input type="number" id="amount" placeholder="Enter amount" step="0.01" required>
-              <small>Tip: Use negative values for expenses, positive for income</small>
+              <small>Use negative values for expenses, positive for income</small>
             </div>
             <div class="form-control">
               <label for="currency">Currency</label>
@@ -462,6 +464,52 @@
             <i class="fas fa-plus"></i> Add Recurring
           </button>
         </div>
+          <!-- ================== PIGGY BANK SECTION ================== -->
+
+<!-- Piggy Bank Modal -->
+<div class="piggy-modal" id="piggy-modal">
+  <div class="piggy-modal-box">
+    <h3>Add Savings</h3>
+
+    <input
+      type="number"
+      id="piggy-input"
+      placeholder="Enter amount"
+      min="1"
+    />
+
+    <div class="piggy-modal-actions">
+      <button class="piggy-btn" id="piggy-save-btn">Save</button>
+      <button class="piggy-btn cancel" id="piggy-cancel-btn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Piggy Bank Card -->
+<div class="piggy-bank-section" id="piggy-bank-section">
+  <div class="piggy-bank-card">
+
+    <div class="piggy-bank-icon">🐷</div>
+
+    <div class="piggy-bank-title">
+      Piggy Bank Savings
+    </div>
+
+    <div class="piggy-bank-desc">
+      Saved Amount: ₹<span id="piggy-amount">0</span>
+    </div>
+
+    <div class="piggy-actions">
+      <button class="piggy-btn" id="piggy-add-btn">Add Money</button>
+      <button class="piggy-btn" id="piggy-view-btn">View Savings</button>
+    </div>
+    <p id="piggy-details" style="display:none;">
+  🐷 Total Savings: ₹<span id="piggy-total"></span>
+</p>
+
+  </div>
+</div>
+
 
         <!-- Recurring Statistics -->
         <div class="recurring-stats" id="recurring-stats">
@@ -582,6 +630,59 @@
       </div>
     </div>
   </main>
+  <footer class="footer">
+  <div class="footer-container">
+
+    <div class="footer-section">
+      <div class="footer-logo">
+        <i class="fas fa-wallet"></i>
+        <span>ExpenseFlow</span>
+      </div>
+
+      <p class="footer-description">
+        Smart money management made simple. Track, analyze, and optimize your financial habits.
+      </p>
+
+      <div class="social-links">
+        <a href="https://x.com/9504_renu" target="_blank" rel="noopener noreferrer">
+        <i class="fab fa-x-twitter"></i></a>
+        <a href="https://github.com/Renu-code123/ExpenseFlow" target="_blank"><i class="fab fa-github"></i></a>
+        <a href="mailto:renu89857@gmail.com"><i class="far fa-envelope"></i></a>
+        <a href="https://www.linkedin.com/in/renu-kumari-prajapati" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+      </div>
+    </div>
+
+    <div class="footer-section">
+      <h4>Company</h4>
+      <ul class="footer-links">
+        <li><a href="AboutUs.html">About Us</a></li>
+        <li><a href="PrivacyPolicy.html">Privacy Policy</a></li>
+        <li><a href="terms_service.html">Terms of Service</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-section">
+      <h4>Features</h4>
+      <ul class="footer-links">
+        <li>Expense Tracking</li>
+        <li>Budget Planning</li>
+        <li>Analytics Dashboard</li>
+        <li>Goal Setting</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div class="footer-bottom">
+    <p>&copy; 2026 ExpenseFlow. All rights reserved. Made with ❤️ for better financial management.</p>
+    <div class="footer-stats">
+      <span>🏆 Trusted by 10,000+ users</span>
+      <span>💰 ₹50M+ tracked</span>
+      <span>📊 99.9% uptime</span>
+    </div>
+  </div>
+</footer>
+
 
   <!-- Currency Settings Modal -->
   <div id="currency-modal" class="modal">
@@ -612,98 +713,6 @@
     </div>
   </div>
 
-  <footer class="footer">
-  <div class="footer-container">
-
-    <div class="footer-section">
-  <div class="footer-logo">
-    <i class="fas fa-wallet"></i>
-    <span>ExpenseFlow</span>
-  </div>
-
-  <p class="footer-description">
-    Smart money management made simple. Track, analyze, and optimize your financial habits.
-  </p>
-
-  <div class="social-links">
-    <a
-      href="https://x.com/9504_renu"
-      class="social-link"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="X (Twitter)"
-    >
-      <i class="fab fa-x-twitter"></i>
-    </a>
-
-    <a
-      href="https://github.com/Renu-code123/ExpenseFlow"
-      class="social-link"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Github"
-    >
-      <i class="fab fa-github"></i>
-    </a>
-
-    <a
-      href="mailto:renu89857@gmail.com"
-      class="social-link"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Email"
-    >
-      <i class="far fa-envelope"></i>
-    </a>
-
-    <a
-      href="https://www.linkedin.com/in/renu-kumari-prajapati"
-      class="social-link"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="LinkedIn"
-    >
-      <i class="fab fa-linkedin-in"></i>
-    </a>
-  </div>
-</div>
-
-
-    <div class="footer-section">
-      <h4>Company</h4>
-      <ul class="footer-links">
-        <li><a href="AboutUs.html">About Us</a></li>
-        <li><a href="PrivacyPolicy.html">Privacy Policy</a></li>
-        <li><a href="terms_service.html">Terms of Service</a></li>
-        <li><a href="#">Contact</a></li>
-      </ul>
-    </div>
-
-    <div class="footer-section">
-      <h4>Features</h4>
-      <ul class="footer-links">
-        <li><a href="#">Expense Tracking</a></li>
-        <li><a href="#">Budget Planning</a></li>
-        <li><a href="#">Analytics Dashboard</a></li>
-        <li><a href="#">Goal Setting</a></li>
-      </ul>
-    </div>
-
-  </div>
-
-  <div class="footer-bottom">
-    <p>&copy; 2026 ExpenseFlow. All rights reserved. Made with ❤️ for better financial management.</p>
-    <div class="footer-stats">
-      <span>🏆 Trusted by 10,000+ users</span>
-      <span>💰 ₹50M+ tracked</span>
-      <span>📊 99.9% uptime</span>
-    </div>
-  </div>
-</footer>
-
-
-  <script src="trackerscript.js"></script>
-    
     <!-- PWA Installation Prompt -->
     <div id="install-prompt" class="install-prompt" style="display: none;">
       <div class="install-prompt-content">
@@ -722,21 +731,21 @@
         </div>
       </div>
     </div>
+     <!-- Offline Indicator -->
+  <div id="offline-indicator" class="offline-indicator" style="display: none;">
+    <i class="fas fa-wifi-slash"></i>
+    <span>You're offline. Changes will be saved locally.</span>
+  </div>
+<!-- Update Available Notification -->
+<div id="update-notification" class="update-notification" style="display: none;">
+  <div class="update-content">
+    <i class="fas fa-sync-alt"></i>
+    <span>A new version is available!</span>
+    <button id="update-button" class="update-btn">Update Now</button>
+  </div>
+</div>
 
-    <div class="footer-bottom">
-      <div class="footer-container">
-        <p>&copy; 2026 ExpenseFlow. All rights reserved. Made with ❤️ for better financial management.</p>
-        <div class="footer-stats">
-          <span>🏆 Trusted by 10,000+ users</span>
-          <span>💰 ₹50M+ tracked</span>
-          <span>📊 99.9% uptime</span>
-        </div>
-      </div>
-    </div>
-  </footer>
-
-  <script src="trackerscript.js"></script>
-  <script src="analytics-dashboard.js"></script>
+   
   <script>
     // Currency Management Functions
     let supportedCurrencies = [];
@@ -785,27 +794,32 @@
     }
 
     // Load user's currency preference
-    async function loadUserCurrencyPreference() {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
+async function loadUserCurrencyPreference() {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) return;
 
-        const response = await fetch('/api/currency/preference', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        const data = await response.json();
-        if (data.success) {
-          currentUserCurrency = data.data.preferredCurrency;
-          document.getElementById('current-currency').textContent = currentUserCurrency;
-          populateCurrencySelects();
-        }
-      } catch (error) {
-        console.error('Error loading currency preference:', error);
+    const response = await fetch('/api/currency/preference', {
+      headers: {
+        'Authorization': `Bearer ${token}`
       }
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      currentUserCurrency = data.data.preferredCurrency;
+      document.getElementById('current-currency').textContent = currentUserCurrency;
+      populateCurrencySelects();
     }
+
+  } catch (error) {
+    console.error('Error loading currency preference:', error);
+  }
+}
+
+
+
 
     // Open currency settings modal
     function openCurrencyModal() {
@@ -819,44 +833,51 @@
     }
 
     // Load exchange rate information
-    async function loadExchangeRateInfo() {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`/api/currency/rates?base=${currentUserCurrency}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
+async function loadExchangeRateInfo() {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) return;
 
-        const data = await response.json();
-        if (data.success) {
-          const rateInfo = document.getElementById('exchange-rate-info');
-          const rates = data.data.rates;
-          const popularCurrencies = ['USD', 'EUR', 'GBP', 'JPY', 'AUD'];
-          
-          let html = '<div class="rate-list">';
-          popularCurrencies.forEach(curr => {
-            if (rates[curr]) {
-              html += `<div class="rate-item">
-                <span class="rate-currency">${curr}</span>
-                <span class="rate-value">${rates[curr].toFixed(4)}</span>
-              </div>`;
-            }
-          });
-          html += '</div>';
-          html += `<small>Last updated: ${new Date(data.data.lastUpdated).toLocaleString()}</small>`;
-          rateInfo.innerHTML = html;
+    const response = await fetch(
+      `/api/currency/rates?base=${currentUserCurrency}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`
         }
-      } catch (error) {
-        console.error('Error loading exchange rates:', error);
       }
+    );
+
+    const data = await response.json();
+
+    if (data.success) {
+      const rateInfo = document.getElementById("exchange-rate-info");
+      if (!rateInfo) return;
+
+      let html = "<ul>";
+      for (let curr in data.data.rates) {
+        html += `<li>${curr}: ${data.data.rates[curr]}</li>`;
+      }
+      html += "</ul>";
+
+      rateInfo.innerHTML = html;
     }
+
+  } catch (error) {
+    console.error("Error loading exchange rates:", error);
+  }
+}
+
 
     // Save currency preference
     async function saveCurrencyPreference() {
       try {
         const token = localStorage.getItem('token');
         const newCurrency = document.getElementById('preferred-currency').value;
+        if (!newCurrency) {
+  alert("Please select a currency");
+  return;
+}
+
 
         const response = await fetch('/api/currency/preference', {
           method: 'PUT',
@@ -887,50 +908,23 @@
     document.addEventListener('DOMContentLoaded', function() {
       loadSupportedCurrencies();
       loadUserCurrencyPreference();
+      loadExchangeRateInfo();
+
     });
 
     // Close modal when clicking outside
-    window.onclick = function(event) {
+    window.addEventListener("click", function(event) {
       const modal = document.getElementById('currency-modal');
       if (event.target === modal) {
         closeCurrencyModal();
       }
-    }
+    });
   </script>
+  
+<!-- Scripts -->
+<script src="trackerscript.js"></script>
+<script src="analytics-dashboard.js"></script>
+<script src="piggy-bank.js"></script>
 
-  <!-- PWA Installation Prompt -->
-  <div id="install-prompt" class="install-prompt" style="display: none;">
-    <div class="install-prompt-content">
-      <div class="install-prompt-header">
-        <i class="fas fa-download"></i>
-        <h3>Install ExpenseFlow</h3>
-      </div>
-      <p>Install ExpenseFlow for quick access and offline functionality!</p>
-      <div class="install-prompt-actions">
-        <button id="install-button" class="install-btn">
-          <i class="fas fa-plus"></i> Install
-        </button>
-        <button id="install-dismiss" class="dismiss-btn">
-          <i class="fas fa-times"></i> Not now
-        </button>
-      </div>
-    </div>
-.7  </div>
-
-  <!-- Offline Indicator -->
-  <div id="offline-indicator" class="offline-indicator" style="display: none;">
-    <i class="fas fa-wifi-slash"></i>
-    <span>You're offline. Changes will be saved locally.</span>
-  </div>
-
-  <!-- Update Available Notification -->
-  <div id="update-notification" class="update-notification" style="display: none;">
-    <div class="update-content">
-      <i class="fas fa-sync-alt"></i>
-      <span>A new version is available!</span>
-      <button id="update-button" class="update-btn">Update Now</button>
-    </div>
-  </div>
 </body>
-
 </html>

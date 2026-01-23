@@ -1476,10 +1476,7 @@ body {
     right: max(20px, env(safe-area-inset-right) + 20px);
   }
 }
- |  | 
-1468
  
-
 .empty-state {
   list-style: none;
   display: flex;
@@ -2530,10 +2527,11 @@ button {
   font-weight: 600;
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
+@keyframes pulseOpacity {
+  0%,100% { opacity: 1; }
   50% { opacity: 0.5; }
 }
+
 
 /* Suggestion item */
 .suggestion-item {
@@ -3238,4 +3236,119 @@ button {
   .main-content .container {
     row-gap: 1.3rem !important;
   }
+}
+/* =========================
+   Piggy Bank – PIN Card
+========================= */
+
+.piggy-bank-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border-radius: 18px;
+  border: 1px solid rgba(100, 255, 218, 0.25);
+  padding: 1.6rem;
+  transition: all 0.35s ease;
+}
+
+.piggy-bank-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0 28px rgba(100, 255, 218, 0.35);
+}
+
+.piggy-bank-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 15px;
+  background: linear-gradient(135deg, #64ffda, #4facfe);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  color: #0f0f23;
+  margin-bottom: 1rem;
+}
+
+.piggy-bank-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.piggy-bank-desc {
+  font-size: 0.85rem;
+  color: #b4b4b4;
+  margin-bottom: 0.75rem;
+}
+
+.piggy-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.piggy-btn {
+  flex: 1;
+  padding: 0.5rem;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  background: rgba(100, 255, 218, 0.15);
+  color: #64ffda;
+}
+
+.piggy-btn:hover {
+  background: rgba(100, 255, 218, 0.3);
+}
+/* Piggy Modal */
+.piggy-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.piggy-modal.active {
+  display: flex;
+}
+
+.piggy-modal-box {
+  background: #0f172a;
+  padding: 1.5rem;
+  border-radius: 16px;
+  width: 320px;
+  animation: pop 0.3s ease;
+}
+
+@keyframes pop {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.piggy-modal-box h3 {
+  margin-bottom: 1rem;
+}
+
+.piggy-modal-box input {
+  width: 100%;
+  padding: 0.6rem;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+  margin-bottom: 1rem;
+}
+
+.piggy-modal-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.piggy-btn.cancel {
+  background: rgba(255, 255, 255, 0.15);
 }

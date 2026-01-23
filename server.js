@@ -1,162 +1,144 @@
+// ================== CORE IMPORTS ==================
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const mongoose = require('mongoose');
 const helmet = require('helmet');
 const cors = require('cors');
-const socketAuth = require('./middleware/socketAuth');
-const CronJobs = require('./services/cronJobs');
-const { generalLimiter } = require('./middleware/rateLimiter');
-const { sanitizeInput, mongoSanitizeMiddleware } = require('./middleware/sanitization');
-const securityMonitor = require('./services/securityMonitor');
 require('dotenv').config();
 
+// ================== APP SETUP ==================
+const app = express();
+const server = http.createServer(app);
+
+const io = socketIo(server, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST']
+  }
+});
+
+// ================== CUSTOM IMPORTS ==================
+const socketAuth = require('./middleware/socketAuth');
+const CronJobs = require('./services/cronJobs');
+const {
+  generalLimiter,
+  authLimiter,
+  expenseLimiter,
+  uploadLimiter
+} = require('./middleware/rateLimiter');
+const {
+  sanitizeInput,
+  mongoSanitizeMiddleware
+} = require('./middleware/sanitization');
+const securityMonitor = require('./services/securityMonitor');
+
+// Routes
 const authRoutes = require('./routes/auth');
 const expenseRoutes = require('./routes/expenses');
 const syncRoutes = require('./routes/sync');
 
-const app = express();
-const server = http.createServer(app);
-const io = socketIo(server, {
-  cors: {
-    origin: process.env.FRONTEND_URL || "http://localhost:3000",
-    methods: ["GET", "POST"],
-    credentials: true
-  }
-});
-
+// ================== PORT ==================
 const PORT = process.env.PORT || 3000;
 
-// Security middleware
+// ================== SECURITY ==================
 app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'"],
-      fontSrc: ["'self'"],
-      objectSrc: ["'none'"],
-      mediaSrc: ["'self'"],
-      frameSrc: ["'none'"]
-    }
-  },
   crossOriginEmbedderPolicy: false
 }));
 
-// CORS configuration
 app.use(cors({
   origin: function (origin, callback) {
     const allowedOrigins = [
-      'http://localhost:3000',
+      'http://localhost:3000',   // React (future)
       'http://localhost:3001',
+      'http://localhost:5500',   // Live Server ✅
+      'http://127.0.0.1:5500',   // Live Server (alt) ✅
       process.env.FRONTEND_URL
     ].filter(Boolean);
-    
+
+    // allow requests with no origin (Postman, server-to-server)
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  credentials: true
 }));
 
-// Rate limiting
 app.use(generalLimiter);
 
-// Input sanitization
-app.use(mongoSanitizeMiddleware);
-app.use(sanitizeInput);
-
-// Security monitoring
-app.use(securityMonitor.blockSuspiciousIPs());
-
-// Body parsing middleware
+// ================== BODY & SANITIZATION ==================
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(mongoSanitizeMiddleware);
+app.use(sanitizeInput);
+app.use(securityMonitor.blockSuspiciousIPs());
 
-// Static files
-app.use(express.static('.'));
+// ================== STATIC FRONTEND ==================
+// 👉 YAHI SE FULL PAGE SERVE HOGA
+app.use(express.static('public'));
 
-// Security logging middleware
-app.use((req, res, next) => {
-  const originalSend = res.send;
-  res.send = function(data) {
-    // Log failed requests
-    if (res.statusCode >= 400) {
-      securityMonitor.logSecurityEvent(req, 'suspicious_activity', {
-        statusCode: res.statusCode,
-        response: typeof data === 'string' ? data.substring(0, 200) : 'Non-string response'
-      });
-    }
-    originalSend.call(this, data);
-  };
-  next();
-});
-
-// Make io available to the  routes
+// ================== SOCKET.IO ==================
 app.set('io', io);
-
-// Make io globally available for notifications
 global.io = io;
 
-// Database connection
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => {
-    console.log('MongoDB connected');
-    // Initialize cron jobs after DB connection
-    CronJobs.init();
-    console.log('Email cron jobs initialized');
-  })
-  .catch(err => console.error('MongoDB connection error:', err));
-
-// Socket.IO authentication
 io.use(socketAuth);
 
-// Socket.IO connection handling
 io.on('connection', (socket) => {
-  console.log(`User ${socket.user.name} connected`);
+  console.log(`User ${socket.user?.name || socket.userId} connected`);
 
-  // Join user-specific room
   socket.join(`user_${socket.userId}`);
 
-  // Handle sync requests
-  socket.on('sync_request', async (data) => {
+  socket.on('sync_request', async () => {
     try {
-      // Process sync queue for this user
       const SyncQueue = require('./models/SyncQueue');
-      const pendingSync = await SyncQueue.find({
+      const pending = await SyncQueue.find({
         user: socket.userId,
         processed: false
       }).sort({ createdAt: 1 });
 
-      socket.emit('sync_data', pendingSync);
-    } catch (error) {
-      socket.emit('sync_error', { error: error.message });
+      socket.emit('sync_data', pending);
+    } catch (err) {
+      socket.emit('sync_error', { error: err.message });
     }
   });
 
   socket.on('disconnect', () => {
-    console.log(`User ${socket.user.name} disconnected`);
+    console.log(`User ${socket.userId} disconnected`);
   });
 });
 
-// Routes
-app.use('/api/auth', require('./middleware/rateLimiter').authLimiter, authRoutes);
-app.use('/api/expenses', require('./middleware/rateLimiter').expenseLimiter, expenseRoutes);
+// ================== API ROUTES ==================
+app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api/expenses', expenseLimiter, expenseRoutes);
 app.use('/api/sync', syncRoutes);
 app.use('/api/notifications', require('./routes/notifications'));
-app.use('/api/receipts', require('./middleware/rateLimiter').uploadLimiter, require('./routes/receipts'));
+app.use('/api/receipts', uploadLimiter, require('./routes/receipts'));
 app.use('/api/budgets', require('./routes/budgets'));
 app.use('/api/goals', require('./routes/goals'));
 app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/currency', require('./routes/currency'));
 
+// ================== HEALTH CHECK (OPTIONAL) ==================
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'OK',
+    message: 'ExpenseFlow Backend Healthy 🚀'
+  });
+});
+
+// ================== DATABASE ==================
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => {
+    console.log('MongoDB connected');
+    CronJobs.init();
+    console.log('Cron jobs initialized');
+  })
+  .catch(err => console.error('MongoDB connection error:', err));
+
+// ================== SERVER START ==================
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  console.log('Security features enabled: Rate limiting, Input sanitization, Security headers');
+  console.log('Security enabled: Rate limit, Sanitization, Helmet');
 });
