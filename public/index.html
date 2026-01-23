@@ -155,6 +155,10 @@
       margin-right: 8px;
     }
 
+    .i18n-multiline {
+      white-space: pre-line;
+    }
+
     .footer-links {
       display: grid;
       grid-template-columns: repeat(3, minmax(100px, 1fr));
@@ -172,13 +176,12 @@
           <span>ExpenseFlow</span>
         </div>
         <div class="nav-menu" id="nav-menu">
-          <a href="#dashboard" class="nav-link active">Dashboard</a>
-          <a href="#analytics" class="nav-link">Analytics</a>
-          <a href="#investments" class="nav-link">Investments</a>
-          <a href="#goals" class="nav-link">Goals</a>
-          <a href="#settings" class="nav-link">Settings</a>
-          <a href="./contributor.html" class="nav-link">Contributors</a>
-          <a href="contact.html" class="nav-link">Contact</a>
+          <a href="#dashboard" class="nav-link active"><span data-i18n="nav.dashboard">Dashboard</span></a>
+          <a href="#analytics" class="nav-link"><span data-i18n="nav.analytics">Analytics</span></a>
+          <a href="#goals" class="nav-link"><span data-i18n="nav.goals">Goals</span></a>
+          <a href="#settings" class="nav-link"><span data-i18n="nav.settings">Settings</span></a>
+          <a href="./contributor.html" class="nav-link"><span data-i18n="nav.contributors">Contributors</span></a>
+          <a href="contact.html" class="nav-link"><span data-i18n="nav.contact">Contact</span></a>
         </div>
         <div class="nav-toggle" id="nav-toggle">
           <span class="bar"></span>
@@ -186,6 +189,11 @@
           <span class="bar"></span>
         </div>
         <div class="user-profile">
+          <select id="language-switcher" class="language-select" aria-label="Language">
+            <option value="en">EN</option>
+            <option value="es">ES</option>
+            <option value="fr">FR</option>
+          </select>
           <button class="currency-btn" onclick="openCurrencyModal()" title="Currency Settings">
             <i class="fas fa-coins"></i>
             <span id="current-currency">INR</span>
@@ -213,18 +221,20 @@
       <div class="hero-content-wrapper">
         <div class="hero-badge">
           <i class="fas fa-star"></i>
-          <span>Trusted by 10,000+ users worldwide</span>
+          <span data-i18n="hero.badge">Trusted by 10,000+ users worldwide</span>
         </div>
-        <h1 class="hero-title">Smart Money Management<br>Made Simple</h1>
-        <p class="hero-subtitle">Take control of your finances with our intelligent expense tracker.<br>Track, analyze,
-          and optimize your spending habits effortlessly.</p>
+        <h1 class="hero-title i18n-multiline" data-i18n="hero.title">Smart Money Management
+          Made Simple</h1>
+        <p class="hero-subtitle i18n-multiline" data-i18n="hero.subtitle">Take control of your finances with our
+          intelligent expense tracker.
+          Track, analyze, and optimize your spending habits effortlessly.</p>
         <div class="hero-cta">
           <button class="cta-primary" onclick="document.getElementById('form').scrollIntoView({ behavior: 'smooth' })">
-            <i class="fas fa-rocket"></i> Start Tracking Now
+            <i class="fas fa-rocket"></i> <span data-i18n="hero.cta.start">Start Tracking Now</span>
           </button>
           <button class="cta-secondary"
             onclick="document.getElementById('features-section').scrollIntoView({ behavior: 'smooth' })">
-            <i class="fas fa-info-circle"></i> Learn More
+            <i class="fas fa-info-circle"></i> <span data-i18n="hero.cta.learn">Learn More</span>
           </button>
         </div>
         <div class="hero-features">
@@ -256,8 +266,8 @@
     <section id="features-section" class="features-showcase">
       <div class="container">
         <div class="section-header-center">
-          <h2 class="section-title">Powerful Features for Smart Finance</h2>
-          <p class="section-subtitle">Everything you need to manage your money effectively</p>
+          <h2 class="section-title" data-i18n="feature.heading">Powerful Features for Smart Finance</h2>
+          <p class="section-subtitle" data-i18n="feature.subheading">Everything you need to manage your money effectively</p>
         </div>
         <div class="features-grid">
           <div class="feature-card">
@@ -350,7 +360,7 @@
             <i class="fas fa-wallet"></i>
           </div>
           <div class="stat-content">
-            <p class="stat-label">Total Balance</p>
+            <p class="stat-label" data-i18n="stats.balance">Total Balance</p>
             <h3 class="stat-value" id="quick-balance">₹0.00</h3>
           </div>
         </div>
@@ -359,7 +369,7 @@
             <i class="fas fa-arrow-up"></i>
           </div>
           <div class="stat-content">
-            <p class="stat-label">This Month Income</p>
+            <p class="stat-label" data-i18n="stats.income">This Month Income</p>
             <h3 class="stat-value income" id="quick-income">₹0.00</h3>
           </div>
         </div>
@@ -368,7 +378,7 @@
             <i class="fas fa-arrow-down"></i>
           </div>
           <div class="stat-content">
-            <p class="stat-label">This Month Expenses</p>
+            <p class="stat-label" data-i18n="stats.expense">This Month Expenses</p>
             <h3 class="stat-value expense" id="quick-expense">₹0.00</h3>
           </div>
         </div>
@@ -377,7 +387,7 @@
             <i class="fas fa-piggy-bank"></i>
           </div>
           <div class="stat-content">
-            <p class="stat-label">Savings Rate</p>
+            <p class="stat-label" data-i18n="stats.savings">Savings Rate</p>
             <h3 class="stat-value" id="quick-savings">0%</h3>
           </div>
         </div>
@@ -425,20 +435,21 @@
       <!-- Transaction History -->
       <div class="history-section">
         <div class="section-header">
-          <h3><i class="fas fa-history"></i> Transaction History</h3>
+          <h3><i class="fas fa-history"></i> <span data-i18n="history.title">Transaction History</span></h3>
           <div class="filter-controls">
             <div class="search-container">
-              <input type="text" id="search-input" placeholder="Search transactions..." class="search-input">
+              <input type="text" id="search-input" placeholder="Search transactions..." class="search-input"
+                data-i18n-placeholder="history.search">
               <i class="fas fa-search search-icon"></i>
             </div>
             <div class="filter-buttons">
-              <button class="filter-btn active" data-filter="all">All</button>
-              <button class="filter-btn" data-filter="income">Income</button>
-              <button class="filter-btn" data-filter="expense">Expense</button>
+              <button class="filter-btn active" data-filter="all" data-i18n="history.filter.all">All</button>
+              <button class="filter-btn" data-filter="income" data-i18n="history.filter.income">Income</button>
+              <button class="filter-btn" data-filter="expense" data-i18n="history.filter.expense">Expense</button>
             </div>
             <div class="advanced-filters">
               <select id="category-filter" class="category-select">
-                <option value="all">All Categories</option>
+                <option value="all" data-i18n="history.category.all">All Categories</option>
                 <option value="food">🍽️ Food & Dining</option>
                 <option value="transport">🚗 Transportation</option>
                 <option value="shopping">🛒 Shopping</option>
@@ -461,7 +472,7 @@
                 <input type="number" id="amount-max" placeholder="Max Amount" class="amount-input" step="0.01">
               </div>
               <button class="clear-filters-btn" id="clear-filters">
-                <i class="fas fa-times"></i> Clear Filters
+                <i class="fas fa-times"></i> <span data-i18n="history.clear">Clear Filters</span>
               </button>
             </div>
           </div>
@@ -473,38 +484,38 @@
 
       <!-- Data Management Section -->
       <div class="data-management-section">
-        <h3><i class="fas fa-database"></i> Data Management</h3>
+        <h3><i class="fas fa-database"></i> <span data-i18n="data.title">Data Management</span></h3>
         <div class="data-actions">
           <div class="export-section">
-            <h4>Export Data</h4>
+            <h4 data-i18n="data.export">Export Data</h4>
             <div class="export-buttons">
               <button class="export-btn" id="export-csv">
-                <i class="fas fa-file-csv"></i> Quick CSV
+                <i class="fas fa-file-csv"></i> <span data-i18n="data.export.csv">Quick CSV</span>
               </button>
               <button class="export-btn pdf-btn" id="export-pdf">
-                <i class="fas fa-file-pdf"></i> Quick PDF
+                <i class="fas fa-file-pdf"></i> <span data-i18n="data.export.pdf">Quick PDF</span>
               </button>
               <button class="export-btn advanced-btn" id="open-export-modal">
-                <i class="fas fa-cog"></i> Advanced Export
+                <i class="fas fa-cog"></i> <span data-i18n="data.export.advanced">Advanced Export</span>
               </button>
             </div>
           </div>
           <div class="import-section">
-            <h4>Import Data</h4>
+            <h4 data-i18n="data.import">Import Data</h4>
             <div class="import-controls">
               <input type="file" id="import-file" accept=".csv,.json" class="file-input">
               <label for="import-file" class="file-label">
-                <i class="fas fa-upload"></i> Choose File
+                <i class="fas fa-upload"></i> <span data-i18n="data.import.choose">Choose File</span>
               </label>
               <button class="import-btn" id="import-data" disabled>
-                <i class="fas fa-download"></i> Import Data
+                <i class="fas fa-download"></i> <span data-i18n="data.import.run">Import Data</span>
               </button>
             </div>
             <div class="import-options">
               <label class="checkbox-label">
                 <input type="checkbox" id="merge-data" checked>
                 <span class="checkmark"></span>
-                Merge with existing data
+                <span data-i18n="data.import.merge">Merge with existing data</span>
               </label>
             </div>
           </div>
@@ -515,7 +526,7 @@
       <div class="export-modal" id="export-modal">
         <div class="export-modal-content">
           <div class="export-modal-header">
-            <h3><i class="fas fa-download"></i> Export Expenses</h3>
+            <h3><i class="fas fa-download"></i> <span data-i18n="export.modal.title">Export Expenses</span></h3>
             <button class="modal-close-btn" id="export-modal-close">
               <i class="fas fa-times"></i>
             </button>
@@ -524,22 +535,22 @@
           <div class="export-modal-body">
             <!-- Format Selection -->
             <div class="export-format-section">
-              <h4>Export Format</h4>
+              <h4 data-i18n="export.format.title">Export Format</h4>
               <div class="format-options">
                 <label class="format-option">
                   <input type="radio" name="export-format" id="export-format" value="csv" checked>
                   <div class="format-card">
                     <i class="fas fa-file-csv"></i>
-                    <span class="format-name">CSV</span>
-                    <span class="format-desc">Excel compatible</span>
+                    <span class="format-name" data-i18n="export.format.csv">CSV</span>
+                    <span class="format-desc" data-i18n="export.format.csv.desc">Excel compatible</span>
                   </div>
                 </label>
                 <label class="format-option">
                   <input type="radio" name="export-format" value="pdf">
                   <div class="format-card">
                     <i class="fas fa-file-pdf"></i>
-                    <span class="format-name">PDF Report</span>
-                    <span class="format-desc">With charts & summary</span>
+                    <span class="format-name" data-i18n="export.format.pdf">PDF Report</span>
+                    <span class="format-desc" data-i18n="export.format.pdf.desc">With charts & summary</span>
                   </div>
                 </label>
               </div>
@@ -547,7 +558,7 @@
 
             <!-- Filters -->
             <div class="export-filters-section">
-              <h4>Filter Options</h4>
+              <h4 data-i18n="export.filters.title">Filter Options</h4>
               <div class="filter-grid">
                 <div class="form-control">
                   <label for="export-start-date">Start Date</label>
@@ -583,7 +594,7 @@
 
             <!-- Preview -->
             <div class="export-preview-section">
-              <h4>Export Preview</h4>
+              <h4 data-i18n="export.preview.title">Export Preview</h4>
               <div class="export-preview" id="export-preview">
                 <div class="export-preview-loading">Loading preview...</div>
               </div>
@@ -591,9 +602,9 @@
           </div>
 
           <div class="export-modal-footer">
-            <button type="button" class="btn-cancel" id="export-cancel-btn">Cancel</button>
+            <button type="button" class="btn-cancel" id="export-cancel-btn" data-i18n="export.actions.cancel">Cancel</button>
             <button type="button" class="btn-submit" id="export-submit-btn">
-              <i class="fas fa-download"></i> Export
+              <i class="fas fa-download"></i> <span data-i18n="export.actions.export">Export</span>
             </button>
           </div>
         </div>
@@ -601,7 +612,7 @@
 
       <!-- Add Transaction Form -->
       <div class="form-section">
-        <h3><i class="fas fa-plus-circle"></i> Add New Transaction</h3>
+        <h3><i class="fas fa-plus-circle"></i> <span data-i18n="form.title">Add New Transaction</span></h3>
         <form id="form" class="transaction-form">
           <div class="form-row">
             <div class="ocr-scan-container" style="width: 100%; margin-bottom: 1.5rem;">
@@ -622,8 +633,9 @@
           </div>
           <div class="form-row">
             <div class="form-control">
-              <label for="text">Description</label>
-              <input type="text" id="text" placeholder="Enter transaction description" required />
+              <label for="text" data-i18n="form.description">Description</label>
+              <input type="text" id="text" placeholder="Enter transaction description" required
+                data-i18n-placeholder="form.description.placeholder" />
             </div>
             <div class="form-control">
               <label for="category">Category <span id="category-confidence"
@@ -647,12 +659,13 @@
           </div>
           <div class="form-row">
             <div class="form-control">
-              <label for="amount">Amount</label>
-              <input type="number" id="amount" placeholder="Enter amount" step="0.01" required>
+              <label for="amount" data-i18n="form.amount">Amount</label>
+              <input type="number" id="amount" placeholder="Enter amount" step="0.01" required
+                data-i18n-placeholder="form.amount.placeholder">
               <small>Tip: Use negative values for expenses, positive for income</small>
             </div>
             <div class="form-control">
-              <label for="currency">Currency</label>
+              <label for="currency" data-i18n="form.currency">Currency</label>
               <select id="currency" required>
                 <option value="">Loading currencies...</option>
               </select>
@@ -660,18 +673,18 @@
           </div>
           <div class="form-row">
             <div class="form-control">
-              <label for="type">Transaction Type</label>
+              <label for="type" data-i18n="form.type">Transaction Type</label>
               <select id="type" required>
                 <option value="">Select Type</option>
-                <option value="income">💰 Income</option>
-                <option value="expense">💸 Expense</option>
+                <option value="income" data-i18n="form.type.income">💰 Income</option>
+                <option value="expense" data-i18n="form.type.expense">💸 Expense</option>
               </select>
             </div>
             <div class="form-control"></div>
           </div>
           <button type="submit" class="btn-submit">
             <i class="fas fa-plus"></i>
-            Add Transaction
+            <span data-i18n="form.submit">Add Transaction</span>
           </button>
         </form>
       </div>
@@ -679,9 +692,9 @@
       <!-- Recurring Expenses Section -->
       <div class="recurring-section" id="recurring-section">
         <div class="section-header">
-          <h3><i class="fas fa-sync-alt"></i> Recurring Expenses & Subscriptions</h3>
+          <h3><i class="fas fa-sync-alt"></i> <span data-i18n="recurring.title">Recurring Expenses & Subscriptions</span></h3>
           <button class="add-recurring-btn" id="add-recurring-btn">
-            <i class="fas fa-plus"></i> Add Recurring
+            <i class="fas fa-plus"></i> <span data-i18n="recurring.add">Add Recurring</span>
           </button>
         </div>
 
@@ -975,27 +988,28 @@
   <div id="currency-modal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3><i class="fas fa-money-bill-wave"></i> Currency Settings</h3>
+        <h3><i class="fas fa-money-bill-wave"></i> <span data-i18n="currency.modal.title">Currency Settings</span>
+        </h3>
         <span class="close-modal" onclick="closeCurrencyModal()">&times;</span>
       </div>
       <div class="modal-body">
         <div class="form-control">
-          <label for="preferred-currency">Preferred Currency</label>
+          <label for="preferred-currency" data-i18n="currency.preferred">Preferred Currency</label>
           <select id="preferred-currency" class="currency-select">
             <option value="">Loading currencies...</option>
           </select>
-          <small>All expenses will be converted to this currency for display</small>
+          <small data-i18n="currency.info">All expenses will be converted to this currency for display</small>
         </div>
         <div class="form-control">
-          <label>Exchange Rate Info</label>
+          <label data-i18n="currency.exchange">Exchange Rate Info</label>
           <div class="exchange-rate-info" id="exchange-rate-info">
             <p>Select a currency to see current exchange rates</p>
           </div>
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn-cancel" onclick="closeCurrencyModal()">Cancel</button>
-        <button class="btn-submit" onclick="saveCurrencyPreference()">Save Settings</button>
+        <button class="btn-cancel" onclick="closeCurrencyModal()" data-i18n="currency.cancel">Cancel</button>
+        <button class="btn-submit" onclick="saveCurrencyPreference()" data-i18n="currency.save">Save Settings</button>
       </div>
     </div>
   </div>
@@ -1023,151 +1037,23 @@
     </div>
   </footer>
 
-  <!-- OCR Result Modal -->
-  <div id="ocr-result-modal" class="modal">
-    <div class="modal-content" style="max-width: 800px;">
-      <div class="modal-header">
-        <h3><i class="fas fa-file-invoice-dollar"></i> Confirm Scanned Receipt</h3>
-        <span class="close-modal" onclick="closeOCRModal()">&times;</span>
-      </div>
-      <div class="modal-body" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-        <div class="receipt-preview">
-          <h4 style="margin-bottom: 1rem;">Receipt Image</h4>
-          <div
-            style="background: #000; border-radius: 12px; overflow: hidden; height: 350px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1);">
-            <img id="ocr-preview-img" src="" style="max-width: 100%; max-height: 100%; object-fit: contain;">
-          </div>
-        </div>
-        <div class="ocr-extracted-data">
-          <h4 style="margin-bottom: 1rem;">Extracted Data</h4>
-          <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1rem;">Please verify and correct the
-            information below.</p>
-
-          <div class="form-control" style="margin-bottom: 1rem;">
-            <label>Merchant / Title</label>
-            <input type="text" id="ocr-merchant">
-          </div>
-
-          <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1rem;">
-            <div class="form-control" style="flex: 1;">
-              <label>Amount (₹)</label>
-              <input type="number" id="ocr-amount" step="0.01">
-            </div>
-            <div class="form-control" style="flex: 1;">
-              <label>Date</label>
-              <input type="date" id="ocr-date">
-            </div>
-          </div>
-
-          <div class="form-control" style="margin-bottom: 1.5rem;">
-            <label>Category (Suggested)</label>
-            <select id="ocr-category"
-              style="width: 100%; background: #252545; color: white; border: 1px solid rgba(255,255,255,0.1); padding: 0.75rem; border-radius: 8px;">
-              <option value="food">🍽️ Food & Dining</option>
-              <option value="transport">🚗 Transportation</option>
-              <option value="shopping">🛒 Shopping</option>
-              <option value="entertainment">🎬 Entertainment</option>
-              <option value="utilities">💡 Bills & Utilities</option>
-              <option value="healthcare">🏥 Healthcare</option>
-              <option value="other">📋 Other</option>
-            </select>
-          </div>
-
-          <div class="confidence-info" style="margin-bottom: 1.5rem;">
-            <div style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 0.4rem;">
-              <span style="color: var(--text-secondary);">AI Confidence Score</span>
-              <span id="ocr-confidence-text"
-                style="color: var(--accent-primary); font-weight: bold;">Calculating...</span>
-            </div>
-            <div class="progress-bar"
-              style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
-              <div id="ocr-confidence-bar" class="progress-fill"
-                style="width: 0%; height: 100%; background: var(--accent-primary); transition: width 0.5s ease;"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer"
-        style="display: flex; justify-content: flex-end; gap: 1rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
-        <button type="button" class="btn-cancel" onclick="closeOCRModal()"
-          style="padding: 0.75rem 1.5rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: var(--text-secondary); cursor: pointer;">Discard</button>
-        <button type="button" class="btn-submit" id="ocr-save-btn"
-          style="padding: 0.75rem 1.5rem; border-radius: 8px; border: none; background: var(--primary-gradient); color: white; font-weight: bold; cursor: pointer;">Confirm
-          & Save Expense</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- OCR Loading Overlay -->
-  <div id="ocr-loading-overlay" class="modal" style="background: rgba(15, 15, 35, 0.95); z-index: 10001;">
-    <div
-      style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center;">
-      <div class="ai-loader"
-        style="width: 80px; height: 80px; border: 4px solid var(--accent-primary); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1.5rem;">
-      </div>
-      <h3 class="loading-text" style="color: var(--text-primary); margin-bottom: 0.5rem; font-size: 1.5rem;">AI is
-        scanning your receipt...</h3>
-      <p style="color: var(--text-secondary); font-size: 1rem;">Extracting amount, date, and merchant details using
-        Computer Vision.</p>
-    </div>
-  </div>
-
-  <style>
-    @keyframes spin {
-      100% {
-        transform: rotate(360deg);
-      }
-    }
-
-    .progress-fill.high {
-      background: #4caf50 !important;
-    }
-
-    .progress-fill.medium {
-      background: #ffc107 !important;
-    }
-
-    .progress-fill.low {
-      background: #f44336 !important;
-    }
-  </style>
-
-  <!-- Workspace Modal -->
-  <div id="workspace-modal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3><i class="fas fa-users"></i> Create Shared Workspace</h3>
-        <span class="close-modal" onclick="closeWorkspaceModal()">&times;</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- API and Feature Scripts -->
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="auth-integration.js"></script>
-  <script src="api-integration.js"></script>
-  <script src="workspace-feature.js"></script>
-  <script src="budget-goals.js"></script>
-  <script src="receipt-upload.js"></script>
-  <script src="receipt-ocr.js"></script>
-  <script src="analytics-dashboard.js"></script>
-  <script src="realtime-sync.js"></script>
-  <script src="investment-portfolio.js"></script>
+  <script src="i18n.js"></script>
+  <script src="trackerscript.js"></script>
 
   <!-- PWA Installation Prompt -->
   <div id="install-prompt" class="install-prompt" style="display: none;">
     <div class="install-prompt-content">
       <div class="install-prompt-header">
         <i class="fas fa-download"></i>
-        <h3>Install ExpenseFlow</h3>
+        <h3 data-i18n="install.title">Install ExpenseFlow</h3>
       </div>
-      <p>Install ExpenseFlow for quick access and offline functionality!</p>
+      <p data-i18n="install.text">Install ExpenseFlow for quick access and offline functionality!</p>
       <div class="install-prompt-actions">
         <button id="install-button" class="install-btn">
-          <i class="fas fa-plus"></i> Install
+          <i class="fas fa-plus"></i> <span data-i18n="install.install">Install</span>
         </button>
         <button id="install-dismiss" class="dismiss-btn">
-          <i class="fas fa-times"></i> Not now
+          <i class="fas fa-times"></i> <span data-i18n="install.dismiss">Not now</span>
         </button>
       </div>
     </div>
@@ -1216,12 +1102,34 @@
     }
   }
 
-  // Initialize recurring button
-  document.addEventListener('DOMContentLoaded', function () {
-    const addBtn = document.getElementById('add-recurring-btn');
-    if (addBtn) {
-      addBtn.addEventListener('click', openRecurringModal);
-    }
+      // Close modal when clicking outside
+      const modal = document.getElementById('recurring-modal');
+      if (modal) {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) {
+            closeRecurringModal();
+          }
+        });
+      }
+    });
+  </script>
+  <script>
+    // Currency Management Functions
+    let supportedCurrencies = [];
+    let currentUserCurrency = (window.i18n?.getCurrency?.() && window.i18n.getCurrency()) || 'INR';
+    window.currentUserCurrency = currentUserCurrency;
+
+    // Load supported currencies on page load
+    async function loadSupportedCurrencies() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const response = await fetch('/api/currency/supported', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
 
     const closeBtn = document.getElementById('recurring-modal-close');
     if (closeBtn) {
@@ -1297,9 +1205,15 @@
       const token = localStorage.getItem('authToken');
       if (!token) return;
 
-      const response = await fetch('/api/currency/preference', {
-        headers: {
-          'Authorization': `Bearer ${token}`
+        const data = await response.json();
+        if (data.success) {
+          currentUserCurrency = data.data.preferredCurrency;
+          window.currentUserCurrency = currentUserCurrency;
+          if (window.i18n?.setCurrency) {
+            window.i18n.setCurrency(currentUserCurrency);
+          }
+          document.getElementById('current-currency').textContent = currentUserCurrency;
+          populateCurrencySelects();
         }
       });
 
@@ -1359,9 +1273,24 @@
               </div>`;
           }
         });
-        html += '</div>';
-        html += `<small>Last updated: ${new Date(data.data.lastUpdated).toLocaleString()}</small>`;
-        rateInfo.innerHTML = html;
+
+        const data = await response.json();
+        if (data.success) {
+          currentUserCurrency = newCurrency;
+          window.currentUserCurrency = newCurrency;
+          if (window.i18n?.setCurrency) {
+            window.i18n.setCurrency(newCurrency);
+          }
+          document.getElementById('current-currency').textContent = newCurrency;
+          closeCurrencyModal();
+          // Reload transactions to show in new currency
+          location.reload();
+        } else {
+          alert('Failed to update currency preference');
+        }
+      } catch (error) {
+        console.error('Error saving currency preference:', error);
+        alert('Error saving currency preference');
       }
     } catch (error) {
       console.error('Error loading exchange rates:', error);
@@ -1397,31 +1326,50 @@
       } else {
         alert('Failed to update currency preference');
       }
-    } catch (error) {
-      console.error('Error saving currency preference:', error);
-      alert('Error saving currency preference');
-    }
-  }
+    });
 
-  // Initialize currency features when page loads
-  document.addEventListener('DOMContentLoaded', function () {
-    loadSupportedCurrencies();
-    loadUserCurrencyPreference();
-  });
 
-  // Close modal when clicking outside
-  window.onclick = function (event) {
-    const modal = document.getElementById('currency-modal');
-    const wsModal = document.getElementById('workspace-modal');
-    const recModal = document.getElementById('recurring-modal');
-    const ocrModal = document.getElementById('ocr-result-modal');
+  </script>
 
-    if (event.target === modal) closeCurrencyModal();
-    if (event.target === wsModal) if (typeof closeWorkspaceModal === 'function') closeWorkspaceModal();
-    if (event.target === recModal) closeRecurringModal();
-    if (event.target === ocrModal) if (typeof closeOCRModal === 'function') closeOCRModal();
-  }
-</script>
+  <!-- PWA Installation Prompt -->
+  <div id="install-prompt" class="install-prompt" style="display: none;">
+    <div class="install-prompt-content">
+      <div class="install-prompt-header">
+        <i class="fas fa-download"></i>
+        <h3>Install ExpenseFlow</h3>
+      </div>
+      <p>Install ExpenseFlow for quick access and offline functionality!</p>
+      <div class="install-prompt-actions">
+        <button id="install-button" class="install-btn">
+          <i class="fas fa-plus"></i> Install
+        </button>
+        <button id="install-dismiss" class="dismiss-btn">
+          <i class="fas fa-times"></i> Not now
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Offline Indicator -->
+  <div id="offline-indicator" class="offline-indicator" style="display: none;">
+    <i class="fas fa-wifi-slash"></i>
+    <span data-i18n="offline.text">You're offline. Changes will be saved locally.</span>
+  </div>
+
+  <!-- Update Available Notification -->
+  <div id="update-notification" class="update-notification" style="display: none;">
+    <div class="update-content">
+      <i class="fas fa-sync-alt"></i>
+      <span data-i18n="update.text">A new version is available!</span>
+      <button id="update-button" class="update-btn" data-i18n="update.action">Update Now</button>
+    </div>
+  </div>
+  <script src="auth-check.js"></script>
+  <script src="auth.js"></script>
+  <script src="trackerscript.js"></script>
+  <script src="analytics-dashboard.js"></script>
+
+
 </body>
 
 </html>

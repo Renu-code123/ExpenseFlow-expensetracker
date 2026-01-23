@@ -11,6 +11,24 @@ let analyticsData = {
   forecast: null
 };
 
+const getAnalyticsLocale = () => (window.i18n?.getLocale?.() && window.i18n.getLocale()) || 'en-US';
+const getAnalyticsCurrency = () => (window.i18n?.getCurrency?.() && window.i18n.getCurrency()) || 'INR';
+
+function formatAnalyticsCurrency(value, options = {}) {
+  const currency = options.currency || getAnalyticsCurrency();
+  if (window.i18n?.formatCurrency) {
+    return window.i18n.formatCurrency(value, {
+      currency,
+      locale: getAnalyticsLocale(),
+      minimumFractionDigits: options.minimumFractionDigits ?? 0,
+      maximumFractionDigits: options.maximumFractionDigits ?? 0
+    });
+  }
+
+  const amount = Number(value || 0);
+  return `${currency} ${amount.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+}
+
 // ========================
 // API Functions
 // ========================
@@ -191,15 +209,15 @@ function renderVelocityWidget(velocity) {
     </div>
     <div class="velocity-stats">
       <div class="velocity-stat">
-        <span class="stat-value">₹${velocity.currentSpent.toLocaleString()}</span>
+        <span class="stat-value">${formatAnalyticsCurrency(velocity.currentSpent)}</span>
         <span class="stat-label">Spent this month</span>
       </div>
       <div class="velocity-stat">
-        <span class="stat-value">₹${velocity.dailyAverage.toLocaleString()}</span>
+        <span class="stat-value">${formatAnalyticsCurrency(velocity.dailyAverage)}</span>
         <span class="stat-label">Daily average</span>
       </div>
       <div class="velocity-stat projected">
-        <span class="stat-value">₹${velocity.projectedMonthEnd.toLocaleString()}</span>
+        <span class="stat-value">${formatAnalyticsCurrency(velocity.projectedMonthEnd)}</span>
         <span class="stat-label">Projected month end</span>
       </div>
     </div>
@@ -247,7 +265,7 @@ function renderCategoryChart(breakdown) {
   container.innerHTML = `
     <div class="category-chart-header">
       <h4><i class="fas fa-pie-chart"></i> Category Breakdown</h4>
-      <span class="total-amount">Total: ₹${breakdown.grandTotal.toLocaleString()}</span>
+      <span class="total-amount">Total: ${formatAnalyticsCurrency(breakdown.grandTotal)}</span>
     </div>
     <div class="category-bars">
       ${breakdown.categories.map(cat => `
@@ -260,7 +278,7 @@ function renderCategoryChart(breakdown) {
             <div class="category-bar" style="width: ${cat.percentage}%; background-color: ${categoryColors[cat.category] || '#999'}"></div>
           </div>
           <div class="category-stats">
-            <span class="category-amount">₹${cat.total.toLocaleString()}</span>
+            <span class="category-amount">${formatAnalyticsCurrency(cat.total)}</span>
             <span class="category-percent">${cat.percentage}%</span>
           </div>
         </div>
@@ -298,8 +316,8 @@ function renderTrendsChart(trends) {
     return `
           <div class="trend-bar-group">
             <div class="trend-bars">
-              <div class="trend-bar income" style="height: ${incomeHeight}%" title="Income: ₹${item.income}"></div>
-              <div class="trend-bar expense" style="height: ${expenseHeight}%" title="Expense: ₹${item.expense}"></div>
+              <div class="trend-bar income" style="height: ${incomeHeight}%" title="Income: ${formatAnalyticsCurrency(item.income)}"></div>
+              <div class="trend-bar expense" style="height: ${expenseHeight}%" title="Expense: ${formatAnalyticsCurrency(item.expense)}"></div>
             </div>
             <span class="trend-label">${formatPeriodLabel(item.period)}</span>
           </div>
@@ -310,7 +328,7 @@ function renderTrendsChart(trends) {
       <div class="trends-summary">
         <div class="summary-item">
           <span class="summary-label">Avg Monthly Expense</span>
-          <span class="summary-value expense">₹${trends.summary.avgMonthlyExpense.toLocaleString()}</span>
+          <span class="summary-value expense">${formatAnalyticsCurrency(trends.summary.avgMonthlyExpense)}</span>
         </div>
         <div class="summary-item">
           <span class="summary-label">Savings Rate</span>
@@ -398,7 +416,7 @@ function renderPredictions(predictions) {
     </div>
     <div class="prediction-main">
       <span class="prediction-label">Next Month Forecast</span>
-      <span class="prediction-value">₹${predictions.nextMonthPrediction.toLocaleString()}</span>
+      <span class="prediction-value">${formatAnalyticsCurrency(predictions.nextMonthPrediction)}</span>
       <span class="prediction-trend ${trendClass}">
         <i class="fas fa-${trendIcon}"></i>
         ${capitalizeFirst(predictions.trend)}
@@ -407,11 +425,11 @@ function renderPredictions(predictions) {
     <div class="prediction-details">
       <div class="detail-item">
         <span class="detail-label">Historical Avg</span>
-        <span class="detail-value">₹${predictions.historicalAverage.toLocaleString()}</span>
+        <span class="detail-value">${formatAnalyticsCurrency(predictions.historicalAverage)}</span>
       </div>
       <div class="detail-item">
         <span class="detail-label">Moving Avg</span>
-        <span class="detail-value">₹${predictions.movingAverage.toLocaleString()}</span>
+        <span class="detail-value">${formatAnalyticsCurrency(predictions.movingAverage)}</span>
       </div>
       <div class="detail-item">
         <span class="detail-label">Based on</span>

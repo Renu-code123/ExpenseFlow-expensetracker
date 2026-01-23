@@ -50,7 +50,7 @@ router.post('/register', validateUser, async (req, res) => {
 
     res.status(201).json({
       token,
-      user: { id: user._id, name: user.name, email: user.email }
+      user: { id: user._id, name: user.name, email: user.email, locale: user.locale, preferredCurrency: user.preferredCurrency }
     });
   } catch (error) {
     console.error('Registration error:', error);
@@ -89,7 +89,7 @@ router.post('/login', async (req, res) => {
 
     res.json({
       token,
-      user: { id: user._id, name: user.name, email: user.email }
+      user: { id: user._id, name: user.name, email: user.email, locale: user.locale, preferredCurrency: user.preferredCurrency }
     });
   } catch (error) {
     console.error('Login error:', error);
