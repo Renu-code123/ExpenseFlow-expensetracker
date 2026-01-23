@@ -553,9 +553,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const categoryInfo = categories[transaction.category] || categories.other;
 
     item.innerHTML = `
-    
-    
-    <div class="transaction-content">
+      <div class="transaction-content">
         <div class="transaction-main">
           <span class="transaction-text">${transaction.text}</span>
           <span class="transaction-amount">₹${Math.abs(transaction.amount).toFixed(2)}</span>

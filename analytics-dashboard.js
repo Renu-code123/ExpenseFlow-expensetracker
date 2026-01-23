@@ -234,57 +234,102 @@ function renderVelocityWidget(velocity) {
  * Render category breakdown chart
  */
 function renderCategoryChart(breakdown) {
-  const container = document.getElementById('category-chart');
-  if (!container) return;
+    const container = document.getElementById('category-chart');
+    if (!container) return;
 
-  if (!breakdown || breakdown.categories.length === 0) {
-    container.innerHTML = '<div class="no-data">No expense data available</div>';
-    return;
-  }
+    if (!breakdown || breakdown.categories.length === 0) {
+        container.innerHTML = '<div class="no-data">No expense data available</div>';
+        return;
+    }
 
-  const categoryColors = {
-    food: '#FF6B6B',
-    transport: '#4ECDC4',
-    entertainment: '#96CEB4',
-    utilities: '#FECA57',
-    healthcare: '#FF9FF3',
-    shopping: '#45B7D1',
-    other: '#A55EEA'
-  };
+    // Clear previous chart
+    container.innerHTML = '';
 
-  const categoryIcons = {
-    food: '🍽️',
-    transport: '🚗',
-    entertainment: '🎬',
-    utilities: '💡',
-    healthcare: '🏥',
-    shopping: '🛒',
-    other: '📋'
-  };
+    const categoryColors = {
+        food: '#FF6B6B',
+        transport: '#4ECDC4',
+        entertainment: '#96CEB4',
+        utilities: '#FECA57',
+        healthcare: '#FF9FF3',
+        shopping: '#45B7D1',
+        other: '#A55EEA'
+    };
 
-  container.innerHTML = `
-    <div class="category-chart-header">
+    const categoryIcons = {
+        food: '🍽️',
+        transport: '🚗',
+        entertainment: '🎬',
+        utilities: '💡',
+        healthcare: '🏥',
+        shopping: '🛒',
+        other: '📋'
+    };
+
+    // Create chart header
+    const header = document.createElement('div');
+    header.className = 'category-chart-header';
+    header.innerHTML = `
       <h4><i class="fas fa-pie-chart"></i> Category Breakdown</h4>
-      <span class="total-amount">Total: ${formatAnalyticsCurrency(breakdown.grandTotal)}</span>
-    </div>
-    <div class="category-bars">
-      ${breakdown.categories.map(cat => `
-        <div class="category-bar-item">
-          <div class="category-info">
-            <span class="category-icon">${categoryIcons[cat.category] || '📋'}</span>
-            <span class="category-name">${capitalizeFirst(cat.category)}</span>
-          </div>
-          <div class="category-bar-wrapper">
-            <div class="category-bar" style="width: ${cat.percentage}%; background-color: ${categoryColors[cat.category] || '#999'}"></div>
-          </div>
-          <div class="category-stats">
-            <span class="category-amount">${formatAnalyticsCurrency(cat.total)}</span>
-            <span class="category-percent">${cat.percentage}%</span>
-          </div>
-        </div>
-      `).join('')}
-    </div>
-  `;
+      <span class="total-amount">Total: ₹${breakdown.grandTotal.toLocaleString()}</span>
+    `;
+    container.appendChild(header);
+
+    // Create canvas for Chart.js
+    const canvas = document.createElement('canvas');
+    canvas.id = 'category-pie-chart';
+    canvas.style.maxWidth = '100%';
+    canvas.style.height = '300px';
+    container.appendChild(canvas);
+
+    // Prepare data for Chart.js
+    const chartData = {
+        labels: breakdown.categories.map(cat => `${categoryIcons[cat.category] || '📋'} ${capitalizeFirst(cat.category)}`),
+        datasets: [{
+            data: breakdown.categories.map(cat => cat.total),
+            backgroundColor: breakdown.categories.map(cat => categoryColors[cat.category] || '#999'),
+            borderColor: breakdown.categories.map(cat => categoryColors[cat.category] || '#999'),
+            borderWidth: 2,
+            hoverOffset: 10
+        }]
+    };
+
+    // Create pie chart
+    new Chart(canvas, {
+        type: 'pie',
+        data: chartData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true,
+                        font: {
+                            size: 12,
+                            family: 'Inter, sans-serif'
+                        },
+                        color: '#ffffff'
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.raw;
+                            const percentage = breakdown.categories[context.dataIndex].percentage;
+                            return `₹${value.toLocaleString()} (${percentage}%)`;
+                        }
+                    },
+                    backgroundColor: 'rgba(15, 15, 35, 0.9)',
+                    titleColor: '#64ffda',
+                    bodyColor: '#ffffff',
+                    borderColor: 'rgba(100, 255, 218, 0.3)',
+                    borderWidth: 1
+                }
+            }
+        }
+    });
 }
 
 /**
@@ -299,50 +344,149 @@ function renderTrendsChart(trends) {
     return;
   }
 
-  const maxAmount = Math.max(...trends.data.map(d => Math.max(d.income, d.expense)));
+    // Clear previous chart
+    container.innerHTML = '';
 
-  container.innerHTML = `
-    <div class="trends-header">
+    // Create chart header
+    const header = document.createElement('div');
+    header.className = 'trends-header';
+    header.innerHTML = `
       <h4><i class="fas fa-chart-line"></i> Spending Trends</h4>
-      <div class="trends-legend">
-        <span class="legend-item income"><span class="legend-dot"></span> Income</span>
-        <span class="legend-item expense"><span class="legend-dot"></span> Expense</span>
-      </div>
-    </div>
-    <div class="trends-chart-container">
-      ${trends.data.map(item => {
-    const incomeHeight = (item.income / maxAmount) * 100;
-    const expenseHeight = (item.expense / maxAmount) * 100;
-    return `
-          <div class="trend-bar-group">
-            <div class="trend-bars">
-              <div class="trend-bar income" style="height: ${incomeHeight}%" title="Income: ${formatAnalyticsCurrency(item.income)}"></div>
-              <div class="trend-bar expense" style="height: ${expenseHeight}%" title="Expense: ${formatAnalyticsCurrency(item.expense)}"></div>
-            </div>
-            <span class="trend-label">${formatPeriodLabel(item.period)}</span>
+    `;
+    container.appendChild(header);
+
+    // Create canvas for Chart.js
+    const canvas = document.createElement('canvas');
+    canvas.id = 'trends-line-chart';
+    canvas.style.maxWidth = '100%';
+    canvas.style.height = '300px';
+    container.appendChild(canvas);
+
+    // Prepare data for Chart.js
+    const chartData = {
+        labels: trends.data.map(item => formatPeriodLabel(item.period)),
+        datasets: [
+            {
+                label: 'Income',
+                data: trends.data.map(item => item.income),
+                borderColor: '#00e676',
+                backgroundColor: 'rgba(0, 230, 118, 0.1)',
+                borderWidth: 3,
+                fill: false,
+                tension: 0.4,
+                pointBackgroundColor: '#00e676',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8
+            },
+            {
+                label: 'Expense',
+                data: trends.data.map(item => item.expense),
+                borderColor: '#ff5722',
+                backgroundColor: 'rgba(255, 87, 34, 0.1)',
+                borderWidth: 3,
+                fill: false,
+                tension: 0.4,
+                pointBackgroundColor: '#ff5722',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8
+            }
+        ]
+    };
+
+    // Create line chart
+    new Chart(canvas, {
+        type: 'line',
+        data: chartData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true,
+                        font: {
+                            size: 12,
+                            family: 'Inter, sans-serif'
+                        },
+                        color: '#ffffff'
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.dataset.label}: ₹${context.raw.toLocaleString()}`;
+                        }
+                    },
+                    backgroundColor: 'rgba(15, 15, 35, 0.9)',
+                    titleColor: '#64ffda',
+                    bodyColor: '#ffffff',
+                    borderColor: 'rgba(100, 255, 218, 0.3)',
+                    borderWidth: 1
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    },
+                    ticks: {
+                        color: '#b4b4b4',
+                        font: {
+                            size: 11
+                        }
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    },
+                    ticks: {
+                        color: '#b4b4b4',
+                        font: {
+                            size: 11
+                        },
+                        callback: function(value) {
+                            return '₹' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Add summary section
+    if (trends.summary) {
+        const summary = document.createElement('div');
+        summary.className = 'trends-summary';
+        summary.innerHTML = `
+          <div class="summary-item">
+            <span class="summary-label">Avg Monthly Expense</span>
+            <span class="summary-value expense">₹${trends.summary.avgMonthlyExpense.toLocaleString()}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Savings Rate</span>
+            <span class="summary-value ${trends.summary.avgSavingsRate >= 0 ? 'positive' : 'negative'}">${trends.summary.avgSavingsRate}%</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Trend</span>
+            <span class="summary-value ${trends.summary.spendingTrend === 'decreasing' ? 'positive' : 'negative'}">
+              ${trends.summary.spendingTrend === 'decreasing' ? '↓' : '↑'} ${capitalizeFirst(trends.summary.spendingTrend)}
+            </span>
           </div>
         `;
-  }).join('')}
-    </div>
-    ${trends.summary ? `
-      <div class="trends-summary">
-        <div class="summary-item">
-          <span class="summary-label">Avg Monthly Expense</span>
-          <span class="summary-value expense">${formatAnalyticsCurrency(trends.summary.avgMonthlyExpense)}</span>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">Savings Rate</span>
-          <span class="summary-value ${trends.summary.avgSavingsRate >= 0 ? 'positive' : 'negative'}">${trends.summary.avgSavingsRate}%</span>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">Trend</span>
-          <span class="summary-value ${trends.summary.spendingTrend === 'decreasing' ? 'positive' : 'negative'}">
-            ${trends.summary.spendingTrend === 'decreasing' ? '↓' : '↑'} ${capitalizeFirst(trends.summary.spendingTrend)}
-          </span>
-        </div>
-      </div>
-    ` : ''}
-  `;
+        container.appendChild(summary);
+    }
 }
 
 /**
