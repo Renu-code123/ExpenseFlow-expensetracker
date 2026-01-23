@@ -6,6 +6,11 @@ const helmet = require('helmet');
 const cors = require('cors');
 const socketAuth = require('./middleware/socketAuth');
 const CronJobs = require('./services/cronJobs');
+const aiService = require('./services/aiService');
+const currencyService = require('./services/currencyService');
+const internationalizationService = require('./services/internationalizationService');
+const taxService = require('./services/taxService');
+const collaborationService = require('./services/collaborationService');
 const { generalLimiter } = require('./middleware/rateLimiter');
 const { sanitizeInput, mongoSanitizeMiddleware } = require('./middleware/sanitization');
 const securityMonitor = require('./services/securityMonitor');
@@ -132,6 +137,22 @@ mongoose.connect(process.env.MONGODB_URI)
     // Initialize cron jobs after DB connection
     CronJobs.init();
     console.log('Email cron jobs initialized');
+    
+    // Initialize AI service
+    aiService.init();
+    console.log('AI service initialized');
+    
+    // Initialize currency service
+    currencyService.init();
+    console.log('Currency service initialized');
+    
+    // Initialize internationalization service
+    internationalizationService.init();
+    console.log('Internationalization service initialized');
+    
+    // Initialize tax service
+    taxService.init();
+    console.log('Tax service initialized');
   })
   .catch(err => console.error('MongoDB connection error:', err));
 
@@ -144,6 +165,12 @@ io.on('connection', (socket) => {
 
   // Join user-specific room
   socket.join(`user_${socket.userId}`);
+  
+  // Join workspace rooms
+  const workspaces = await collaborationService.getUserWorkspaces(socket.userId);
+  workspaces.forEach(workspace => {
+    socket.join(`workspace_${workspace._id}`);
+  });
 
   // Handle sync requests
   socket.on('sync_request', async (data) => {
