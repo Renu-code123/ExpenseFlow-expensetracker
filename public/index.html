@@ -1027,6 +1027,74 @@
           <span>ExpenseFlow</span>
         </div>
 
+  <p class="footer-description">
+    Smart money management made simple. Track, analyze, and optimize your financial habits.
+  </p>
+
+  <div class="social-links">
+    <a
+      href="https://x.com/9504_renu"
+      class="social-link"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="X (Twitter)"
+    >
+      <i class="fab fa-x-twitter"></i>
+    </a>
+
+    <a
+      href="https://github.com/Renu-code123/ExpenseFlow"
+      class="social-link"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Github"
+    >
+      <i class="fab fa-github"></i>
+    </a>
+
+    <a
+      href="mailto:renu89857@gmail.com"
+      class="social-link"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Email"
+    >
+      <i class="far fa-envelope"></i>
+    </a>
+
+    <a
+      href="https://www.linkedin.com/in/renu-kumari-prajapati"
+      class="social-link"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="LinkedIn"
+    >
+      <i class="fab fa-linkedin-in"></i>
+    </a>
+  </div>
+</div>
+
+
+      <div class="footer-section">
+        <h4>Company</h4>
+        <ul class="footer-links">
+          <li><a href="AboutUs.html">About Us</a></li>
+          <li><a href="PrivacyPolicy.html">Privacy Policy</a></li>
+          <li><a href="terms_service.html">Terms of Service</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-section">
+        <h4>Features</h4>
+        <ul class="footer-links">
+          <li><a href="#">Expense Tracking</a></li>
+          <li><a href="#">Budget Planning</a></li>
+          <li><a href="#">Analytics Dashboard</a></li>
+          <li><a href="#">Goal Setting</a></li>
+        </ul>
+      </div>
+
     </div>
 
     <div class="footer-bottom">
@@ -1154,6 +1222,25 @@
         <h3><i class="fas fa-users"></i> Create Shared Workspace</h3>
         <span class="close-modal" onclick="closeWorkspaceModal()">&times;</span>
       </div>
+      <form id="create-workspace-form">
+        <div class="modal-body">
+          <div class="form-control">
+            <label for="workspace-name-input">Workspace Name *</label>
+            <input type="text" id="workspace-name-input" placeholder="e.g., Family, Hackathon Team" required>
+          </div>
+          <div class="form-control">
+            <label for="workspace-desc-input">Description (Optional)</label>
+            <textarea id="workspace-desc-input" rows="3" placeholder="What is this workspace for?"></textarea>
+          </div>
+          <p class="info-text">
+            <i class="fas fa-info-circle"></i> After creating, you can invite members from the workspace settings.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" onclick="closeWorkspaceModal()">Cancel</button>
+          <button type="submit" class="btn-submit">Create Workspace</button>
+        </div>
+      </form>
     </div>
   </div>
 
