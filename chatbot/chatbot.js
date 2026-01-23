@@ -1,4 +1,8 @@
-import "./chatbot.css";
+const link = document.createElement("link");
+link.rel = "stylesheet";
+link.href = "./chatbot/chatbot.css";
+document.head.appendChild(link);
+
 import { chatbotKnowledge } from "./chatbot.data.js";
 import { CHATBOT_CONFIG } from "./chatbot.config.js";
 
@@ -13,9 +17,14 @@ fetch("./chatbot/chatbot.html")
     const messagesEl = document.getElementById("chatbot-messages");
     const inputEl = document.getElementById("chatbot-input");
     const sendBtn = document.getElementById("chatbot-send");
+    toggleBtn.onclick = () => {
+      windowEl.style.display =
+        windowEl.style.display === "none" ? "flex" : "none";
+    };
 
-    toggleBtn.onclick = () => windowEl.classList.toggle("hidden");
-    closeBtn.onclick = () => windowEl.classList.add("hidden");
+    closeBtn.onclick = () => {
+      windowEl.style.display = "none";
+    };
 
     const addMessage = (text, type = "bot") => {
       const msg = document.createElement("div");
