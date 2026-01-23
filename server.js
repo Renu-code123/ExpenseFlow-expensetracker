@@ -7,6 +7,9 @@ const cors = require('cors');
 const socketAuth = require('./middleware/socketAuth');
 const CronJobs = require('./services/cronJobs');
 const aiService = require('./services/aiService');
+const currencyService = require('./services/currencyService');
+const internationalizationService = require('./services/internationalizationService');
+const taxService = require('./services/taxService');
 const { generalLimiter } = require('./middleware/rateLimiter');
 const { sanitizeInput, mongoSanitizeMiddleware } = require('./middleware/sanitization');
 const securityMonitor = require('./services/securityMonitor');
@@ -137,6 +140,18 @@ mongoose.connect(process.env.MONGODB_URI)
     // Initialize AI service
     aiService.init();
     console.log('AI service initialized');
+    
+    // Initialize currency service
+    currencyService.init();
+    console.log('Currency service initialized');
+    
+    // Initialize internationalization service
+    internationalizationService.init();
+    console.log('Internationalization service initialized');
+    
+    // Initialize tax service
+    taxService.init();
+    console.log('Tax service initialized');
   })
   .catch(err => console.error('MongoDB connection error:', err));
 
@@ -186,6 +201,7 @@ app.use('/api/splits', require('./routes/splits'));
 app.use('/api/workspaces', require('./routes/workspaces'));
 app.use('/api/investments', require('./routes/investments'));
 app.use('/api/ai', require('./routes/ai'));
+app.use('/api/multicurrency', require('./routes/multicurrency'));
 
 // Root route to serve the UI
 app.get('/', (req, res) => {
