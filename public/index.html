@@ -887,6 +887,108 @@
         </div>
       </section>
     </div>
+
+    <!-- Settings Section -->
+    <section id="settings" class="settings-section">
+      <div class="section-header">
+        <h3><i class="fas fa-cog"></i> Settings</h3>
+      </div>
+
+      <div class="settings-container">
+        <!-- Workspace Settings Tab -->
+        <div class="settings-tabs">
+          <button class="settings-tab active" onclick="switchSettingsTab('workspace')">Workspace</button>
+          <button class="settings-tab" onclick="switchSettingsTab('approvals')">Approvals</button>
+          <button class="settings-tab" onclick="switchSettingsTab('profile')">Profile</button>
+        </div>
+
+        <!-- Workspace Settings -->
+        <div id="workspace-settings" class="settings-content active">
+          <div class="settings-card">
+            <h4><i class="fas fa-users"></i> Workspace Management</h4>
+            <div class="workspace-info">
+              <div class="current-workspace">
+                <label>Current Workspace:</label>
+                <span id="current-workspace-name">Personal</span>
+              </div>
+              <div class="workspace-selector">
+                <label for="workspace-select">Switch Workspace:</label>
+                <select id="workspace-select" onchange="switchWorkspace()">
+                  <option value="personal">Personal</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="workspace-actions">
+              <button class="btn-secondary" onclick="openCreateWorkspaceModal()">
+                <i class="fas fa-plus"></i> Create New Workspace
+              </button>
+            </div>
+          </div>
+
+          <div class="settings-card">
+            <h4><i class="fas fa-user-friends"></i> Members</h4>
+            <div id="members-list" class="members-list">
+              <!-- Members will be loaded here -->
+            </div>
+            <button class="btn-secondary" onclick="openInviteModal()">
+              <i class="fas fa-user-plus"></i> Invite Member
+            </button>
+          </div>
+        </div>
+
+        <!-- Approvals Settings -->
+        <div id="approvals-settings" class="settings-content">
+          <div class="settings-card">
+            <h4><i class="fas fa-check-circle"></i> Expense Approvals</h4>
+            <div class="approval-config">
+              <div class="form-control">
+                <label for="approval-required">Require Approval for Expenses Over:</label>
+                <input type="number" id="approval-required" placeholder="10000" min="0" step="100">
+                <small>Set to 0 to disable approval workflow</small>
+              </div>
+              <button class="btn-submit" onclick="saveApprovalSettings()">
+                <i class="fas fa-save"></i> Save Settings
+              </button>
+            </div>
+          </div>
+
+          <div class="settings-card">
+            <h4><i class="fas fa-clock"></i> Pending Approvals</h4>
+            <div id="pending-approvals" class="approvals-list">
+              <!-- Pending approvals will be loaded here -->
+            </div>
+          </div>
+
+          <div class="settings-card">
+            <h4><i class="fas fa-history"></i> Approval History</h4>
+            <div id="approval-history" class="approvals-list">
+              <!-- Approval history will be loaded here -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Profile Settings -->
+        <div id="profile-settings" class="settings-content">
+          <div class="settings-card">
+            <h4><i class="fas fa-user"></i> Profile Information</h4>
+            <div class="profile-form">
+              <div class="form-control">
+                <label for="profile-name">Full Name:</label>
+                <input type="text" id="profile-name" placeholder="Your full name">
+              </div>
+              <div class="form-control">
+                <label for="profile-email">Email:</label>
+                <input type="email" id="profile-email" placeholder="your.email@example.com" readonly>
+              </div>
+              <button class="btn-submit" onclick="updateProfile()">
+                <i class="fas fa-save"></i> Update Profile
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <!-- Investment Portfolio Section -->
@@ -1580,6 +1682,7 @@
   <script src="auth.js"></script>
   <script src="trackerscript.js"></script>
   <script src="analytics-dashboard.js"></script>
+  <script src="workspace-feature.js"></script>
 
 
 </body>

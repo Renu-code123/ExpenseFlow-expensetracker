@@ -160,7 +160,7 @@ mongoose.connect(process.env.MONGODB_URI)
 io.use(socketAuth);
 
 // Socket.IO connection handling
-io.on('connection', (socket) => {
+io.on('connection', async (socket) => {
   console.log(`User ${socket.user.name} connected`);
 
   // Join user-specific room
@@ -206,6 +206,7 @@ app.use('/api/currency', require('./routes/currency'));
 app.use('/api/groups', require('./routes/groups'));
 app.use('/api/splits', require('./routes/splits'));
 app.use('/api/workspaces', require('./routes/workspaces'));
+app.use('/api/approvals', require('./routes/approvals'));
 app.use('/api/investments', require('./routes/investments'));
 app.use('/api/ai', require('./routes/ai'));
 app.use('/api/multicurrency', require('./routes/multicurrency'));
