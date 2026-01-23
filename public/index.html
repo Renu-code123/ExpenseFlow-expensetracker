@@ -1037,8 +1037,132 @@
     </div>
   </footer>
 
-  <script src="i18n.js"></script>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <script src="trackerscript.js"></script>
+  <script src="api-integration.js"></script>
+  <script src="realtime-sync.js"></script>
+  <script src="analytics-dashboard.js"></script>
+  <script>
+    // Recurring Modal Control
+    function openRecurringModal() {
+      const modal = document.getElementById('recurring-modal');
+      if (modal) {
+        modal.style.display = 'flex';
+        modal.classList.add('active');
+        document.getElementById('recurring-modal-title').textContent = 'Add Recurring Expense';
+        document.getElementById('recurring-form').reset();
+      }
+    }
+
+    function closeRecurringModal() {
+      const modal = document.getElementById('recurring-modal');
+      if (modal) {
+        modal.style.display = 'none';
+        modal.classList.remove('active');
+      }
+    }
+
+    // Initialize recurring button
+    document.addEventListener('DOMContentLoaded', function() {
+      const addBtn = document.getElementById('add-recurring-btn');
+      if (addBtn) {
+        addBtn.addEventListener('click', openRecurringModal);
+      }
+
+      const closeBtn = document.getElementById('recurring-modal-close');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', closeRecurringModal);
+      }
+
+      const cancelBtn = document.getElementById('recurring-cancel-btn');
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeRecurringModal);
+      }
+
+      // Close modal when clicking outside
+      const modal = document.getElementById('recurring-modal');
+      if (modal) {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) {
+            closeRecurringModal();
+          }
+        });
+      }
+    });
+  </script>
+  <script>
+    // Currency Management Functions
+    let supportedCurrencies = [];
+    let currentUserCurrency = 'INR';
+
+    // Load supported currencies on page load
+    async function loadSupportedCurrencies() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const response = await fetch('/api/currency/supported', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          supportedCurrencies = data.data.currencies;
+          populateCurrencySelects();
+        }
+      } catch (error) {
+        console.error('Error loading currencies:', error);
+      }
+    }
+
+    // Populate currency dropdowns
+    function populateCurrencySelects() {
+      const currencySelect = document.getElementById('currency');
+      const preferredCurrencySelect = document.getElementById('preferred-currency');
+
+  <style>
+    @keyframes spin {
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    .progress-fill.high {
+      background: #4caf50 !important;
+    }
+
+    .progress-fill.medium {
+      background: #ffc107 !important;
+    }
+
+    .progress-fill.low {
+      background: #f44336 !important;
+    }
+  </style>
+
+  <!-- Workspace Modal -->
+  <div id="workspace-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3><i class="fas fa-users"></i> Create Shared Workspace</h3>
+        <span class="close-modal" onclick="closeWorkspaceModal()">&times;</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- API and Feature Scripts -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="auth-integration.js"></script>
+  <script src="api-integration.js"></script>
+  <script src="workspace-feature.js"></script>
+  <script src="budget-goals.js"></script>
+  <script src="receipt-upload.js"></script>
+  <script src="receipt-ocr.js"></script>
+  <script src="analytics-dashboard.js"></script>
+  <script src="realtime-sync.js"></script>
+  <script src="investment-portfolio.js"></script>
 
   <!-- PWA Installation Prompt -->
   <div id="install-prompt" class="install-prompt" style="display: none;">
