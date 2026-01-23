@@ -5,6 +5,7 @@ const budgetService = require('../services/budgetService');
 const categorizationService = require('../services/categorizationService');
 const exportService = require('../services/exportService');
 const currencyService = require('../services/currencyService');
+const aiService = require('../services/aiService');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
 const router = express.Router();
