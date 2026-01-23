@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const cors = require('cors');
 const socketAuth = require('./middleware/socketAuth');
 const CronJobs = require('./services/cronJobs');
+const aiService = require('./services/aiService');
 const { generalLimiter } = require('./middleware/rateLimiter');
 const { sanitizeInput, mongoSanitizeMiddleware } = require('./middleware/sanitization');
 const securityMonitor = require('./services/securityMonitor');
@@ -132,6 +133,10 @@ mongoose.connect(process.env.MONGODB_URI)
     // Initialize cron jobs after DB connection
     CronJobs.init();
     console.log('Email cron jobs initialized');
+    
+    // Initialize AI service
+    aiService.init();
+    console.log('AI service initialized');
   })
   .catch(err => console.error('MongoDB connection error:', err));
 
@@ -179,6 +184,8 @@ app.use('/api/currency', require('./routes/currency'));
 app.use('/api/groups', require('./routes/groups'));
 app.use('/api/splits', require('./routes/splits'));
 app.use('/api/workspaces', require('./routes/workspaces'));
+app.use('/api/investments', require('./routes/investments'));
+app.use('/api/ai', require('./routes/ai'));
 
 // Root route to serve the UI
 app.get('/', (req, res) => {
