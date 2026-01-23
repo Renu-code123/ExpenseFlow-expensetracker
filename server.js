@@ -160,7 +160,7 @@ mongoose.connect(process.env.MONGODB_URI)
 io.use(socketAuth);
 
 // Socket.IO connection handling
-io.on('connection', (socket) => {
+io.on('connection', async (socket) => {
   console.log(`User ${socket.user.name} connected`);
 
   // Join user-specific room
