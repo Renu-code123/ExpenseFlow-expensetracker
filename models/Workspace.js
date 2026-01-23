@@ -1,64 +1,77 @@
 const mongoose = require('mongoose');
 
 const workspaceSchema = new mongoose.Schema({
-    name: {
-        type: String,
-        required: true,
-        trim: true
+  name: {
+    type: String,
+    required: true,
+    trim: true,
+    maxlength: 100
+  },
+  description: {
+    type: String,
+    maxlength: 500
+  },
+  owner: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  members: [{
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
     },
-    description: {
-        type: String,
-        trim: true
+    role: {
+      type: String,
+      enum: ['owner', 'admin', 'manager', 'member', 'viewer'],
+      default: 'member'
     },
-    owner: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
-    },
-    members: [{
-        user: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User'
-        },
-        role: {
-            type: String,
-            enum: ['admin', 'editor', 'viewer'],
-            default: 'viewer'
-        },
-        joinedAt: {
-            type: Date,
-            default: Date.now
-        }
+    permissions: [{
+      type: String,
+      enum: ['create_expense', 'approve_expense', 'view_reports', 'manage_budgets', 'manage_members', 'export_data']
     }],
-    settings: {
-        currency: {
-            type: String,
-            default: 'INR'
-        },
-        allowMemberInvites: {
-            type: Boolean,
-            default: false
-        }
+    joinedAt: {
+      type: Date,
+      default: Date.now
     },
     isActive: {
-        type: Boolean,
-        default: true
+      type: Boolean,
+      default: true
     }
+  }],
+  settings: {
+    currency: {
+      type: String,
+      default: 'USD'
+    },
+    approvalRequired: {
+      type: Boolean,
+      default: false
+    },
+    approvalThreshold: {
+      type: Number,
+      default: 100
+    },
+    expenseCategories: [{
+      type: String
+    }],
+    budgetPeriod: {
+      type: String,
+      enum: ['monthly', 'quarterly', 'yearly'],
+      default: 'monthly'
+    }
+  },
+  isActive: {
+    type: Boolean,
+    default: true
+  }
 }, {
-    timestamps: true
+  timestamps: true
 });
 
-// Middleware to ensure owner is always an admin member
-workspaceSchema.pre('save', function (next) {
-    const isOwnerMember = this.members.find(m => m.user.toString() === this.owner.toString());
-    if (!isOwnerMember) {
-        this.members.push({
-            user: this.owner,
-            role: 'admin',
-            joinedAt: new Date()
-        });
-    }
-    next();
-});
+workspaceSchema.index({ owner: 1 });
+workspaceSchema.index({ 'members.user': 1 });
+workspaceSchema.index({ isActive: 1 });
 
 module.exports = mongoose.model('Workspace', workspaceSchema);
