@@ -163,6 +163,10 @@
       display: grid;
       grid-template-columns: repeat(3, minmax(100px, 1fr));
     }
+      .footer-links {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(100px, 1fr));
+        }
   </style>
 </head>
 
@@ -176,12 +180,12 @@
           <span>ExpenseFlow</span>
         </div>
         <div class="nav-menu" id="nav-menu">
-          <a href="#dashboard" class="nav-link active"><span data-i18n="nav.dashboard">Dashboard</span></a>
-          <a href="#analytics" class="nav-link"><span data-i18n="nav.analytics">Analytics</span></a>
-          <a href="#goals" class="nav-link"><span data-i18n="nav.goals">Goals</span></a>
-          <a href="#settings" class="nav-link"><span data-i18n="nav.settings">Settings</span></a>
-          <a href="./contributor.html" class="nav-link"><span data-i18n="nav.contributors">Contributors</span></a>
-          <a href="contact.html" class="nav-link"><span data-i18n="nav.contact">Contact</span></a>
+          <a href="#dashboard" class="nav-link active">Dashboard</a>
+          <a href="#analytics" class="nav-link">Analytics</a>
+          <a href="#goals" class="nav-link">Goals</a>
+          <a href="#settings" class="nav-link">Settings</a>
+          <a href="Monthlysummary.html" class="nav-link">Monthly/Yearly Summary</a>
+          <a href="./contributor.html" class="nav-link">Contributors</a>
         </div>
         <div class="nav-toggle" id="nav-toggle">
           <span class="bar"></span>
@@ -1183,11 +1187,8 @@
     </div>
   </div>
 
-  <!-- Offline Indicator -->
-  <div id="offline-indicator" class="offline-indicator" style="display: none;">
-    <i class="fas fa-wifi-slash"></i>
-    <span>You're offline. Changes will be saved locally.</span>
-  </div>
+  
+  </footer>
 
   <!-- Update Available Notification -->
   <div id="update-notification" class="update-notification" style="display: none;">
