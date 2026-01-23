@@ -17,6 +17,29 @@ const expenseSchema = new mongoose.Schema({
     required: true,
     min: 0.01
   },
+  originalAmount: {
+    type: Number,
+    required: true,
+    min: 0.01
+  },
+  originalCurrency: {
+    type: String,
+    required: true,
+    default: 'INR',
+    uppercase: true
+  },
+  convertedAmount: {
+    type: Number,
+    min: 0.01
+  },
+  convertedCurrency: {
+    type: String,
+    uppercase: true
+  },
+  exchangeRate: {
+    type: Number,
+    min: 0
+  },
   category: {
     type: String,
     required: true,
@@ -27,12 +50,39 @@ const expenseSchema = new mongoose.Schema({
     required: true,
     enum: ['income', 'expense']
   },
+  merchant: {
+    type: String,
+    trim: true,
+    maxlength: 50,
+    default: ''
+  },
   date: {
     type: Date,
     default: Date.now
+  },
+  workspace: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Workspace',
+    default: null
+  },
+  addedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  isPrivate: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true
 });
+
+// Indexes for performance optimization
+expenseSchema.index({ user: 1, date: -1 });
+expenseSchema.index({ workspace: 1, date: -1 });
+expenseSchema.index({ user: 1, type: 1, date: -1 });
+expenseSchema.index({ workspace: 1, type: 1, date: -1 });
+expenseSchema.index({ user: 1, category: 1, date: -1 });
+expenseSchema.index({ workspace: 1, category: 1, date: -1 });
 
 module.exports = mongoose.model('Expense', expenseSchema);
