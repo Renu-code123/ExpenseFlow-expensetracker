@@ -115,7 +115,8 @@ document.addEventListener("DOMContentLoaded", () => {
         amount: expense.type === 'expense' ? -expense.amount : expense.amount,
         category: expense.category,
         type: expense.type,
-        date: expense.date
+        date: expense.date,
+        approvalStatus: expense.approvalStatus || 'approved' // Default to approved for backward compatibility
       }));
     } catch (error) {
       console.error('Error fetching expenses:', error);
@@ -552,6 +553,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const formattedDate = date.toLocaleDateString('en-IN');
     const categoryInfo = categories[transaction.category] || categories.other;
 
+    // Determine approval status
+    let statusBadge = '';
+    if (transaction.approvalStatus) {
+      const status = transaction.approvalStatus.toLowerCase();
+      const statusText = transaction.approvalStatus.charAt(0).toUpperCase() + transaction.approvalStatus.slice(1);
+      statusBadge = `<span class="approval-badge status-${status}">${statusText}</span>`;
+    }
+
     item.innerHTML = `
       <div class="transaction-content">
         <div class="transaction-main">
@@ -562,7 +571,10 @@ document.addEventListener("DOMContentLoaded", () => {
           <span class="transaction-category" style="background-color: ${categoryInfo.color}20; color: ${categoryInfo.color};">
             ${categoryInfo.name}
           </span>
-          <div class="transaction-date">${formattedDate}</div>
+          <div class="transaction-meta">
+            <div class="transaction-date">${formattedDate}</div>
+            ${statusBadge}
+          </div>
         </div>
       </div>
       <button class="delete-btn" onclick="removeTransaction('${transaction.id}')">
