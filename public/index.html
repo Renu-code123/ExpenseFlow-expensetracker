@@ -890,91 +890,101 @@
     </div>
 
     <!-- Settings Section -->
-    <section id="settings" class="settings-section" style="display: none; padding-top: 100px;">
-      <div class="container">
-        <div class="section-header">
-          <h3><i class="fas fa-cog"></i> Settings</h3>
+    <section id="settings" class="settings-section">
+      <div class="section-header">
+        <h3><i class="fas fa-cog"></i> Settings</h3>
+      </div>
+
+      <div class="settings-container">
+        <!-- Workspace Settings Tab -->
+        <div class="settings-tabs">
+          <button class="settings-tab active" onclick="switchSettingsTab('workspace')">Workspace</button>
+          <button class="settings-tab" onclick="switchSettingsTab('approvals')">Approvals</button>
+          <button class="settings-tab" onclick="switchSettingsTab('profile')">Profile</button>
         </div>
 
         <!-- Workspace Settings -->
-        <div id="workspace-settings" class="settings-card" style="display: none;">
-          <div class="settings-header">
+        <div id="workspace-settings" class="settings-content active">
+          <div class="settings-card">
             <h4><i class="fas fa-users"></i> Workspace Management</h4>
-            <span class="settings-subtitle">Manage members, roles, and permissions</span>
-          </div>
-
-          <div class="workspace-info">
-            <div class="workspace-details">
-              <h5 id="current-workspace-name">Workspace Name</h5>
-              <p id="current-workspace-desc">Workspace description</p>
-              <div class="workspace-stats">
-                <span id="member-count">0 members</span>
-                <span id="your-role">Your role: member</span>
+            <div class="workspace-info">
+              <div class="current-workspace">
+                <label>Current Workspace:</label>
+                <span id="current-workspace-name">Personal</span>
+              </div>
+              <div class="workspace-selector">
+                <label for="workspace-select">Switch Workspace:</label>
+                <select id="workspace-select" onchange="switchWorkspace()">
+                  <option value="personal">Personal</option>
+                </select>
               </div>
             </div>
-          </div>
 
-          <!-- Members Management -->
-          <div class="members-section">
-            <div class="section-header-small">
-              <h5>Members</h5>
-              <button class="btn-secondary" onclick="openInviteModal()" id="invite-btn" style="display: none;">
-                <i class="fas fa-user-plus"></i> Invite Member
+            <div class="workspace-actions">
+              <button class="btn-secondary" onclick="openCreateWorkspaceModal()">
+                <i class="fas fa-plus"></i> Create New Workspace
               </button>
             </div>
+          </div>
 
+          <div class="settings-card">
+            <h4><i class="fas fa-user-friends"></i> Members</h4>
             <div id="members-list" class="members-list">
               <!-- Members will be loaded here -->
             </div>
+            <button class="btn-secondary" onclick="openInviteModal()">
+              <i class="fas fa-user-plus"></i> Invite Member
+            </button>
+          </div>
+        </div>
+
+        <!-- Approvals Settings -->
+        <div id="approvals-settings" class="settings-content">
+          <div class="settings-card">
+            <h4><i class="fas fa-check-circle"></i> Expense Approvals</h4>
+            <div class="approval-config">
+              <div class="form-control">
+                <label for="approval-required">Require Approval for Expenses Over:</label>
+                <input type="number" id="approval-required" placeholder="10000" min="0" step="100">
+                <small>Set to 0 to disable approval workflow</small>
+              </div>
+              <button class="btn-submit" onclick="saveApprovalSettings()">
+                <i class="fas fa-save"></i> Save Settings
+              </button>
+            </div>
           </div>
 
-          <!-- Role Permissions Info -->
-          <div class="permissions-info">
-            <h5>Role Permissions</h5>
-            <div class="permissions-grid">
-              <div class="permission-item">
-                <strong>Owner:</strong> Full access to all features, manage members, delete workspace
-              </div>
-              <div class="permission-item">
-                <strong>Admin:</strong> Manage members and their roles, access all workspace data
-              </div>
-              <div class="permission-item">
-                <strong>Manager:</strong> Manage budgets, approve expenses, access all data
-              </div>
-              <div class="permission-item">
-                <strong>Member:</strong> Add and edit expenses, view all reports
-              </div>
-              <div class="permission-item">
-                <strong>Viewer:</strong> View expenses and reports, cannot make changes
-              </div>
+          <div class="settings-card">
+            <h4><i class="fas fa-clock"></i> Pending Approvals</h4>
+            <div id="pending-approvals" class="approvals-list">
+              <!-- Pending approvals will be loaded here -->
+            </div>
+          </div>
+
+          <div class="settings-card">
+            <h4><i class="fas fa-history"></i> Approval History</h4>
+            <div id="approval-history" class="approvals-list">
+              <!-- Approval history will be loaded here -->
             </div>
           </div>
         </div>
 
-        <!-- Personal Settings -->
-        <div class="settings-card">
-          <div class="settings-header">
-            <h4><i class="fas fa-user"></i> Personal Settings</h4>
-            <span class="settings-subtitle">Manage your account preferences</span>
-          </div>
-
-          <div class="settings-content">
-            <div class="setting-item">
-              <label for="default-currency">Default Currency</label>
-              <select id="default-currency" onchange="updateDefaultCurrency()">
-                <option value="INR">INR (₹)</option>
-                <option value="USD">USD ($)</option>
-                <option value="EUR">EUR (€)</option>
-                <option value="GBP">GBP (£)</option>
-              </select>
-            </div>
-
-            <div class="setting-item">
-              <label for="theme-toggle">Theme</label>
-              <select id="theme-toggle">
-                <option value="dark">Dark</option>
-                <option value="light">Light</option>
-              </select>
+        <!-- Profile Settings -->
+        <div id="profile-settings" class="settings-content">
+          <div class="settings-card">
+            <h4><i class="fas fa-user"></i> Profile Information</h4>
+            <div class="profile-form">
+              <div class="form-control">
+                <label for="profile-name">Full Name:</label>
+                <input type="text" id="profile-name" placeholder="Your full name">
+              </div>
+              <div class="form-control">
+                <label for="profile-email">Email:</label>
+                <input type="email" id="profile-email" placeholder="your.email@example.com" readonly>
+              </div>
+              <button class="btn-submit" onclick="updateProfile()">
+                <i class="fas fa-save"></i> Update Profile
+              </button>
             </div>
           </div>
         </div>
@@ -1713,6 +1723,7 @@
   <script src="auth.js"></script>
   <script src="trackerscript.js"></script>
   <script src="analytics-dashboard.js"></script>
+  <script src="workspace-feature.js"></script>
 
 
 </body>
