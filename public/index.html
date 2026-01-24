@@ -193,6 +193,7 @@
           <span class="bar"></span>
         </div>
         <div class="user-profile">
+          <div id="workspace-selector" class="workspace-selector"></div>
           <select id="language-switcher" class="language-select" aria-label="Language">
             <option value="en">EN</option>
             <option value="es">ES</option>
@@ -1341,6 +1342,46 @@
         <div class="modal-footer">
           <button type="button" class="btn-cancel" onclick="closeWorkspaceModal()">Cancel</button>
           <button type="submit" class="btn-submit">Create Workspace</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Invite Member Modal -->
+  <div id="invite-modal" class="modal invite-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3><i class="fas fa-user-plus"></i> Invite Member</h3>
+        <span class="close-modal" onclick="closeInviteModal()">&times;</span>
+      </div>
+      <form id="invite-form" class="invite-form">
+        <div class="modal-body">
+          <div class="form-control">
+            <label for="invite-email">Email Address *</label>
+            <input type="email" id="invite-email" placeholder="member@example.com" required>
+            <small>Enter the email address of the person you want to invite</small>
+          </div>
+          <div class="form-control">
+            <label for="invite-role">Role *</label>
+            <select id="invite-role" class="role-select" required>
+              <option value="">Select Role</option>
+              <option value="viewer">Viewer - Can view expenses and reports</option>
+              <option value="member">Member - Can add expenses and view all data</option>
+              <option value="manager">Manager - Can manage budgets and approve expenses</option>
+              <option value="admin">Admin - Can manage members and all workspace data</option>
+            </select>
+            <small>Choose the appropriate role for this member</small>
+          </div>
+          <div class="role-permissions">
+            <h5>Role Permissions:</h5>
+            <div id="role-permissions-display">
+              <p>Select a role to see permissions</p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" onclick="closeInviteModal()">Cancel</button>
+          <button type="submit" class="btn-submit">Send Invitation</button>
         </div>
       </form>
     </div>
