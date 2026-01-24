@@ -50,12 +50,42 @@ const expenseSchema = new mongoose.Schema({
     required: true,
     enum: ['income', 'expense']
   },
+  merchant: {
+    type: String,
+    trim: true,
+    maxlength: 50,
+    default: ''
+  },
   date: {
     type: Date,
     default: Date.now
+  },
+  workspace: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Workspace',
+    default: null
+  },
+  addedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  isPrivate: {
+    type: Boolean,
+    default: false
+  },
+  syncedToAccounting: {
+    type: Boolean,
+    default: false
   }
-}, {
   timestamps: true
 });
+
+// Indexes for performance optimization
+expenseSchema.index({ user: 1, date: -1 });
+expenseSchema.index({ workspace: 1, date: -1 });
+expenseSchema.index({ user: 1, type: 1, date: -1 });
+expenseSchema.index({ workspace: 1, type: 1, date: -1 });
+expenseSchema.index({ user: 1, category: 1, date: -1 });
+expenseSchema.index({ workspace: 1, category: 1, date: -1 });
 
 module.exports = mongoose.model('Expense', expenseSchema);

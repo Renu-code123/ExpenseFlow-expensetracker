@@ -2,86 +2,106 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
 const currencyService = require('../services/currencyService');
-const User = require('../models/User');
+const Joi = require('joi');
 
 /**
  * @route   GET /api/currency/rates
  * @desc    Get current exchange rates
  * @access  Private
- * @query   base - Base currency (optional, defaults to USD)
  */
 router.get('/rates', auth, async (req, res) => {
     try {
-        const baseCurrency = req.query.base || 'USD';
+        const { base = 'USD', symbols } = req.query;
 
-        if (!currencyService.isValidCurrency(baseCurrency)) {
+        // Validate base currency
+        if (!currencyService.isValidCurrency(base)) {
             return res.status(400).json({
-                success: false,
-                message: 'Invalid base currency code'
+                error: 'Invalid base currency code'
             });
         }
 
-        const rates = await currencyService.getExchangeRates(baseCurrency);
+        // Parse symbols if provided
+        let targetCurrencies = null;
+        if (symbols) {
+            const symbolArray = symbols.split(',').map(s => s.trim().toUpperCase());
+            const invalidSymbols = symbolArray.filter(s => !currencyService.isValidCurrency(s));
+            if (invalidSymbols.length > 0) {
+                return res.status(400).json({
+                    error: `Invalid currency codes: ${invalidSymbols.join(', ')}`
+                });
+            }
+            targetCurrencies = symbolArray;
+        }
+
+        const ratesData = await currencyService.getExchangeRates(base);
+
+        // Filter rates if specific symbols requested
+        let filteredRates = ratesData.rates;
+        if (targetCurrencies) {
+            filteredRates = {};
+            targetCurrencies.forEach(symbol => {
+                if (ratesData.rates[symbol]) {
+                    filteredRates[symbol] = ratesData.rates[symbol];
+                }
+            });
+        }
 
         res.json({
             success: true,
-            data: rates
+            data: {
+                base: ratesData.baseCurrency,
+                rates: filteredRates,
+                lastUpdated: ratesData.lastUpdated,
+                source: ratesData.source,
+                cached: ratesData.cached
+            }
         });
     } catch (error) {
-        console.error('Get rates error:', error);
+        console.error('[Currency Routes] Get rates error:', error);
         res.status(500).json({
-            success: false,
-            message: 'Failed to fetch exchange rates',
-            error: error.message
+            error: 'Failed to fetch exchange rates'
         });
     }
 });
 
 /**
- * @route   GET /api/currency/convert
+ * @route   POST /api/currency/convert
  * @desc    Convert amount between currencies
  * @access  Private
- * @query   amount, from, to
  */
-router.get('/convert', auth, async (req, res) => {
+router.post('/convert', auth, async (req, res) => {
     try {
-        const { amount, from, to } = req.query;
+        const { amount, from, to } = req.body;
 
-        // Validate inputs
-        if (!amount || !from || !to) {
+        // Validation
+        if (!amount || typeof amount !== 'number' || amount <= 0) {
             return res.status(400).json({
-                success: false,
-                message: 'Missing required parameters: amount, from, to'
+                error: 'Valid amount is required'
             });
         }
 
-        const parsedAmount = parseFloat(amount);
-        if (isNaN(parsedAmount) || parsedAmount <= 0) {
+        if (!from || !to) {
             return res.status(400).json({
-                success: false,
-                message: 'Invalid amount'
+                error: 'Both from and to currencies are required'
             });
         }
 
         if (!currencyService.isValidCurrency(from) || !currencyService.isValidCurrency(to)) {
             return res.status(400).json({
-                success: false,
-                message: 'Invalid currency code'
+                error: 'Invalid currency code(s)'
             });
         }
 
-        const conversion = await currencyService.convertCurrency(parsedAmount, from, to);
+        const conversion = await currencyService.convertCurrency(amount, from.toUpperCase(), to.toUpperCase());
 
         res.json({
             success: true,
             data: conversion
         });
     } catch (error) {
-        console.error('Currency conversion error:', error);
+        console.error('[Currency Routes] Convert error:', error);
         res.status(500).json({
-            success: false,
-            message: 'Failed to convert currency',
-            error: error.message
+            error: 'Failed to convert currency'
         });
     }
 });
@@ -97,118 +117,42 @@ router.get('/supported', auth, async (req, res) => {
 
         res.json({
             success: true,
-            data: {
-                currencies: currencies,
-                count: currencies.length
-            }
+            count: currencies.length,
+            data: currencies
         });
     } catch (error) {
-        console.error('Get supported currencies error:', error);
+        console.error('[Currency Routes] Get supported currencies error:', error);
         res.status(500).json({
-            success: false,
-            message: 'Failed to fetch supported currencies',
-            error: error.message
+            error: 'Failed to fetch supported currencies'
         });
     }
 });
 
 /**
- * @route   PUT /api/currency/preference
- * @desc    Update user's preferred currency
+ * @route   GET /api/currency/symbols
+ * @desc    Get currency symbols mapping
  * @access  Private
- * @body    currency, locale (optional), decimalPlaces (optional)
  */
-router.put('/preference', auth, async (req, res) => {
+router.get('/symbols', auth, async (req, res) => {
     try {
-        const { currency, locale, decimalPlaces } = req.body;
+        const currencies = currencyService.getSupportedCurrencies();
+        const symbols = {};
 
-        if (!currency) {
-            return res.status(400).json({
-                success: false,
-                message: 'Currency code is required'
-            });
-        }
-
-        if (!currencyService.isValidCurrency(currency)) {
-            return res.status(400).json({
-                success: false,
-                message: 'Invalid currency code'
-            });
-        }
-
-        const updateData = {
-            preferredCurrency: currency.toUpperCase()
-        };
-
-        if (locale) {
-            updateData['currencySettings.locale'] = locale;
-        }
-
-        if (decimalPlaces !== undefined) {
-            const places = parseInt(decimalPlaces);
-            if (places < 0 || places > 4) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Decimal places must be between 0 and 4'
-                });
-            }
-            updateData['currencySettings.decimalPlaces'] = places;
-        }
-
-        const user = await User.findByIdAndUpdate(
-            req.user.id,
-            { $set: updateData },
-            { new: true, runValidators: true }
-        ).select('-password');
+        currencies.forEach(currency => {
+            symbols[currency.code] = {
+                name: currency.name,
+                symbol: currency.symbol
+            };
+        });
 
         res.json({
             success: true,
-            message: 'Currency preference updated successfully',
-            data: {
-                preferredCurrency: user.preferredCurrency,
-                currencySettings: user.currencySettings
-            }
+            data: symbols
         });
     } catch (error) {
-        console.error('Update currency preference error:', error);
+        console.error('[Currency Routes] Get symbols error:', error);
         res.status(500).json({
-            success: false,
-            message: 'Failed to update currency preference',
-            error: error.message
-        });
-    }
-});
-
-/**
- * @route   GET /api/currency/preference
- * @desc    Get user's current currency preference
- * @access  Private
- */
-router.get('/preference', auth, async (req, res) => {
-    try {
-        const user = await User.findById(req.user.id).select('preferredCurrency currencySettings');
-
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: 'User not found'
-            });
-        }
-
-        res.json({
-            success: true,
-            data: {
-                preferredCurrency: user.preferredCurrency,
-                currencySettings: user.currencySettings,
-                currencySymbol: currencyService.getCurrencySymbol(user.preferredCurrency)
-            }
-        });
-    } catch (error) {
-        console.error('Get currency preference error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to fetch currency preference',
-            error: error.message
+            error: 'Failed to fetch currency symbols'
         });
     }
 });
