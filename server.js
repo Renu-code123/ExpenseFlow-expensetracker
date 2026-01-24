@@ -227,6 +227,7 @@ app.use('/api/ai', require('./routes/ai'));
 app.use('/api/multicurrency', require('./routes/multicurrency'));
 app.use('/api/collaboration', require('./routes/collaboration'));
 app.use('/api/audit-compliance', require('./routes/auditCompliance'));
+app.use('/api/accounting', require('./routes/accounting'));
 app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/fraud-detection', require('./routes/fraudDetection'));
 
