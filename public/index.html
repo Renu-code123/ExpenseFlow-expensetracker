@@ -193,6 +193,7 @@
           <span class="bar"></span>
         </div>
         <div class="user-profile">
+          <div id="workspace-selector" class="workspace-selector"></div>
           <select id="language-switcher" class="language-select" aria-label="Language">
             <option value="en">EN</option>
             <option value="es">ES</option>
@@ -887,6 +888,98 @@
         </div>
       </section>
     </div>
+
+    <!-- Settings Section -->
+    <section id="settings" class="settings-section" style="display: none; padding-top: 100px;">
+      <div class="container">
+        <div class="section-header">
+          <h3><i class="fas fa-cog"></i> Settings</h3>
+        </div>
+
+        <!-- Workspace Settings -->
+        <div id="workspace-settings" class="settings-card" style="display: none;">
+          <div class="settings-header">
+            <h4><i class="fas fa-users"></i> Workspace Management</h4>
+            <span class="settings-subtitle">Manage members, roles, and permissions</span>
+          </div>
+
+          <div class="workspace-info">
+            <div class="workspace-details">
+              <h5 id="current-workspace-name">Workspace Name</h5>
+              <p id="current-workspace-desc">Workspace description</p>
+              <div class="workspace-stats">
+                <span id="member-count">0 members</span>
+                <span id="your-role">Your role: member</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Members Management -->
+          <div class="members-section">
+            <div class="section-header-small">
+              <h5>Members</h5>
+              <button class="btn-secondary" onclick="openInviteModal()" id="invite-btn" style="display: none;">
+                <i class="fas fa-user-plus"></i> Invite Member
+              </button>
+            </div>
+
+            <div id="members-list" class="members-list">
+              <!-- Members will be loaded here -->
+            </div>
+          </div>
+
+          <!-- Role Permissions Info -->
+          <div class="permissions-info">
+            <h5>Role Permissions</h5>
+            <div class="permissions-grid">
+              <div class="permission-item">
+                <strong>Owner:</strong> Full access to all features, manage members, delete workspace
+              </div>
+              <div class="permission-item">
+                <strong>Admin:</strong> Manage members and their roles, access all workspace data
+              </div>
+              <div class="permission-item">
+                <strong>Manager:</strong> Manage budgets, approve expenses, access all data
+              </div>
+              <div class="permission-item">
+                <strong>Member:</strong> Add and edit expenses, view all reports
+              </div>
+              <div class="permission-item">
+                <strong>Viewer:</strong> View expenses and reports, cannot make changes
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Personal Settings -->
+        <div class="settings-card">
+          <div class="settings-header">
+            <h4><i class="fas fa-user"></i> Personal Settings</h4>
+            <span class="settings-subtitle">Manage your account preferences</span>
+          </div>
+
+          <div class="settings-content">
+            <div class="setting-item">
+              <label for="default-currency">Default Currency</label>
+              <select id="default-currency" onchange="updateDefaultCurrency()">
+                <option value="INR">INR (₹)</option>
+                <option value="USD">USD ($)</option>
+                <option value="EUR">EUR (€)</option>
+                <option value="GBP">GBP (£)</option>
+              </select>
+            </div>
+
+            <div class="setting-item">
+              <label for="theme-toggle">Theme</label>
+              <select id="theme-toggle">
+                <option value="dark">Dark</option>
+                <option value="light">Light</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <!-- Investment Portfolio Section -->
@@ -1239,6 +1332,46 @@
         <div class="modal-footer">
           <button type="button" class="btn-cancel" onclick="closeWorkspaceModal()">Cancel</button>
           <button type="submit" class="btn-submit">Create Workspace</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Invite Member Modal -->
+  <div id="invite-modal" class="modal invite-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3><i class="fas fa-user-plus"></i> Invite Member</h3>
+        <span class="close-modal" onclick="closeInviteModal()">&times;</span>
+      </div>
+      <form id="invite-form" class="invite-form">
+        <div class="modal-body">
+          <div class="form-control">
+            <label for="invite-email">Email Address *</label>
+            <input type="email" id="invite-email" placeholder="member@example.com" required>
+            <small>Enter the email address of the person you want to invite</small>
+          </div>
+          <div class="form-control">
+            <label for="invite-role">Role *</label>
+            <select id="invite-role" class="role-select" required>
+              <option value="">Select Role</option>
+              <option value="viewer">Viewer - Can view expenses and reports</option>
+              <option value="member">Member - Can add expenses and view all data</option>
+              <option value="manager">Manager - Can manage budgets and approve expenses</option>
+              <option value="admin">Admin - Can manage members and all workspace data</option>
+            </select>
+            <small>Choose the appropriate role for this member</small>
+          </div>
+          <div class="role-permissions">
+            <h5>Role Permissions:</h5>
+            <div id="role-permissions-display">
+              <p>Select a role to see permissions</p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" onclick="closeInviteModal()">Cancel</button>
+          <button type="submit" class="btn-submit">Send Invitation</button>
         </div>
       </form>
     </div>

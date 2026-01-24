@@ -38,7 +38,7 @@ router.get('/', auth, async (req, res) => {
  * @desc    Get workspace by ID
  * @access  Private
  */
-router.get('/:workspaceId', auth, checkRole([ROLES.ADMIN, ROLES.EDITOR, ROLES.VIEWER]), async (req, res) => {
+router.get('/:workspaceId', auth, checkRole([ROLES.OWNER, ROLES.ADMIN, ROLES.MANAGER, ROLES.MEMBER, ROLES.VIEWER]), async (req, res) => {
     try {
         const workspace = await workspaceService.getWorkspaceById(req.params.workspaceId, req.user._id);
         res.json({ success: true, data: workspace });
@@ -52,7 +52,7 @@ router.get('/:workspaceId', auth, checkRole([ROLES.ADMIN, ROLES.EDITOR, ROLES.VI
  * @desc    Invite user to workspace
  * @access  Private (Admin only)
  */
-router.post('/:workspaceId/invite', auth, checkRole([ROLES.ADMIN]), async (req, res) => {
+router.post('/:workspaceId/invite', auth, checkRole([ROLES.OWNER, ROLES.ADMIN]), async (req, res) => {
     try {
         const { email, role } = req.body;
         const result = await invitationService.inviteUser(req.params.workspaceId, email, role, req.user);
@@ -82,7 +82,7 @@ router.post('/join', auth, async (req, res) => {
  * @desc    Update member role
  * @access  Private (Admin only)
  */
-router.put('/:workspaceId/members/:userId', auth, checkRole([ROLES.ADMIN]), async (req, res) => {
+router.put('/:workspaceId/members/:userId', auth, checkRole([ROLES.OWNER, ROLES.ADMIN]), async (req, res) => {
     try {
         const { role } = req.body;
         const workspace = await workspaceService.updateMemberRole(req.params.workspaceId, req.user._id, req.params.userId, role);
@@ -97,7 +97,7 @@ router.put('/:workspaceId/members/:userId', auth, checkRole([ROLES.ADMIN]), asyn
  * @desc    Remove member from workspace
  * @access  Private (Admin only)
  */
-router.delete('/:workspaceId/members/:userId', auth, checkRole([ROLES.ADMIN]), async (req, res) => {
+router.delete('/:workspaceId/members/:userId', auth, checkRole([ROLES.OWNER, ROLES.ADMIN]), async (req, res) => {
     try {
         if (req.params.userId === req.user._id.toString()) {
             return res.status(400).json({ error: 'Cannot remove yourself. Use leave workspace instead.' });
