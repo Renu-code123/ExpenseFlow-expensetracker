@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Community | ExpenseFlow</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+:root {
+--primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+--bg-primary: #0f0f23;
+--text-primary: #ffffff;
+--text-secondary: #b4b4b4;
+--accent-primary: #64ffda;
+--shadow-glass: 0 8px 32px rgba(31,38,135,0.37);
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+font-family:Inter,sans-serif;
+background:var(--bg-primary);
+color:var(--text-primary);
+min-height:100vh;
+}
+
+.main-content{padding-top:80px}
+
+.hero-section{text-align:center;padding:3rem 2rem}
+.hero-title{
+font-size:3rem;
+background:var(--primary-gradient);
+-webkit-background-clip:text;
+-webkit-text-fill-color:transparent;
+}
+.hero-subtitle{color:var(--text-secondary)}
+
+.container{
+max-width:1200px;
+margin:auto;
+padding:0 2rem;
+display:grid;
+gap:1.5rem;
+}
+
+.form-section,
+.history-section{
+background:rgba(255,255,255,0.05);
+backdrop-filter:blur(20px);
+border-radius:20px;
+border:1px solid rgba(255,255,255,0.1);
+padding:2rem;
+box-shadow:var(--shadow-glass);
+}
+
+.form-section h3,
+.history-section h3{
+margin-bottom:1rem;
+display:flex;
+gap:.5rem;
+align-items:center;
+}
+
+.transaction-form input,
+.transaction-form textarea{
+width:100%;
+padding:1rem;
+margin-bottom:1rem;
+background:rgba(255,255,255,0.05);
+border:1px solid rgba(255,255,255,0.2);
+border-radius:10px;
+color:white;
+}
+
+.btn-submit{
+padding:1rem;
+width:100%;
+background:var(--primary-gradient);
+border:none;
+border-radius:10px;
+color:white;
+font-weight:600;
+cursor:pointer;
+transition: 0.3s;
+}
+
+.btn-submit:hover{
+opacity:0.9;
+}
+
+.list{list-style:none}
+.list li{
+background:rgba(255,255,255,0.05);
+padding:1rem;
+border-radius:12px;
+margin-bottom:.8rem;
+transition: 0.3s;
+}
+
+.list li:hover{
+background:rgba(255,255,255,0.1);
+}
+
+.filter-btn{
+background:transparent;
+border:1px solid rgba(255,255,255,0.2);
+color:var(--text-secondary);
+padding:.4rem .8rem;
+border-radius:20px;
+cursor:pointer;
+margin-right:.4rem;
+transition: all 0.3s ease;
+}
+
+.filter-btn:hover{
+background:var(--accent-primary);
+color:var(--bg-primary);
+}
+
+.reply-box{
+margin-top:.8rem;
+margin-left:1rem;
+display:flex;
+flex-wrap:wrap;
+gap:0.5rem;
+align-items:center;
+}
+
+.reply-box input{
+flex: 1;
+padding:0.8rem;
+border-radius:8px;
+border:1px solid rgba(255,255,255,0.2);
+background:rgba(255,255,255,0.05);
+color:white;
+transition: 0.3s;
+}
+
+.reply-box input:focus{
+outline:none;
+border-color:var(--accent-primary);
+}
+
+.reply-box button{
+padding:0.7rem 1rem;
+border:none;
+border-radius:8px;
+background:var(--accent-primary);
+color:var(--bg-primary);
+cursor:pointer;
+font-weight:600;
+transition: 0.3s;
+}
+
+.reply-box button:hover{
+opacity:0.9;
+}
+
+/* =========================
+   SWEETALERT-LIKE MODAL
+   ========================= */
+#swal {
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background: rgba(0,0,0,0.5);
+display: flex;
+align-items: center;
+justify-content: center;
+z-index: 9999;
+opacity: 0;
+pointer-events: none;
+transition: opacity 0.3s ease;
+}
+
+#swal.show {
+opacity: 1;
+pointer-events: auto;
+}
+
+#swal .swal-box {
+background: var(--bg-primary);
+border-radius: 15px;
+padding: 2rem;
+max-width: 400px;
+width: 90%;
+text-align: center;
+box-shadow: var(--shadow-glass);
+border: 1px solid rgba(255,255,255,0.2);
+color: var(--text-primary);
+animation: pop 0.3s ease;
+}
+
+@keyframes pop {
+0%{transform: scale(0.5);opacity:0;}
+100%{transform: scale(1);opacity:1;}
+}
+
+#swal .swal-box h3 {
+margin-bottom: 1rem;
+font-size: 1.4rem;
+}
+
+#swal .swal-box button {
+margin-top: 1rem;
+padding: 0.8rem 1.5rem;
+background: var(--accent-primary);
+color: var(--bg-primary);
+border: none;
+border-radius: 10px;
+cursor: pointer;
+font-weight: 600;
+transition: 0.3s;
+}
+
+#swal .swal-box button:hover{
+opacity:0.9;
+}
+
+</style>
+</head>
+
+<body>
+
+<main class="main-content">
+
+<section class="hero-section">
+<h1 class="hero-title">Community</h1>
+<p class="hero-subtitle">Share tips, ask questions, help others</p>
+</section>
+
+<div class="container">
+
+<!-- CREATE POST -->
+<section class="form-section">
+<h3><i class="fa-solid fa-pen"></i> Create Post</h3>
+<div class="transaction-form">
+<input id="title" placeholder="Post title">
+<textarea id="content" rows="4" placeholder="Write your post..."></textarea>
+<button class="btn-submit" onclick="addPost()">Post</button>
+</div>
+</section>
+
+<!-- POSTS -->
+<section class="history-section">
+<h3><i class="fa-solid fa-comments"></i> Community Posts</h3>
+<ul id="posts" class="list"></ul>
+</section>
+
+</div>
+</main>
+
+<!-- Sweetalert modal -->
+<div id="swal">
+<div class="swal-box">
+<h3 id="swal-msg">Message</h3>
+<button onclick="closeSwal()">OK</button>
+</div>
+</div>
+
+<script>
+let posts = JSON.parse(localStorage.getItem("ef_posts")) || [];
+
+function showSwal(msg){
+    const swal = document.getElementById("swal");
+    document.getElementById("swal-msg").innerText = msg;
+    swal.classList.add("show");
+}
+
+function closeSwal(){
+    document.getElementById("swal").classList.remove("show");
+}
+
+function save(){
+localStorage.setItem("ef_posts", JSON.stringify(posts));
+}
+
+function addPost(){
+const t = title.value.trim();
+const c = content.value.trim();
+if(!t || !c) {
+    showSwal("⚠ Please fill all fields");
+    return;
+}
+
+posts.unshift({
+id:Date.now(),
+title:t,
+content:c,
+up:0,
+replies:[]
+});
+
+title.value="";
+content.value="";
+save();
+render();
+showSwal("✅ Post added");
+}
+
+function delPost(id){
+posts = posts.filter(p=>p.id!==id);
+save();render();
+showSwal("🗑 Post deleted");
+}
+
+function upvote(id){
+posts.find(p=>p.id===id).up++;
+save();render();
+}
+
+function reply(id){
+const input = document.getElementById("r"+id);
+if(!input.value.trim()) {
+    showSwal("⚠ Reply cannot be empty");
+    return;
+}
+posts.find(p=>p.id===id).replies.push({t:input.value,u:0});
+input.value="";
+save();render();
+showSwal("💬 Reply added");
+}
+
+function upReply(pid,i){
+posts.find(p=>p.id===pid).replies[i].u++;
+save();render();
+}
+
+function render(){
+document.getElementById("posts").innerHTML = posts.map(p=>`
+<li>
+<strong>${p.title}</strong>
+<p>${p.content}</p>
+
+<button class="filter-btn" onclick="upvote(${p.id})">👍 ${p.up}</button>
+<button class="filter-btn" onclick="delPost(${p.id})">🗑 Delete</button>
+
+<div class="reply-box">
+<input id="r${p.id}" placeholder="Reply">
+<button onclick="reply(${p.id})">Reply</button>
+
+${p.replies.map((r,i)=>`
+<div class="reply-box">
+💬 ${r.t}
+<button onclick="upReply(${p.id},${i})">👍 ${r.u}</button>
+</div>
+`).join("")}
+</div>
+</li>
+`).join("");
+}
+
+render();
+</script>
+
+</body>
+</html>

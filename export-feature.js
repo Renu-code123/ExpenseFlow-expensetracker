@@ -1,6 +1,18 @@
 // Export Functionality for ExpenseFlow
 const EXPORT_API_URL = 'http://localhost:3000/api/export';
 
+const formatExportCurrency = (value, { showPlus = false } = {}) => {
+    const formatter = window.i18n?.formatCurrency;
+    const numericValue = Number(value) || 0;
+    const formatted = typeof formatter === 'function'
+        ? formatter(numericValue)
+        : (function(){ const sym = window.i18n?.getCurrencySymbol?.(window.i18n?.getCurrency?.() || '') || ''; return `${sym}${numericValue.toFixed(2)}`; })();
+    if (showPlus && numericValue > 0 && !formatted.startsWith('+') && !formatted.startsWith('-')) {
+        return `+${formatted}`;
+    }
+    return formatted;
+};
+
 // ========================
 // API Functions
 // ========================
@@ -270,15 +282,15 @@ function updateExportPreview(preview, error = null) {
       </div>
       <div class="preview-stat income">
         <span class="stat-label">Income</span>
-        <span class="stat-value">+₹${preview.summary.totalIncome.toFixed(2)}</span>
+                <span class="stat-value">${formatExportCurrency(preview.summary.totalIncome, { showPlus: true })}</span>
       </div>
       <div class="preview-stat expense">
         <span class="stat-label">Expenses</span>
-        <span class="stat-value">-₹${preview.summary.totalExpense.toFixed(2)}</span>
+                <span class="stat-value">${formatExportCurrency(-preview.summary.totalExpense)}</span>
       </div>
       <div class="preview-stat ${preview.summary.netBalance >= 0 ? 'positive' : 'negative'}">
         <span class="stat-label">Net</span>
-        <span class="stat-value">${preview.summary.netBalance >= 0 ? '+' : ''}₹${preview.summary.netBalance.toFixed(2)}</span>
+                <span class="stat-value">${formatExportCurrency(preview.summary.netBalance, { showPlus: true })}</span>
       </div>
     </div>
     ${preview.transactionCount === 0 ? `

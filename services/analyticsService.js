@@ -4,6 +4,23 @@ const AnalyticsCache = require('../models/AnalyticsCache');
 const mongoose = require('mongoose');
 
 class AnalyticsService {
+    constructor() {
+        this.defaultCurrency = process.env.DEFAULT_CURRENCY || 'INR';
+        this.defaultLocale = process.env.DEFAULT_LOCALE || 'en-US';
+    }
+
+    formatCurrency(amount, locale = this.defaultLocale, currency = this.defaultCurrency) {
+        try {
+            return new Intl.NumberFormat(locale, {
+                style: 'currency',
+                currency,
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(Number(amount) || 0);
+        } catch (err) {
+            return `${currency} ${Number(amount || 0).toFixed(2)}`;
+        }
+    }
     /**
      * Get spending trends over time (daily, weekly, monthly)
      */
@@ -232,19 +249,52 @@ class AnalyticsService {
         }
 
         const now = new Date();
+        const startDate = new Date(now.getFullYear(), now.getMonth() - months, 1);
+        
+        // Optimize: Use a single aggregation to get all monthly stats instead of multiple queries in a loop
+        const allStats = await Expense.aggregate([
+            {
+                $match: {
+                    user: new mongoose.Types.ObjectId(userId),
+                    date: { $gte: startDate }
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        year: { $year: "$date" },
+                        month: { $month: "$date" },
+                        type: "$type"
+                    },
+                    total: { $sum: "$amount" },
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
+
+        const getMonthData = (year, month) => {
+            const monthStats = allStats.filter(s => s._id.year === year && s._id.month === (month + 1));
+            const income = monthStats.find(s => s._id.type === 'income');
+            const expense = monthStats.find(s => s._id.type === 'expense');
+            const totalIncome = income?.total || 0;
+            const totalExpense = expense?.total || 0;
+            return {
+                totalIncome,
+                totalExpense,
+                incomeCount: income?.count || 0,
+                expenseCount: expense?.count || 0,
+                net: totalIncome - totalExpense,
+                savingsRate: totalIncome ? Math.round(((totalIncome - totalExpense) / totalIncome) * 100) : 0
+            };
+        };
+
         const comparisons = [];
-
         for (let i = 0; i < months; i++) {
-            const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
-            const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59);
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const pd = new Date(now.getFullYear(), now.getMonth() - i - 1, 1);
 
-            const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - i - 1, 1);
-            const prevMonthEnd = new Date(now.getFullYear(), now.getMonth() - i, 0, 23, 59, 59);
-
-            const [currentMonth, previousMonth] = await Promise.all([
-                this.getMonthStats(userId, monthStart, monthEnd),
-                this.getMonthStats(userId, prevMonthStart, prevMonthEnd)
-            ]);
+            const currentMonth = getMonthData(d.getFullYear(), d.getMonth());
+            const previousMonth = getMonthData(pd.getFullYear(), pd.getMonth());
 
             const expenseChange = previousMonth.totalExpense > 0
                 ? ((currentMonth.totalExpense - previousMonth.totalExpense) / previousMonth.totalExpense) * 100
@@ -255,8 +305,8 @@ class AnalyticsService {
                 : 0;
 
             comparisons.push({
-                month: monthStart.toLocaleString('default', { month: 'long', year: 'numeric' }),
-                monthKey: `${monthStart.getFullYear()}-${String(monthStart.getMonth() + 1).padStart(2, '0')}`,
+                month: d.toLocaleString('default', { month: 'long', year: 'numeric' }),
+                monthKey: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
                 current: currentMonth,
                 previous: previousMonth,
                 changes: {
@@ -326,33 +376,60 @@ class AnalyticsService {
         const insights = [];
         const now = new Date();
 
-        // Get last 3 months of data
+        // Get last 3 months of data using aggregation for better performance
         const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, 1);
 
-        const expenses = await Expense.find({
-            user: userId,
-            date: { $gte: threeMonthsAgo }
-        }).sort({ date: -1 });
+        const [aggregateData] = await Expense.aggregate([
+            {
+                $match: {
+                    user: new mongoose.Types.ObjectId(userId),
+                    date: { $gte: threeMonthsAgo }
+                }
+            },
+            {
+                $facet: {
+                    byCategory: [
+                        { $match: { type: 'expense' } },
+                        { $group: { _id: '$category', total: { $sum: '$amount' } } }
+                    ],
+                    byMonth: [
+                        {
+                            $group: {
+                                _id: {
+                                    year: { $year: '$date' },
+                                    month: { $month: '$date' },
+                                    type: '$type'
+                                },
+                                total: { $sum: '$amount' }
+                            }
+                        }
+                    ],
+                    overall: [
+                        { $group: { _id: '$type', total: { $sum: '$amount' }, count: { $sum: 1 } } }
+                    ]
+                }
+            }
+        ]);
 
-        if (expenses.length === 0) {
+        const totalExpense = aggregateData.overall.find(o => o._id === 'expense')?.total || 0;
+        const totalIncome = aggregateData.overall.find(o => o._id === 'income')?.total || 0;
+        const expenseCount = aggregateData.overall.find(o => o._id === 'expense')?.count || 0;
+
+        if (expenseCount === 0 && totalIncome === 0) {
             return { insights: [{ type: 'info', message: 'Start adding expenses to get personalized insights!', priority: 1 }] };
         }
 
         // Analyze spending patterns
         const categoryTotals = {};
+        aggregateData.byCategory.forEach(c => {
+            categoryTotals[c._id] = c.total;
+        });
+
         const monthlyExpenses = {};
-        let totalExpense = 0;
-        let totalIncome = 0;
-
-        expenses.forEach(exp => {
-            const monthKey = `${exp.date.getFullYear()}-${exp.date.getMonth()}`;
-
-            if (exp.type === 'expense') {
-                totalExpense += exp.amount;
-                categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + exp.amount;
-                monthlyExpenses[monthKey] = (monthlyExpenses[monthKey] || 0) + exp.amount;
-            } else {
-                totalIncome += exp.amount;
+        aggregateData.byMonth.forEach(m => {
+            if (m._id.type === 'expense') {
+                const monthKey = `${m._id.year}-${m._id.month - 1}`;
+                monthlyExpenses[monthKey] = m.total;
             }
         });
 
@@ -366,7 +443,7 @@ class AnalyticsService {
                 type: 'category',
                 priority: 2,
                 title: 'Top Spending Category',
-                message: `${this.capitalizeFirst(topCategory[0])} accounts for ${percentage}% of your expenses (₹${topCategory[1].toFixed(2)})`,
+                message: `${this.capitalizeFirst(topCategory[0])} accounts for ${percentage}% of your expenses (${this.formatCurrency(topCategory[1])})`,
                 category: topCategory[0],
                 amount: topCategory[1],
                 suggestion: percentage > 40
@@ -425,11 +502,16 @@ class AnalyticsService {
             }
         }
 
-        // Insight 4: Unusual expenses
-        const avgExpense = totalExpense / expenses.filter(e => e.type === 'expense').length;
-        const unusualExpenses = expenses.filter(
-            e => e.type === 'expense' && e.amount > avgExpense * 3
-        ).slice(0, 3);
+        // Insight 4: Unusual expenses - fetch separately with limit to avoid fetching everything
+        const avgExpense = totalExpense / expenseCount;
+        const unusualExpenses = await Expense.find({
+            user: userId,
+            type: 'expense',
+            date: { $gte: threeMonthsAgo },
+            amount: { $gt: avgExpense * 3 }
+        })
+        .sort({ amount: -1 })
+        .limit(3);
 
         if (unusualExpenses.length > 0) {
             insights.push({
@@ -573,7 +655,14 @@ class AnalyticsService {
     /**
      * Get spending velocity (rate of spending)
      */
-    async getSpendingVelocity(userId) {
+    async getSpendingVelocity(userId, options = {}) {
+        const { useCache = true } = options;
+
+        if (useCache) {
+            const cached = await AnalyticsCache.getCache('velocity', userId, {});
+            if (cached) return cached;
+        }
+
         const now = new Date();
         const dayOfMonth = now.getDate();
         const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
@@ -601,14 +690,21 @@ class AnalyticsService {
         const dailyRate = spent / dayOfMonth;
         const projectedMonthEnd = dailyRate * daysInMonth;
 
-        return {
+        const result = {
             currentSpent: Math.round(spent * 100) / 100,
             dailyAverage: Math.round(dailyRate * 100) / 100,
             projectedMonthEnd: Math.round(projectedMonthEnd * 100) / 100,
             dayOfMonth,
             daysRemaining: daysInMonth - dayOfMonth,
-            transactionCount: currentMonthExpenses[0]?.count || 0
+            transactionCount: currentMonthExpenses[0]?.count || 0,
+            generatedAt: now
         };
+
+        if (useCache) {
+            await AnalyticsCache.setCache('velocity', userId, {}, result, 15);
+        }
+
+        return result;
     }
 
     /**
