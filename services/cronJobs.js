@@ -2,7 +2,7 @@ const cron = require('node-cron');
 const User = require('../models/User');
 const Expense = require('../models/Expense');
 const emailService = require('../services/emailService');
-const recurringService = require('../services/recurringService');
+const currencyService = require('../services/currencyService');
 
 class CronJobs {
   static init() {
@@ -36,30 +36,42 @@ class CronJobs {
       await this.checkBudgetAlerts();
     });
 
-    console.log('[CronJobs] All cron jobs scheduled successfully');
+    // Update exchange rates - Every 6 hours
+    cron.schedule('0 */6 * * *', async () => {
+      console.log('Updating exchange rates...');
+      await this.updateExchangeRates();
+    });
+
+    console.log('Cron jobs initialized successfully');
   }
 
-  /**
-   * Process all due recurring expenses and create actual expense entries
-   */
   static async processRecurringExpenses() {
-    try {
-      const result = await recurringService.processRecurringExpenses();
-      console.log(`[CronJobs] Recurring expenses processed: ${result.processedCount} created, ${result.skippedCount} skipped, ${result.errorCount} errors`);
-    } catch (error) {
-      console.error('[CronJobs] Error processing recurring expenses:', error);
-    }
+    console.log('Processing recurring expenses (Placeholder)');
+    // Implementation would go here
   }
 
-  /**
-   * Send reminders for upcoming recurring expenses
-   */
   static async sendRecurringReminders() {
+    console.log('Sending recurring reminders (Placeholder)');
+    // Implementation would go here
+  }
+
+  static async updateExchangeRates() {
     try {
-      const sentCount = await recurringService.sendUpcomingReminders();
-      console.log(`[CronJobs] Sent ${sentCount} recurring expense reminders`);
+      // Update rates for major base currencies
+      const baseCurrencies = ['USD', 'EUR', 'GBP', 'INR'];
+
+      for (const currency of baseCurrencies) {
+        try {
+          await currencyService.updateExchangeRates(currency);
+          console.log(`Updated exchange rates for ${currency}`);
+        } catch (error) {
+          console.error(`Failed to update rates for ${currency}:`, error.message);
+        }
+      }
+
+      console.log('Exchange rates update completed');
     } catch (error) {
-      console.error('[CronJobs] Error sending recurring reminders:', error);
+      console.error('Exchange rates update error:', error);
     }
   }
 

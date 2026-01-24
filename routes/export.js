@@ -28,7 +28,7 @@ router.get('/csv', auth, exportRateLimiter, async (req, res) => {
 
         const csvContent = exportService.generateCSV(expenses, {
             includeHeaders: true,
-            dateFormat: req.query.dateFormat || 'en-IN'
+            dateFormat: req.query.dateFormat || req.user?.locale || 'en-US'
         });
 
         // Generate filename
