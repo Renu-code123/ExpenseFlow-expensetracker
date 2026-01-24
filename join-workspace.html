@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join Workspace - ExpenseFlow</title>
+    <link rel="stylesheet" href="expensetracker.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .join-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .join-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .join-spinner {
+            font-size: 3rem;
+            color: var(--accent-primary);
+            margin-bottom: 20px;
+        }
+
+        .join-status {
+            margin-top: 20px;
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+        
+        button:focus,
+        input:focus,
+        a:focus {
+          outline: 3px solid #005fcc;
+          outline-offset: 2px;
+       }}
+    </style>
+</head>
+
+<body class="dark-mode">
+    <div class="join-container">
+        <div class="join-card">
+            <div id="join-loading">
+                <i class="fas fa-spinner fa-spin join-spinner"></i>
+                <h3>Joining Workspace...</h3>
+                <p class="join-status">Please wait while we process your invitation.</p>
+            </div>
+            <div id="join-error" style="display: none;">
+                <i class="fas fa-exclamation-circle join-spinner" style="color: var(--error);"></i>
+                <h3 id="error-title">Invitation Error</h3>
+                <p id="error-message" class="join-status"></p>
+                <button onclick="window.location.href='index.html'" class="btn-submit" style="margin-top: 20px;">
+                    Go to Dashboard
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="api-integration.js"></script>
+    <script src="workspace-feature.js"></script>
+</body>
+
+</html>
