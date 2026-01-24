@@ -432,6 +432,251 @@ Convert amount between currencies.
 }
 ```
 
+### Groups
+
+#### POST /api/groups
+Create a new group.
+
+**Request Body:**
+```json
+{
+  "name": "Trip to Paris",
+  "description": "Group expenses for our Paris vacation",
+  "currency": "EUR",
+  "settings": {
+    "allowPublicExpenses": false,
+    "requireApproval": false,
+    "defaultSplitMethod": "equal"
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Group created successfully",
+  "data": {
+    "_id": "group-id",
+    "name": "Trip to Paris",
+    "description": "Group expenses for our Paris vacation",
+    "createdBy": "user-id",
+    "members": [
+      {
+        "user": "user-id",
+        "role": "admin",
+        "joinedAt": "2024-01-15T10:00:00.000Z",
+        "isActive": true
+      }
+    ],
+    "currency": "EUR",
+    "settings": {
+      "allowPublicExpenses": false,
+      "requireApproval": false,
+      "defaultSplitMethod": "equal"
+    }
+  }
+}
+```
+
+#### GET /api/groups
+Get user's groups.
+
+**Response:**
+```json
+{
+  "success": true,
+  "count": 2,
+  "data": [
+    {
+      "_id": "group-id",
+      "name": "Trip to Paris",
+      "description": "Group expenses for our Paris vacation",
+      "memberCount": 3,
+      "totalExpenses": 5,
+      "currency": "EUR",
+      "createdAt": "2024-01-15T10:00:00.000Z"
+    }
+  ]
+}
+```
+
+#### GET /api/groups/:id
+Get group details.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "group-id",
+    "name": "Trip to Paris",
+    "members": [
+      {
+        "user": { "_id": "user-id", "name": "John Doe", "email": "john@example.com" },
+        "role": "admin",
+        "joinedAt": "2024-01-15T10:00:00.000Z",
+        "isActive": true
+      }
+    ],
+    "expenses": [
+      {
+        "expense": "expense-id",
+        "addedBy": "user-id",
+        "addedAt": "2024-01-15T10:00:00.000Z"
+      }
+    ]
+  }
+}
+```
+
+#### POST /api/groups/:id/members
+Add member to group.
+
+**Request Body:**
+```json
+{
+  "email": "friend@example.com"
+}
+```
+
+#### DELETE /api/groups/:id/members/:memberId
+Remove member from group.
+
+#### GET /api/groups/:id/statistics
+Get group statistics.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "totalMembers": 3,
+    "totalExpenses": 5,
+    "totalAmount": 450.50,
+    "currency": "EUR",
+    "memberContributions": [
+      { "user": "user-id", "name": "John Doe", "totalAmount": 150.17, "expenseCount": 2 }
+    ]
+  }
+}
+```
+
+### Expense Splitting
+
+#### POST /api/splits
+Create expense split.
+
+**Request Body:**
+```json
+{
+  "expenseId": "expense-id",
+  "groupId": "group-id",
+  "splitMethod": "equal",
+  "notes": "Dinner at restaurant"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Expense split created successfully",
+  "data": {
+    "_id": "split-id",
+    "expense": {
+      "description": "Restaurant dinner",
+      "amount": 75.00
+    },
+    "participants": [
+      {
+        "user": { "_id": "user-id", "name": "John Doe" },
+        "amount": 25.00,
+        "isPaid": true,
+        "paidAt": "2024-01-15T10:00:00.000Z"
+      },
+      {
+        "user": { "_id": "user-id-2", "name": "Jane Smith" },
+        "amount": 25.00,
+        "isPaid": false
+      }
+    ],
+    "status": "partial",
+    "totalAmount": 75.00
+  }
+}
+```
+
+#### GET /api/splits
+Get user's pending splits.
+
+**Response:**
+```json
+{
+  "success": true,
+  "count": 2,
+  "data": [
+    {
+      "_id": "split-id",
+      "expense": {
+        "description": "Restaurant dinner",
+        "amount": 75.00,
+        "category": "food"
+      },
+      "group": { "name": "Trip to Paris" },
+      "participants": [
+        {
+          "user": { "name": "John Doe" },
+          "amount": 25.00,
+          "isPaid": false
+        }
+      ],
+      "status": "pending"
+    }
+  ]
+}
+```
+
+#### PATCH /api/splits/:id/pay
+Mark user as paid.
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Payment marked successfully",
+  "data": { /* updated split object */ }
+}
+```
+
+#### POST /api/splits/:id/remind/:participantId
+Send payment reminder.
+
+#### GET /api/splits/statistics/user
+Get user's split statistics.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "totalSplits": 10,
+    "pendingPayments": 3,
+    "completedPayments": 7,
+    "totalOwed": 125.50,
+    "totalOwedTo": 89.25,
+    "pendingSplits": [
+      {
+        "splitId": "split-id",
+        "expense": "Restaurant dinner",
+        "amount": 25.00,
+        "group": "Trip to Paris"
+      }
+    ]
+  }
+}
+```
+
 ### Notifications
 
 #### GET /api/notifications
