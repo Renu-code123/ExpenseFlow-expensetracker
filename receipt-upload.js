@@ -6,6 +6,14 @@ class ReceiptManager {
     this.initializeUploadArea();
   }
 
+  formatCurrency(value) {
+    const formatter = window.i18n?.formatCurrency;
+    if (typeof formatter === 'function') return formatter(value);
+    const numericValue = Number(value) || 0;
+    const symbol = window.i18n?.getCurrencySymbol?.(window.i18n?.getCurrency?.() || '') || '';
+    return `${symbol}${numericValue.toFixed(2)}`;
+  }
+
   // Initialize drag and drop upload area
   initializeUploadArea() {
     // Create upload area HTML
@@ -200,7 +208,7 @@ class ReceiptManager {
     const dateSpan = document.getElementById('ocr-date');
     const confidenceSpan = document.getElementById('ocr-confidence');
 
-    amountSpan.textContent = ocrData.extractedAmount ? `₹${ocrData.extractedAmount.toFixed(2)}` : 'Not found';
+    amountSpan.textContent = ocrData.extractedAmount ? this.formatCurrency(ocrData.extractedAmount) : 'Not found';
     dateSpan.textContent = ocrData.extractedDate ? new Date(ocrData.extractedDate).toLocaleDateString() : 'Not found';
     confidenceSpan.textContent = `${(ocrData.confidence || 0).toFixed(1)}%`;
 

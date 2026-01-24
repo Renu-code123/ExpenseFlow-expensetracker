@@ -5,6 +5,14 @@ class BudgetGoalsManager {
     this.authToken = localStorage.getItem('authToken');
     this.initializeDashboard();
   }
+  
+  formatCurrency(value) {
+    const formatter = window.i18n?.formatCurrency;
+    if (typeof formatter === 'function') return formatter(value);
+    const numericValue = Number(value) || 0;
+    const symbol = window.i18n?.getCurrencySymbol?.(window.i18n?.getCurrency?.() || '') || '';
+    return `${symbol}${numericValue.toFixed(2)}`;
+  }
 
   // Initialize budget and goals dashboard
   initializeDashboard() {
@@ -24,15 +32,15 @@ class BudgetGoalsManager {
             <div id="budget-summary">
               <div class="metric">
                 <span class="label">Total Budget:</span>
-                <span id="total-budget" class="value">₹0</span>
+                <span id="total-budget" class="value">0</span>
               </div>
               <div class="metric">
                 <span class="label">Total Spent:</span>
-                <span id="total-spent" class="value">₹0</span>
+                <span id="total-spent" class="value">0</span>
               </div>
               <div class="metric">
                 <span class="label">Remaining:</span>
-                <span id="remaining-budget" class="value">₹0</span>
+                <span id="remaining-budget" class="value">0</span>
               </div>
             </div>
           </div>
@@ -211,9 +219,9 @@ class BudgetGoalsManager {
       if (!response.ok) throw new Error('Failed to load budget summary');
       const summary = await response.json();
 
-      document.getElementById('total-budget').textContent = `₹${summary.totalBudget.toFixed(2)}`;
-      document.getElementById('total-spent').textContent = `₹${summary.totalSpent.toFixed(2)}`;
-      document.getElementById('remaining-budget').textContent = `₹${summary.remainingBudget.toFixed(2)}`;
+      document.getElementById('total-budget').textContent = this.formatCurrency(summary.totalBudget);
+      document.getElementById('total-spent').textContent = this.formatCurrency(summary.totalSpent);
+      document.getElementById('remaining-budget').textContent = this.formatCurrency(summary.remainingBudget);
     } catch (error) {
       console.error('Budget summary error:', error);
     }
@@ -275,8 +283,8 @@ class BudgetGoalsManager {
           </div>
         </div>
         <div class="budget-details">
-          <span>₹${budget.spent.toFixed(2)} / ₹${budget.amount.toFixed(2)}</span>
-          <span class="remaining">₹${(budget.amount - budget.spent).toFixed(2)} remaining</span>
+          <span>${this.formatCurrency(budget.spent)} / ${this.formatCurrency(budget.amount)}</span>
+          <span class="remaining">${this.formatCurrency(budget.amount - budget.spent)} remaining</span>
         </div>
       `;
 
@@ -323,7 +331,7 @@ class BudgetGoalsManager {
           <span class="progress-text">${progress.toFixed(1)}%</span>
         </div>
         <div class="goal-details">
-          <span>₹${goal.currentAmount.toFixed(2)} / ₹${goal.targetAmount.toFixed(2)}</span>
+          <span>${this.formatCurrency(goal.currentAmount)} / ${this.formatCurrency(goal.targetAmount)}</span>
           <span class="days-left">${daysLeft > 0 ? `${daysLeft} days left` : 'Overdue'}</span>
         </div>
       `;
@@ -366,7 +374,7 @@ class BudgetGoalsManager {
         <div class="alert-content">
           <h4>${alert.budgetName}</h4>
           <p>${alert.isOverBudget ? 'Over budget' : 'Approaching limit'}: ${alert.percentage.toFixed(1)}%</p>
-          <span>₹${alert.spent.toFixed(2)} / ₹${alert.amount.toFixed(2)}</span>
+          <span>${this.formatCurrency(alert.spent)} / ${this.formatCurrency(alert.amount)}</span>
         </div>
       `;
 
