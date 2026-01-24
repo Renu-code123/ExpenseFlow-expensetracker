@@ -28,7 +28,10 @@
     "simple-statistics": "^7.8.3",
     "node-fetch": "^3.3.2",
     "moment-timezone": "^0.5.43",
-    "i18next": "^23.7.6"
+    "i18next": "^23.7.6",
+    "i18next-fs-backend": "^2.3.1",
+    "intuit-oauth": "^4.0.0",
+    "xero-node": "^4.20.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
