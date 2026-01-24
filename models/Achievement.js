@@ -1,111 +1,83 @@
 const mongoose = require('mongoose');
 
-// Achievement Definition Schema
 const achievementSchema = new mongoose.Schema({
-  // Unique identifier code
   code: {
     type: String,
     required: true,
     unique: true,
-    uppercase: true,
     trim: true
   },
-  // Display name
   name: {
     type: String,
     required: true,
     trim: true,
     maxlength: 100
   },
-  // Description
   description: {
     type: String,
     required: true,
     trim: true,
     maxlength: 300
   },
-  // Category of achievement
+  icon: {
+    type: String,
+    required: true,
+    default: '🏆'
+  },
   category: {
     type: String,
     required: true,
-    enum: [
-      'budgeting',      // Budget-related achievements
-      'savings',        // Savings achievements
-      'streaks',        // Streak-based achievements
-      'goals',          // Goal achievements
-      'analytics',      // Dashboard/analytics usage
-      'social',         // Social/sharing achievements
-      'challenges',     // Challenge completions
-      'milestones',     // General milestones
-      'special'         // Special/limited achievements
-    ]
+    enum: ['savings', 'budgeting', 'tracking', 'social', 'challenges', 'streaks', 'milestones', 'special']
   },
-  // Achievement criteria
-  criteria: {
+  tier: {
+    type: String,
+    enum: ['bronze', 'silver', 'gold', 'platinum', 'diamond'],
+    default: 'bronze'
+  },
+  points: {
+    type: Number,
+    default: 10,
+    min: 0
+  },
+  requirement: {
     type: {
       type: String,
       required: true,
       enum: [
-        'budget_streak',        // Stay under budget for X months
-        'savings_streak',       // Save consistently for X days
-        'dashboard_streak',     // Check dashboard for X days
-        'goals_completed',      // Complete X goals
-        'challenges_won',       // Win X challenges
-        'total_saved',          // Save total of X amount
-        'expense_logged',       // Log X expenses
-        'category_mastered',    // Keep category under budget X times
-        'first_action',         // First time doing something
-        'social_action',        // Social activity (share, invite, etc.)
-        'custom'                // Custom criteria
+        'budget_streak',      // Stay under budget for X days/months
+        'savings_amount',     // Save total X amount
+        'expense_tracking',   // Track X expenses
+        'goal_completion',    // Complete X goals
+        'challenge_wins',     // Win X challenges
+        'login_streak',       // Login X days in a row
+        'category_master',    // Track X expenses in one category
+        'analytics_usage',    // View analytics X times
+        'first_action',       // First time doing something
+        'social_engagement',  // Invite/compete with friends
+        'no_spend_days',      // Have X no-spend days
+        'receipt_uploads',    // Upload X receipts
+        'custom'
       ]
     },
-    // Target value for the criteria
-    targetValue: {
+    value: {
       type: Number,
-      required: true,
-      min: 1
+      required: true
     },
-    // Category if specific to a category
-    category: String,
-    // Time period in days (if applicable)
-    periodDays: Number
+    category: String,      // For category-specific achievements
+    timeframe: String      // 'daily', 'weekly', 'monthly', 'yearly', 'all_time'
   },
-  // Badge icon/emoji
-  badge: {
-    type: String,
-    required: true
+  isSecret: {
+    type: Boolean,
+    default: false
   },
-  // Badge color
-  color: {
-    type: String,
-    default: '#FFD700'
-  },
-  // Points awarded
-  points: {
-    type: Number,
-    default: 50,
-    min: 0
-  },
-  // Rarity
-  rarity: {
-    type: String,
-    enum: ['common', 'uncommon', 'rare', 'epic', 'legendary'],
-    default: 'common'
-  },
-  // Order for display
-  displayOrder: {
-    type: Number,
-    default: 0
-  },
-  // Is achievement active
   isActive: {
     type: Boolean,
     default: true
   },
-  // Is hidden until earned
-  isSecret: {
-    type: Boolean,
-    default: false
+  rarity: {
+    type: String,
+    enum: ['common', 'uncommon', 'rare', 'epic', 'legendary'],
+    default: 'common'
   }
 }, {
   timestamps: true
@@ -114,6 +86,6 @@ const achievementSchema = new mongoose.Schema({
 // Indexes
 achievementSchema.index({ code: 1 });
 achievementSchema.index({ category: 1, isActive: 1 });
-achievementSchema.index({ rarity: 1 });
+achievementSchema.index({ tier: 1 });
 
 module.exports = mongoose.model('Achievement', achievementSchema);

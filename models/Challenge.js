@@ -1,14 +1,45 @@
 const mongoose = require('mongoose');
 
-// Challenge Schema - For financial challenges users can participate in
-const challengeSchema = new mongoose.Schema({
-  // Challenge creator (null for system challenges)
-  creator: {
+const participantSchema = new mongoose.Schema({
+  user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    default: null
+    required: true
   },
-  // Challenge details
+  joinedAt: {
+    type: Date,
+    default: Date.now
+  },
+  progress: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  currentStreak: {
+    type: Number,
+    default: 0
+  },
+  bestStreak: {
+    type: Number,
+    default: 0
+  },
+  completedDays: [{
+    date: Date,
+    value: Number
+  }],
+  status: {
+    type: String,
+    enum: ['active', 'completed', 'failed', 'withdrawn'],
+    default: 'active'
+  },
+  completedAt: Date,
+  savedAmount: {
+    type: Number,
+    default: 0
+  }
+}, { _id: false });
+
+const challengeSchema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
@@ -21,56 +52,33 @@ const challengeSchema = new mongoose.Schema({
     trim: true,
     maxlength: 500
   },
-  // Challenge type
   type: {
     type: String,
     required: true,
     enum: [
-      'no_spend',           // No spending for X days
-      'savings_target',     // Save X amount
-      'budget_under',       // Stay under budget
-      'category_limit',     // Limit spending in category
-      'streak',             // Maintain streak for X days
-      'reduction',          // Reduce spending by X%
-      'custom'              // Custom challenge
+      'no_spend',           // No spending days challenge
+      'category_reduction', // Reduce spending in a category
+      'savings_target',     // Save a specific amount
+      'streak',             // Maintain a behavior streak
+      'budget_adherence',   // Stay under budget
+      'custom'              // User-defined challenge
     ]
   },
-  // Challenge scope
-  scope: {
+  category: {
     type: String,
-    enum: ['personal', 'friends', 'public', 'workspace'],
-    default: 'personal'
+    enum: ['food', 'transport', 'entertainment', 'utilities', 'healthcare', 'shopping', 'coffee', 'dining', 'other', 'all'],
+    default: 'all'
   },
-  // Challenge parameters
-  config: {
-    // Target amount (for savings, limits)
-    targetAmount: {
-      type: Number,
-      min: 0
-    },
-    // Target percentage (for reduction challenges)
-    targetPercentage: {
-      type: Number,
-      min: 0,
-      max: 100
-    },
-    // Category to track (for category-specific challenges)
-    category: {
-      type: String,
-      enum: ['food', 'transport', 'entertainment', 'utilities', 'healthcare', 'shopping', 'other', 'all']
-    },
-    // Comparison period for reduction (in days)
-    comparisonPeriod: {
-      type: Number,
-      default: 30
-    },
-    // Streak requirement
-    streakDays: {
-      type: Number,
-      min: 1
-    }
+  targetValue: {
+    type: Number,
+    required: true,
+    min: 0
   },
-  // Challenge timing
+  targetUnit: {
+    type: String,
+    enum: ['days', 'amount', 'percentage', 'count'],
+    default: 'days'
+  },
   startDate: {
     type: Date,
     required: true
@@ -79,80 +87,85 @@ const challengeSchema = new mongoose.Schema({
     type: Date,
     required: true
   },
-  // Challenge status
-  status: {
-    type: String,
-    enum: ['upcoming', 'active', 'completed', 'cancelled'],
-    default: 'upcoming'
+  creator: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
   },
-  // System challenge flag
+  isPublic: {
+    type: Boolean,
+    default: true
+  },
   isSystemChallenge: {
     type: Boolean,
     default: false
   },
-  // Challenge rewards
-  rewards: {
-    points: {
-      type: Number,
-      default: 100
-    },
-    badge: {
-      type: String
-    },
-    achievements: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Achievement'
-    }]
-  },
-  // Challenge icon/emoji
-  icon: {
-    type: String,
-    default: '🎯'
-  },
-  // Difficulty
   difficulty: {
     type: String,
     enum: ['easy', 'medium', 'hard', 'extreme'],
     default: 'medium'
   },
-  // Tags
-  tags: [{
+  rewardPoints: {
+    type: Number,
+    default: 100
+  },
+  rewardBadge: {
     type: String,
-    trim: true,
-    maxlength: 30
+    default: null
+  },
+  participants: [participantSchema],
+  maxParticipants: {
+    type: Number,
+    default: 0 // 0 means unlimited
+  },
+  invitedUsers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
   }],
-  // Privacy for leaderboard
-  showOnLeaderboard: {
-    type: Boolean,
-    default: true
+  rules: {
+    type: String,
+    maxlength: 1000
+  },
+  icon: {
+    type: String,
+    default: '🎯'
+  },
+  status: {
+    type: String,
+    enum: ['upcoming', 'active', 'completed', 'cancelled'],
+    default: 'upcoming'
   }
 }, {
   timestamps: true
 });
 
 // Indexes
-challengeSchema.index({ status: 1, startDate: 1 });
 challengeSchema.index({ creator: 1, status: 1 });
-challengeSchema.index({ scope: 1, status: 1 });
-challengeSchema.index({ type: 1, status: 1 });
+challengeSchema.index({ isPublic: 1, status: 1, startDate: 1 });
+challengeSchema.index({ 'participants.user': 1, status: 1 });
+challengeSchema.index({ endDate: 1, status: 1 });
 
-// Virtual for duration in days
-challengeSchema.virtual('durationDays').get(function() {
-  return Math.ceil((this.endDate - this.startDate) / (1000 * 60 * 60 * 24));
+// Virtual for participant count
+challengeSchema.virtual('participantCount').get(function() {
+  return this.participants.length;
 });
 
-// Virtual for days remaining
-challengeSchema.virtual('daysRemaining').get(function() {
-  if (this.status !== 'active') return 0;
-  const now = new Date();
-  if (now > this.endDate) return 0;
-  return Math.ceil((this.endDate - now) / (1000 * 60 * 60 * 24));
-});
+// Check if user is participant
+challengeSchema.methods.isParticipant = function(userId) {
+  return this.participants.some(p => p.user.toString() === userId.toString());
+};
 
-// Check if challenge is active
-challengeSchema.methods.isActive = function() {
+// Get participant data
+challengeSchema.methods.getParticipant = function(userId) {
+  return this.participants.find(p => p.user.toString() === userId.toString());
+};
+
+// Calculate days remaining
+challengeSchema.methods.getDaysRemaining = function() {
   const now = new Date();
-  return now >= this.startDate && now <= this.endDate && this.status === 'active';
+  const end = new Date(this.endDate);
+  const diffTime = end - now;
+  return Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
 };
 
 module.exports = mongoose.model('Challenge', challengeSchema);

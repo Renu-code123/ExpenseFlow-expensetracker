@@ -1,6 +1,61 @@
 const mongoose = require('mongoose');
 
-// User Gamification Profile Schema
+const earnedAchievementSchema = new mongoose.Schema({
+  achievement: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Achievement',
+    required: true
+  },
+  earnedAt: {
+    type: Date,
+    default: Date.now
+  },
+  progress: {
+    type: Number,
+    default: 100
+  }
+}, { _id: false });
+
+const streakSchema = new mongoose.Schema({
+  type: {
+    type: String,
+    required: true,
+    enum: ['login', 'expense_tracking', 'budget_adherence', 'no_spend', 'savings']
+  },
+  currentStreak: {
+    type: Number,
+    default: 0
+  },
+  longestStreak: {
+    type: Number,
+    default: 0
+  },
+  lastUpdated: {
+    type: Date,
+    default: Date.now
+  },
+  startDate: Date
+}, { _id: false });
+
+const achievementProgressSchema = new mongoose.Schema({
+  achievementCode: {
+    type: String,
+    required: true
+  },
+  currentValue: {
+    type: Number,
+    default: 0
+  },
+  targetValue: {
+    type: Number,
+    required: true
+  },
+  lastUpdated: {
+    type: Date,
+    default: Date.now
+  }
+}, { _id: false });
+
 const userGamificationSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
@@ -8,204 +63,205 @@ const userGamificationSchema = new mongoose.Schema({
     required: true,
     unique: true
   },
-  // Points system
-  points: {
-    total: {
-      type: Number,
-      default: 0
-    },
-    currentMonth: {
-      type: Number,
-      default: 0
-    },
-    lastMonthReset: {
-      type: Date,
-      default: Date.now
-    }
+  totalPoints: {
+    type: Number,
+    default: 0,
+    min: 0
   },
-  // Level system
   level: {
-    current: {
-      type: Number,
-      default: 1
-    },
-    experience: {
-      type: Number,
-      default: 0
-    },
-    experienceToNext: {
-      type: Number,
-      default: 100
-    }
+    type: Number,
+    default: 1,
+    min: 1
   },
-  // Streaks
-  streaks: {
-    // Budget streak (days under budget)
-    budget: {
-      current: { type: Number, default: 0 },
-      longest: { type: Number, default: 0 },
-      lastUpdated: Date
-    },
-    // Savings streak (days with savings)
-    savings: {
-      current: { type: Number, default: 0 },
-      longest: { type: Number, default: 0 },
-      lastUpdated: Date
-    },
-    // Dashboard login streak
-    login: {
-      current: { type: Number, default: 0 },
-      longest: { type: Number, default: 0 },
-      lastUpdated: Date
-    },
-    // Expense logging streak
-    logging: {
-      current: { type: Number, default: 0 },
-      longest: { type: Number, default: 0 },
-      lastUpdated: Date
-    }
+  experience: {
+    type: Number,
+    default: 0,
+    min: 0
   },
-  // Statistics
-  stats: {
-    challengesJoined: { type: Number, default: 0 },
-    challengesCompleted: { type: Number, default: 0 },
-    challengesWon: { type: Number, default: 0 },
-    achievementsEarned: { type: Number, default: 0 },
-    goalsCompleted: { type: Number, default: 0 },
-    totalSaved: { type: Number, default: 0 },
-    monthsUnderBudget: { type: Number, default: 0 }
+  experienceToNextLevel: {
+    type: Number,
+    default: 100
   },
-  // Leaderboard settings
-  leaderboard: {
-    showOnPublic: {
-      type: Boolean,
-      default: true
-    },
-    showProgress: {
-      type: Boolean,
-      default: true
-    },
-    displayName: {
-      type: String,
-      trim: true,
-      maxlength: 50
-    }
+  earnedAchievements: [earnedAchievementSchema],
+  achievementProgress: [achievementProgressSchema],
+  streaks: [streakSchema],
+  challengesCompleted: {
+    type: Number,
+    default: 0
   },
-  // Badges earned (achievement IDs for quick display)
-  badges: [{
-    achievement: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Achievement'
-    },
-    earnedAt: Date
-  }],
-  // Featured badges (up to 5 to show on profile)
-  featuredBadges: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Achievement'
-  }],
-  // Last activity
-  lastActivityAt: {
+  challengesJoined: {
+    type: Number,
+    default: 0
+  },
+  totalSavedFromChallenges: {
+    type: Number,
+    default: 0
+  },
+  rank: {
+    type: String,
+    enum: ['novice', 'apprentice', 'adept', 'expert', 'master', 'grandmaster', 'legend'],
+    default: 'novice'
+  },
+  weeklyPoints: {
+    type: Number,
+    default: 0
+  },
+  monthlyPoints: {
+    type: Number,
+    default: 0
+  },
+  lastWeeklyReset: {
     type: Date,
     default: Date.now
+  },
+  lastMonthlyReset: {
+    type: Date,
+    default: Date.now
+  },
+  privacySettings: {
+    showOnLeaderboard: {
+      type: Boolean,
+      default: true
+    },
+    showAchievements: {
+      type: Boolean,
+      default: true
+    },
+    showChallenges: {
+      type: Boolean,
+      default: true
+    },
+    showStats: {
+      type: Boolean,
+      default: false
+    }
+  },
+  stats: {
+    totalNoSpendDays: {
+      type: Number,
+      default: 0
+    },
+    totalExpensesTracked: {
+      type: Number,
+      default: 0
+    },
+    totalReceiptsUploaded: {
+      type: Number,
+      default: 0
+    },
+    totalGoalsCompleted: {
+      type: Number,
+      default: 0
+    },
+    analyticsViews: {
+      type: Number,
+      default: 0
+    },
+    lastLoginDate: Date,
+    loginStreak: {
+      type: Number,
+      default: 0
+    }
   }
 }, {
   timestamps: true
 });
 
-// Index
+// Indexes
 userGamificationSchema.index({ user: 1 });
-userGamificationSchema.index({ 'points.total': -1 });
-userGamificationSchema.index({ 'points.currentMonth': -1 });
-userGamificationSchema.index({ 'level.current': -1 });
+userGamificationSchema.index({ totalPoints: -1 });
+userGamificationSchema.index({ weeklyPoints: -1 });
+userGamificationSchema.index({ monthlyPoints: -1 });
+userGamificationSchema.index({ level: -1 });
+userGamificationSchema.index({ 'privacySettings.showOnLeaderboard': 1, totalPoints: -1 });
 
 // Calculate level from experience
 userGamificationSchema.methods.calculateLevel = function() {
-  // Level formula: each level requires (level * 100) XP
-  let totalXpNeeded = 0;
+  // Level formula: each level requires progressively more XP
+  // Level 1: 0 XP, Level 2: 100 XP, Level 3: 250 XP, etc.
   let level = 1;
+  let totalXpNeeded = 0;
+  const baseXp = 100;
   
-  while (totalXpNeeded + (level * 100) <= this.level.experience) {
-    totalXpNeeded += level * 100;
+  while (this.experience >= totalXpNeeded + (baseXp * level * 1.5)) {
+    totalXpNeeded += Math.floor(baseXp * level * 1.5);
     level++;
   }
   
-  this.level.current = level;
-  this.level.experienceToNext = (level * 100) - (this.level.experience - totalXpNeeded);
+  this.level = level;
+  this.experienceToNextLevel = Math.floor(baseXp * level * 1.5) - (this.experience - totalXpNeeded);
+  
+  // Update rank based on level
+  if (level >= 50) this.rank = 'legend';
+  else if (level >= 40) this.rank = 'grandmaster';
+  else if (level >= 30) this.rank = 'master';
+  else if (level >= 20) this.rank = 'expert';
+  else if (level >= 10) this.rank = 'adept';
+  else if (level >= 5) this.rank = 'apprentice';
+  else this.rank = 'novice';
   
   return this.level;
 };
 
-// Add points
-userGamificationSchema.methods.addPoints = function(points, reason) {
-  this.points.total += points;
-  this.points.currentMonth += points;
-  this.level.experience += points;
+// Add points and experience
+userGamificationSchema.methods.addPoints = function(points) {
+  this.totalPoints += points;
+  this.weeklyPoints += points;
+  this.monthlyPoints += points;
+  this.experience += points;
   this.calculateLevel();
 };
 
-// Update streak
-userGamificationSchema.methods.updateStreak = function(streakType, achieved) {
-  if (!this.streaks[streakType]) return;
-  
-  const streak = this.streaks[streakType];
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  
-  const lastUpdate = streak.lastUpdated ? new Date(streak.lastUpdated) : null;
-  if (lastUpdate) {
-    lastUpdate.setHours(0, 0, 0, 0);
-  }
+// Check if user has achievement
+userGamificationSchema.methods.hasAchievement = function(achievementId) {
+  return this.earnedAchievements.some(
+    ea => ea.achievement.toString() === achievementId.toString()
+  );
+};
 
-  // Check if this is a new day
-  if (!lastUpdate || today > lastUpdate) {
-    if (achieved) {
-      const yesterday = new Date(today);
-      yesterday.setDate(yesterday.getDate() - 1);
-      
-      if (!lastUpdate || lastUpdate.getTime() === yesterday.getTime()) {
-        streak.current++;
-      } else {
-        streak.current = 1;
-      }
-      
-      if (streak.current > streak.longest) {
-        streak.longest = streak.current;
-      }
+// Get achievement progress
+userGamificationSchema.methods.getProgress = function(achievementCode) {
+  return this.achievementProgress.find(ap => ap.achievementCode === achievementCode);
+};
+
+// Update streak
+userGamificationSchema.methods.updateStreak = function(type, increment = true) {
+  let streak = this.streaks.find(s => s.type === type);
+  
+  if (!streak) {
+    streak = {
+      type,
+      currentStreak: 0,
+      longestStreak: 0,
+      lastUpdated: new Date(),
+      startDate: new Date()
+    };
+    this.streaks.push(streak);
+    streak = this.streaks[this.streaks.length - 1];
+  }
+  
+  const now = new Date();
+  const lastUpdate = new Date(streak.lastUpdated);
+  const daysSinceUpdate = Math.floor((now - lastUpdate) / (1000 * 60 * 60 * 24));
+  
+  if (increment) {
+    if (daysSinceUpdate <= 1) {
+      streak.currentStreak++;
     } else {
-      streak.current = 0;
+      streak.currentStreak = 1;
+      streak.startDate = now;
     }
     
-    streak.lastUpdated = today;
+    if (streak.currentStreak > streak.longestStreak) {
+      streak.longestStreak = streak.currentStreak;
+    }
+  } else {
+    streak.currentStreak = 0;
+    streak.startDate = null;
   }
-
+  
+  streak.lastUpdated = now;
   return streak;
 };
-
-// Reset monthly points (called by cron)
-userGamificationSchema.methods.resetMonthlyPoints = function() {
-  const now = new Date();
-  const lastReset = this.points.lastMonthReset;
-  
-  if (!lastReset || 
-      now.getMonth() !== lastReset.getMonth() || 
-      now.getFullYear() !== lastReset.getFullYear()) {
-    this.points.currentMonth = 0;
-    this.points.lastMonthReset = now;
-  }
-};
-
-// Get rank title based on level
-userGamificationSchema.virtual('rankTitle').get(function() {
-  const level = this.level.current;
-  if (level >= 50) return 'Finance Legend';
-  if (level >= 40) return 'Money Master';
-  if (level >= 30) return 'Budget Expert';
-  if (level >= 20) return 'Savings Pro';
-  if (level >= 15) return 'Expense Tracker';
-  if (level >= 10) return 'Budget Warrior';
-  if (level >= 5) return 'Money Rookie';
-  return 'Finance Beginner';
-});
 
 module.exports = mongoose.model('UserGamification', userGamificationSchema);
