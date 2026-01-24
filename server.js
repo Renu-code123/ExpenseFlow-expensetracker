@@ -11,6 +11,8 @@ const currencyService = require('./services/currencyService');
 const internationalizationService = require('./services/internationalizationService');
 const taxService = require('./services/taxService');
 const collaborationService = require('./services/collaborationService');
+const auditComplianceService = require('./services/auditComplianceService');
+const advancedAnalyticsService = require('./services/advancedAnalyticsService');
 const { generalLimiter } = require('./middleware/rateLimiter');
 const { sanitizeInput, mongoSanitizeMiddleware } = require('./middleware/sanitization');
 const securityMonitor = require('./services/securityMonitor');
@@ -153,6 +155,14 @@ mongoose.connect(process.env.MONGODB_URI)
     // Initialize tax service
     taxService.init();
     console.log('Tax service initialized');
+    
+    // Initialize audit compliance service
+    auditComplianceService.init();
+    console.log('Audit compliance service initialized');
+    
+    // Initialize advanced analytics service
+    advancedAnalyticsService.init();
+    console.log('Advanced analytics service initialized');
   })
   .catch(err => console.error('MongoDB connection error:', err));
 
@@ -210,6 +220,8 @@ app.use('/api/investments', require('./routes/investments'));
 app.use('/api/ai', require('./routes/ai'));
 app.use('/api/multicurrency', require('./routes/multicurrency'));
 app.use('/api/collaboration', require('./routes/collaboration'));
+app.use('/api/audit-compliance', require('./routes/auditCompliance'));
+app.use('/api/analytics', require('./routes/analytics'));
 
 // Root route to serve the UI
 app.get('/', (req, res) => {
