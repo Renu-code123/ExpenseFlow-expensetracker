@@ -72,6 +72,15 @@ const expenseSchema = new mongoose.Schema({
   isPrivate: {
     type: Boolean,
     default: false
+  },
+  status: {
+    type: String,
+    enum: ['draft', 'pending_approval', 'approved', 'rejected'],
+    default: 'approved' // Default to approved for backward compatibility
+  },
+  approvalWorkflow: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ApprovalWorkflow'
   }
 }, {
   timestamps: true

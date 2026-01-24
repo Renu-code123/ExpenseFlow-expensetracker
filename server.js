@@ -11,6 +11,9 @@ const currencyService = require('./services/currencyService');
 const internationalizationService = require('./services/internationalizationService');
 const taxService = require('./services/taxService');
 const collaborationService = require('./services/collaborationService');
+const auditComplianceService = require('./services/auditComplianceService');
+const advancedAnalyticsService = require('./services/advancedAnalyticsService');
+const fraudDetectionService = require('./services/fraudDetectionService');
 const { generalLimiter } = require('./middleware/rateLimiter');
 const { sanitizeInput, mongoSanitizeMiddleware } = require('./middleware/sanitization');
 const securityMonitor = require('./services/securityMonitor');
@@ -153,6 +156,18 @@ mongoose.connect(process.env.MONGODB_URI)
     // Initialize tax service
     taxService.init();
     console.log('Tax service initialized');
+    
+    // Initialize audit compliance service
+    auditComplianceService.init();
+    console.log('Audit compliance service initialized');
+    
+    // Initialize advanced analytics service
+    advancedAnalyticsService.init();
+    console.log('Advanced analytics service initialized');
+    
+    // Initialize fraud detection service
+    fraudDetectionService.init();
+    console.log('Fraud detection service initialized');
   })
   .catch(err => console.error('MongoDB connection error:', err));
 
@@ -160,7 +175,7 @@ mongoose.connect(process.env.MONGODB_URI)
 io.use(socketAuth);
 
 // Socket.IO connection handling
-io.on('connection', (socket) => {
+io.on('connection', async (socket) => {
   console.log(`User ${socket.user.name} connected`);
 
   // Join user-specific room
@@ -206,6 +221,7 @@ app.use('/api/currency', require('./routes/currency'));
 app.use('/api/groups', require('./routes/groups'));
 app.use('/api/splits', require('./routes/splits'));
 app.use('/api/workspaces', require('./routes/workspaces'));
+app.use('/api/approvals', require('./routes/approvals'));
 app.use('/api/investments', require('./routes/investments'));
 app.use('/api/gamification', require('./routes/gamification'));
 
