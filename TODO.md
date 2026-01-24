@@ -1,8 +1,10 @@
-# TODO: Refactor server.js for Security and Code Quality
+# TODO: Feature Implementation Audit and Completion
 
 ## Tasks
-- [x] Remove global.io usage from server.js
-- [x] Update notificationService.js to accept io instance via dependency injection
-- [x] Strengthen CORS configuration in server.js to validate origins more strictly
-- [x] Update server.js to pass io instance to notificationService
-- [ ] Test the refactored code to ensure functionality remains intact
+- [x] Analyze codebase and identify gaps
+- [x] Complete Currency Routes implementation
+- [x] Implement Groups Feature (service, routes, models)
+- [x] Implement Expense Splitting Feature (service, routes, models)
+- [x] Verify End-to-End Integration of all features
+- [x] Update Documentation (README.md, BACKEND.md) to reflect current status
+- [x] Test all implemented features
