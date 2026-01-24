@@ -74,24 +74,45 @@ app.use(
 
 
 
-// CORS configuration
+// CORS configuration - Strict origin validation
 app.use(cors({
   origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+
+    // Define allowed origins with strict validation
     const allowedOrigins = [
       'http://localhost:3000',
       'http://localhost:3001',
       process.env.FRONTEND_URL
     ].filter(Boolean);
 
-    if (!origin || allowedOrigins.includes(origin)) {
+    // Additional security: validate origin format
+    try {
+      const url = new URL(origin);
+      // Only allow http/https protocols
+      if (!['http:', 'https:'].includes(url.protocol)) {
+        return callback(new Error('Invalid protocol'));
+      }
+      // Prevent localhost in production
+      if (process.env.NODE_ENV === 'production' && url.hostname === 'localhost') {
+        return callback(new Error('Localhost not allowed in production'));
+      }
+    } catch (error) {
+      return callback(new Error('Invalid origin format'));
+    }
+
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      console.warn(`CORS blocked request from origin: ${origin}`);
+      callback(new Error('Not allowed by CORS policy'));
     }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 200 // Some legacy browsers choke on 204
 }));
 
 // Rate limiting
@@ -127,11 +148,12 @@ app.use((req, res, next) => {
   next();
 });
 
-// Make io available to the  routes
+// Make io available to the routes
 app.set('io', io);
 
-// Make io globally available for notifications
-global.io = io;
+// Set io instance in notification service
+const notificationService = require('./services/notificationService');
+notificationService.setIo(io);
 
 // Database connection
 mongoose.connect(process.env.MONGODB_URI)
@@ -221,14 +243,11 @@ app.use('/api/currency', require('./routes/currency'));
 app.use('/api/groups', require('./routes/groups'));
 app.use('/api/splits', require('./routes/splits'));
 app.use('/api/workspaces', require('./routes/workspaces'));
-app.use('/api/approvals', require('./routes/approvals'));
-app.use('/api/investments', require('./routes/investments'));
-app.use('/api/ai', require('./routes/ai'));
-app.use('/api/multicurrency', require('./routes/multicurrency'));
-app.use('/api/collaboration', require('./routes/collaboration'));
-app.use('/api/audit-compliance', require('./routes/auditCompliance'));
-app.use('/api/analytics', require('./routes/analytics'));
-app.use('/api/fraud-detection', require('./routes/fraudDetection'));
+app.use('/api/tax', require('./routes/tax'));
+app.use('/api/reports', require('./routes/reports'));
+app.use('/api/recurring', require('./routes/recurring'));
+app.use('/api/subscriptions', require('./routes/subscriptions'));
+app.use('/api/gamification', require('./routes/gamification'));
 
 // Root route to serve the UI
 app.get('/', (req, res) => {

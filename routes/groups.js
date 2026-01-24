@@ -1,79 +1,51 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
-const { validateGroupCreation, validateGroupUpdate, validateAddMember } = require('../middleware/splitValidator');
-const Group = require('../models/Group');
-const User = require('../models/User');
-const SplitExpense = require('../models/SplitExpense');
+const groupService = require('../services/groupService');
+const Joi = require('joi');
+
+// Validation schemas
+const createGroupSchema = Joi.object({
+  name: Joi.string().trim().min(1).max(100).required(),
+  description: Joi.string().trim().max(500).optional(),
+  currency: Joi.string().valid('USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'HKD', 'NZD',
+                               'SEK', 'KRW', 'SGD', 'NOK', 'MXN', 'INR', 'RUB', 'ZAR', 'TRY', 'BRL',
+                               'TWD', 'DKK', 'PLN', 'THB', 'IDR', 'HUF', 'CZK', 'ILS', 'CLP', 'PHP',
+                               'AED', 'SAR', 'MYR', 'RON').default('USD'),
+  settings: Joi.object({
+    allowPublicExpenses: Joi.boolean().default(false),
+    requireApproval: Joi.boolean().default(false),
+    defaultSplitMethod: Joi.string().valid('equal', 'percentage', 'amount').default('equal')
+  }).optional()
+});
+
+const updateSettingsSchema = Joi.object({
+  allowPublicExpenses: Joi.boolean(),
+  requireApproval: Joi.boolean(),
+  defaultSplitMethod: Joi.string().valid('equal', 'percentage', 'amount')
+});
 
 /**
  * @route   POST /api/groups
  * @desc    Create a new group
  * @access  Private
  */
-router.post('/', auth, validateGroupCreation, async (req, res) => {
-    try {
-        const { name, description, category, icon, currency, members, simplifyDebts } = req.body;
+router.post('/', auth, async (req, res) => {
+  try {
+    const { error, value } = createGroupSchema.validate(req.body);
+    if (error) return res.status(400).json({ error: error.details[0].message });
 
-        // Add creator as first member
-        const currentUser = await User.findById(req.user.id);
-        const groupMembers = [{
-            user: currentUser._id,
-            name: currentUser.name,
-            email: currentUser.email,
-            joinedAt: new Date(),
-            isActive: true
-        }];
+    const group = await groupService.createGroup(req.user._id, value);
 
-        // Add other members
-        for (const member of members) {
-            // Check if user exists
-            const user = await User.findById(member.userId);
-            if (!user) {
-                return res.status(404).json({
-                    success: false,
-                    message: `User not found: ${member.email}`
-                });
-            }
-
-            // Don't add creator again
-            if (user._id.toString() !== currentUser._id.toString()) {
-                groupMembers.push({
-                    user: user._id,
-                    name: user.name,
-                    email: user.email,
-                    joinedAt: new Date(),
-                    isActive: true
-                });
-            }
-        }
-
-        const group = new Group({
-            name,
-            description,
-            category: category || 'other',
-            icon: icon || '👥',
-            currency: currency || 'INR',
-            simplifyDebts: simplifyDebts !== undefined ? simplifyDebts : true,
-            createdBy: req.user.id,
-            members: groupMembers
-        });
-
-        await group.save();
-
-        res.status(201).json({
-            success: true,
-            message: 'Group created successfully',
-            data: group
-        });
-    } catch (error) {
-        console.error('Create group error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to create group',
-            error: error.message
-        });
-    }
+    res.status(201).json({
+      success: true,
+      message: 'Group created successfully',
+      data: group
+    });
+  } catch (error) {
+    console.error('[Groups Routes] Create error:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 /**
@@ -82,124 +54,40 @@ router.post('/', auth, validateGroupCreation, async (req, res) => {
  * @access  Private
  */
 router.get('/', auth, async (req, res) => {
-    try {
-        const groups = await Group.getUserGroups(req.user.id);
+  try {
+    const groups = await groupService.getUserGroups(req.user._id);
 
-        res.json({
-            success: true,
-            data: groups,
-            count: groups.length
-        });
-    } catch (error) {
-        console.error('Get groups error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to fetch groups',
-            error: error.message
-        });
-    }
+    res.json({
+      success: true,
+      count: groups.length,
+      data: groups
+    });
+  } catch (error) {
+    console.error('[Groups Routes] Get all error:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 /**
  * @route   GET /api/groups/:id
- * @desc    Get group details
+ * @desc    Get group by ID
  * @access  Private
  */
 router.get('/:id', auth, async (req, res) => {
-    try {
-        const group = await Group.findById(req.params.id)
-            .populate('members.user', 'name email')
-            .populate('createdBy', 'name email');
+  try {
+    const group = await groupService.getGroupById(req.params.id, req.user._id);
 
-        if (!group) {
-            return res.status(404).json({
-                success: false,
-                message: 'Group not found'
-            });
-        }
-
-        // Check if user is a member
-        if (!group.isMember(req.user.id)) {
-            return res.status(403).json({
-                success: false,
-                message: 'Access denied. You are not a member of this group.'
-            });
-        }
-
-        // Get group expenses summary
-        const expenses = await SplitExpense.find({ group: group._id });
-        const totalExpenses = expenses.reduce((sum, exp) => sum + exp.totalAmount, 0);
-        const unsettledExpenses = expenses.filter(exp => !exp.isSettled);
-
-        res.json({
-            success: true,
-            data: {
-                ...group.toObject(),
-                stats: {
-                    totalExpenses,
-                    expenseCount: expenses.length,
-                    unsettledCount: unsettledExpenses.length,
-                    memberCount: group.getActiveMembers().length
-                }
-            }
-        });
-    } catch (error) {
-        console.error('Get group error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to fetch group',
-            error: error.message
-        });
+    res.json({
+      success: true,
+      data: group
+    });
+  } catch (error) {
+    console.error('[Groups Routes] Get by ID error:', error);
+    if (error.message === 'Group not found' || error.message === 'Access denied') {
+      return res.status(404).json({ error: error.message });
     }
-});
-
-/**
- * @route   PUT /api/groups/:id
- * @desc    Update group details
- * @access  Private
- */
-router.put('/:id', auth, validateGroupUpdate, async (req, res) => {
-    try {
-        const group = await Group.findById(req.params.id);
-
-        if (!group) {
-            return res.status(404).json({
-                success: false,
-                message: 'Group not found'
-            });
-        }
-
-        // Only creator can update group
-        if (group.createdBy.toString() !== req.user.id) {
-            return res.status(403).json({
-                success: false,
-                message: 'Only group creator can update group details'
-            });
-        }
-
-        const { name, description, category, icon, simplifyDebts } = req.body;
-
-        if (name) group.name = name;
-        if (description !== undefined) group.description = description;
-        if (category) group.category = category;
-        if (icon) group.icon = icon;
-        if (simplifyDebts !== undefined) group.simplifyDebts = simplifyDebts;
-
-        await group.save();
-
-        res.json({
-            success: true,
-            message: 'Group updated successfully',
-            data: group
-        });
-    } catch (error) {
-        console.error('Update group error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to update group',
-            error: error.message
-        });
-    }
+    res.status(500).json({ error: error.message });
+  }
 });
 
 /**
@@ -207,96 +95,106 @@ router.put('/:id', auth, validateGroupUpdate, async (req, res) => {
  * @desc    Add member to group
  * @access  Private
  */
-router.post('/:id/members', auth, validateAddMember, async (req, res) => {
-    try {
-        const group = await Group.findById(req.params.id);
+router.post('/:id/members', auth, async (req, res) => {
+  try {
+    const { email } = req.body;
 
-        if (!group) {
-            return res.status(404).json({
-                success: false,
-                message: 'Group not found'
-            });
-        }
-
-        // Check if requester is a member
-        if (!group.isMember(req.user.id)) {
-            return res.status(403).json({
-                success: false,
-                message: 'Only group members can add new members'
-            });
-        }
-
-        const { userId, name, email } = req.body;
-
-        // Check if user exists
-        const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: 'User not found'
-            });
-        }
-
-        await group.addMember({
-            user: user._id,
-            name: user.name,
-            email: user.email
-        });
-
-        res.json({
-            success: true,
-            message: 'Member added successfully',
-            data: group
-        });
-    } catch (error) {
-        console.error('Add member error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to add member',
-            error: error.message
-        });
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
     }
+
+    const group = await groupService.addMember(req.params.id, req.user._id, email);
+
+    res.json({
+      success: true,
+      message: 'Member added successfully',
+      data: group
+    });
+  } catch (error) {
+    console.error('[Groups Routes] Add member error:', error);
+    if (error.message.includes('not found') || error.message === 'Access denied') {
+      return res.status(404).json({ error: error.message });
+    }
+    res.status(500).json({ error: error.message });
+  }
 });
 
 /**
- * @route   DELETE /api/groups/:id/members/:userId
+ * @route   DELETE /api/groups/:id/members/:memberId
  * @desc    Remove member from group
  * @access  Private
  */
-router.delete('/:id/members/:userId', auth, async (req, res) => {
-    try {
-        const group = await Group.findById(req.params.id);
+router.delete('/:id/members/:memberId', auth, async (req, res) => {
+  try {
+    const group = await groupService.removeMember(req.params.id, req.user._id, req.params.memberId);
 
-        if (!group) {
-            return res.status(404).json({
-                success: false,
-                message: 'Group not found'
-            });
-        }
-
-        // Only creator or the member themselves can remove a member
-        if (group.createdBy.toString() !== req.user.id && req.params.userId !== req.user.id) {
-            return res.status(403).json({
-                success: false,
-                message: 'You do not have permission to remove this member'
-            });
-        }
-
-        await group.removeMember(req.params.userId);
-
-        res.json({
-            success: true,
-            message: 'Member removed successfully',
-            data: group
-        });
-    } catch (error) {
-        console.error('Remove member error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to remove member',
-            error: error.message
-        });
+    res.json({
+      success: true,
+      message: 'Member removed successfully',
+      data: group
+    });
+  } catch (error) {
+    console.error('[Groups Routes] Remove member error:', error);
+    if (error.message.includes('not found') || error.message === 'Access denied') {
+      return res.status(404).json({ error: error.message });
     }
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * @route   POST /api/groups/:id/expenses
+ * @desc    Add expense to group
+ * @access  Private
+ */
+router.post('/:id/expenses', auth, async (req, res) => {
+  try {
+    const { expenseId } = req.body;
+
+    if (!expenseId) {
+      return res.status(400).json({ error: 'Expense ID is required' });
+    }
+
+    const group = await groupService.addExpenseToGroup(req.params.id, req.user._id, expenseId);
+
+    res.json({
+      success: true,
+      message: 'Expense added to group successfully',
+      data: group
+    });
+  } catch (error) {
+    console.error('[Groups Routes] Add expense error:', error);
+    if (error.message.includes('not found') || error.message === 'Access denied') {
+      return res.status(404).json({ error: error.message });
+    }
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * @route   PUT /api/groups/:id/settings
+ * @desc    Update group settings
+ * @access  Private
+ */
+router.put('/:id/settings', auth, async (req, res) => {
+  try {
+    const { error, value } = updateSettingsSchema.validate(req.body);
+    if (error) return res.status(400).json({ error: error.details[0].message });
+
+    const group = await groupService.updateGroupSettings(req.params.id, req.user._id, value);
+
+    res.json({
+      success: true,
+      message: 'Group settings updated successfully',
+      data: group
+    });
+  } catch (error) {
+    console.error('[Groups Routes] Update settings error:', error);
+    if (error.message.includes('not found') || error.message === 'Access denied') {
+      return res.status(404).json({ error: error.message });
+    }
+    res.status(500).json({ error: error.message });
+  }
 });
 
 /**
@@ -305,52 +203,42 @@ router.delete('/:id/members/:userId', auth, async (req, res) => {
  * @access  Private
  */
 router.delete('/:id', auth, async (req, res) => {
-    try {
-        const group = await Group.findById(req.params.id);
+  try {
+    const result = await groupService.deleteGroup(req.params.id, req.user._id);
 
-        if (!group) {
-            return res.status(404).json({
-                success: false,
-                message: 'Group not found'
-            });
-        }
-
-        // Only creator can delete group
-        if (group.createdBy.toString() !== req.user.id) {
-            return res.status(403).json({
-                success: false,
-                message: 'Only group creator can delete the group'
-            });
-        }
-
-        // Check if there are unsettled expenses
-        const unsettledExpenses = await SplitExpense.find({
-            group: group._id,
-            isSettled: false
-        });
-
-        if (unsettledExpenses.length > 0) {
-            return res.status(400).json({
-                success: false,
-                message: 'Cannot delete group with unsettled expenses'
-            });
-        }
-
-        group.isActive = false;
-        await group.save();
-
-        res.json({
-            success: true,
-            message: 'Group deleted successfully'
-        });
-    } catch (error) {
-        console.error('Delete group error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to delete group',
-            error: error.message
-        });
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    console.error('[Groups Routes] Delete error:', error);
+    if (error.message.includes('not found') || error.message === 'Access denied') {
+      return res.status(404).json({ error: error.message });
     }
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * @route   GET /api/groups/:id/statistics
+ * @desc    Get group statistics
+ * @access  Private
+ */
+router.get('/:id/statistics', auth, async (req, res) => {
+  try {
+    const statistics = await groupService.getGroupStatistics(req.params.id, req.user._id);
+
+    res.json({
+      success: true,
+      data: statistics
+    });
+  } catch (error) {
+    console.error('[Groups Routes] Statistics error:', error);
+    if (error.message.includes('not found') || error.message === 'Access denied') {
+      return res.status(404).json({ error: error.message });
+    }
+    res.status(500).json({ error: error.message });
+  }
 });
 
 module.exports = router;
