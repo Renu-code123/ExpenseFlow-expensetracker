@@ -1948,6 +1948,12 @@
           <div class="card-icon expense-icon">
             <i class="fas fa-arrow-down"></i>
           </div>
+          <button id="theme-toggle-btn" class="theme-toggle-btn dark-mode" title="Switch to Light Mode">
+            <i class="fas fa-sun"></i>
+          </button>
+          <div class="user-profile">
+            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face" alt="User" class="profile-img">
+            <span class="username">John Doe</span>
           <div class="card-content">
             <h4>Expense</h4>
             <p id="money-minus" class="money-minus">
@@ -2381,6 +2387,29 @@
         </ul>
       </div>
 
+    <button id="scrollToTopBtn" title="Go to top">
+    <i data-lucide="arrow-up-circle"></i>
+  </button>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="theme.js"></script>
+    <script src="trackerscript.js"></script>
+    
+    <!-- PWA Installation Prompt -->
+    <div id="install-prompt" class="install-prompt" style="display: none;">
+      <div class="install-prompt-content">
+        <div class="install-prompt-header">
+          <i class="fas fa-download"></i>
+          <h3>Install ExpenseFlow</h3>
+        </div>
+        <p>Install ExpenseFlow for quick access and offline functionality!</p>
+        <div class="install-prompt-actions">
+          <button id="install-button" class="install-btn">
+            <i class="fas fa-plus"></i> Install
+          </button>
+          <button id="install-dismiss" class="dismiss-btn">
+            <i class="fas fa-times"></i> Not now
+          </button>
+        </div>
       <div class="footer-section">
         <h4>Resources</h4>
         <ul class="footer-links">
@@ -2455,4 +2484,42 @@
 
 </body>
 
+    <script>
+      // Mobile Navigation Toggle
+      document.addEventListener('DOMContentLoaded', function() {
+        const navToggle = document.getElementById('nav-toggle');
+        const navMenu = document.getElementById('nav-menu');
+        const navLinks = document.querySelectorAll('.nav-link');
+        
+        if (navToggle) {
+          navToggle.addEventListener('click', function() {
+            navToggle.classList.toggle('active');
+            navMenu.classList.toggle('active');
+          });
+        }
+        
+        // Close mobile menu when clicking on a link
+        navLinks.forEach(link => {
+          link.addEventListener('click', () => {
+            navToggle.classList.remove('active');
+            navMenu.classList.remove('active');
+            
+            // Update active state
+            navLinks.forEach(l => l.classList.remove('active'));
+            link.classList.add('active');
+          });
+        });
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', (event) => {
+          const isClickInsideNav = navMenu.contains(event.target) || navToggle.contains(event.target);
+          if (!isClickInsideNav && navMenu.classList.contains('active')) {
+            navToggle.classList.remove('active');
+            navMenu.classList.remove('active');
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
 </html>
