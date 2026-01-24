@@ -245,6 +245,9 @@ app.use('/api/splits', require('./routes/splits'));
 app.use('/api/workspaces', require('./routes/workspaces'));
 app.use('/api/tax', require('./routes/tax'));
 app.use('/api/reports', require('./routes/reports'));
+app.use('/api/recurring', require('./routes/recurring'));
+app.use('/api/subscriptions', require('./routes/subscriptions'));
+app.use('/api/gamification', require('./routes/gamification'));
 
 // Root route to serve the UI
 app.get('/', (req, res) => {
