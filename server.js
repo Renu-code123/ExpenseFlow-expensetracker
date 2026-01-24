@@ -6,6 +6,14 @@ const helmet = require('helmet');
 const cors = require('cors');
 const socketAuth = require('./middleware/socketAuth');
 const CronJobs = require('./services/cronJobs');
+const aiService = require('./services/aiService');
+const currencyService = require('./services/currencyService');
+const internationalizationService = require('./services/internationalizationService');
+const taxService = require('./services/taxService');
+const collaborationService = require('./services/collaborationService');
+const auditComplianceService = require('./services/auditComplianceService');
+const advancedAnalyticsService = require('./services/advancedAnalyticsService');
+const fraudDetectionService = require('./services/fraudDetectionService');
 const { generalLimiter } = require('./middleware/rateLimiter');
 const { sanitizeInput, mongoSanitizeMiddleware } = require('./middleware/sanitization');
 const securityMonitor = require('./services/securityMonitor');
@@ -28,22 +36,43 @@ const io = socketIo(server, {
 const PORT = process.env.PORT || 3000;
 
 // Security middleware
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'"],
-      fontSrc: ["'self'"],
-      objectSrc: ["'none'"],
-      mediaSrc: ["'self'"],
-      frameSrc: ["'none'"]
-    }
-  },
-  crossOriginEmbedderPolicy: false
-}));
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          "https://fonts.googleapis.com",
+          "https://cdnjs.cloudflare.com"
+        ],
+        fontSrc: [
+          "'self'",
+          "https://fonts.gstatic.com",
+          "https://cdnjs.cloudflare.com"
+        ],
+        scriptSrc: [
+          "'self'",
+          "'unsafe-inline'"
+        ],
+        connectSrc: [
+          "'self'",
+          "http://localhost:3000",
+          "https://api.github.com"
+        ],
+        imgSrc: [
+          "'self'",
+          "data:",
+          "https:"
+        ]
+      }
+    },
+    crossOriginEmbedderPolicy: false
+  })
+);
+
+
 
 // CORS configuration
 app.use(cors({
@@ -53,7 +82,7 @@ app.use(cors({
       'http://localhost:3001',
       process.env.FRONTEND_URL
     ].filter(Boolean);
-    
+
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -80,12 +109,12 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Static files
-app.use(express.static('.'));
+app.use(express.static('public'));
 
 // Security logging middleware
 app.use((req, res, next) => {
   const originalSend = res.send;
-  res.send = function(data) {
+  res.send = function (data) {
     // Log failed requests
     if (res.statusCode >= 400) {
       securityMonitor.logSecurityEvent(req, 'suspicious_activity', {
@@ -111,6 +140,34 @@ mongoose.connect(process.env.MONGODB_URI)
     // Initialize cron jobs after DB connection
     CronJobs.init();
     console.log('Email cron jobs initialized');
+    
+    // Initialize AI service
+    aiService.init();
+    console.log('AI service initialized');
+    
+    // Initialize currency service
+    currencyService.init();
+    console.log('Currency service initialized');
+    
+    // Initialize internationalization service
+    internationalizationService.init();
+    console.log('Internationalization service initialized');
+    
+    // Initialize tax service
+    taxService.init();
+    console.log('Tax service initialized');
+    
+    // Initialize audit compliance service
+    auditComplianceService.init();
+    console.log('Audit compliance service initialized');
+    
+    // Initialize advanced analytics service
+    advancedAnalyticsService.init();
+    console.log('Advanced analytics service initialized');
+    
+    // Initialize fraud detection service
+    fraudDetectionService.init();
+    console.log('Fraud detection service initialized');
   })
   .catch(err => console.error('MongoDB connection error:', err));
 
@@ -118,11 +175,17 @@ mongoose.connect(process.env.MONGODB_URI)
 io.use(socketAuth);
 
 // Socket.IO connection handling
-io.on('connection', (socket) => {
+io.on('connection', async (socket) => {
   console.log(`User ${socket.user.name} connected`);
 
   // Join user-specific room
   socket.join(`user_${socket.userId}`);
+  
+  // Join workspace rooms
+  const workspaces = await collaborationService.getUserWorkspaces(socket.userId);
+  workspaces.forEach(workspace => {
+    socket.join(`workspace_${workspace._id}`);
+  });
 
   // Handle sync requests
   socket.on('sync_request', async (data) => {
@@ -155,6 +218,22 @@ app.use('/api/budgets', require('./routes/budgets'));
 app.use('/api/goals', require('./routes/goals'));
 app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/currency', require('./routes/currency'));
+app.use('/api/groups', require('./routes/groups'));
+app.use('/api/splits', require('./routes/splits'));
+app.use('/api/workspaces', require('./routes/workspaces'));
+app.use('/api/approvals', require('./routes/approvals'));
+app.use('/api/investments', require('./routes/investments'));
+app.use('/api/ai', require('./routes/ai'));
+app.use('/api/multicurrency', require('./routes/multicurrency'));
+app.use('/api/collaboration', require('./routes/collaboration'));
+app.use('/api/audit-compliance', require('./routes/auditCompliance'));
+app.use('/api/analytics', require('./routes/analytics'));
+app.use('/api/fraud-detection', require('./routes/fraudDetection'));
+
+// Root route to serve the UI
+app.get('/', (req, res) => {
+  res.sendFile(require('path').join(__dirname, 'public', 'index.html'));
+});
 
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
