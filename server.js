@@ -5,6 +5,7 @@ require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
 const expenseRoutes = require('./routes/expenses');
+const currencyRoutes = require('./routes/currency');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -22,6 +23,12 @@ mongoose.connect(process.env.MONGODB_URI)
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/expenses', expenseRoutes);
+app.use('/api/currency', currencyRoutes);
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

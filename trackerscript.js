@@ -1,3 +1,31 @@
+// =============================================
+// ExpenseFlow - Main Application Script
+// With Backend API Integration & Multi-Currency Support
+// =============================================
+
+// Configuration
+const API_BASE_URL = 'http://localhost:3000/api';
+
+// Currency symbols mapping
+const CURRENCY_SYMBOLS = {
+  USD: '$', EUR: '€', GBP: '£', INR: '₹', JPY: '¥',
+  AUD: 'A$', CAD: 'C$', CHF: 'CHF', CNY: '¥', AED: 'د.إ',
+  SGD: 'S$', HKD: 'HK$', KRW: '₩', MXN: '$', BRL: 'R$'
+};
+
+// State Management
+let authToken = localStorage.getItem('authToken');
+let currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+let baseCurrency = currentUser?.baseCurrency || 'INR';
+let exchangeRates = {};
+let transactions = [];
+let currentFilter = 'all';
+let currentCategoryFilter = 'all';
+let searchQuery = '';
+let dateRange = { from: null, to: null };
+let amountRange = { min: null, max: null };
+let isOnline = navigator.onLine;
+
 // DOM Elements
 const balance = document.getElementById("balance");
 const money_plus = document.getElementById("money-plus");
@@ -8,6 +36,7 @@ const text = document.getElementById("text");
 const amount = document.getElementById("amount");
 const category = document.getElementById("category");
 const type = document.getElementById("type");
+const currency = document.getElementById("currency");
 const navToggle = document.getElementById("nav-toggle");
 const navMenu = document.getElementById("nav-menu");
 const filterBtns = document.querySelectorAll(".filter-btn");
@@ -23,17 +52,20 @@ const exportJsonBtn = document.getElementById("export-json");
 const importFileInput = document.getElementById("import-file");
 const importDataBtn = document.getElementById("import-data");
 const mergeDataCheckbox = document.getElementById("merge-data");
+const authButton = document.getElementById("auth-button");
+const displayUsername = document.getElementById("display-username");
+const authModal = document.getElementById("auth-modal");
+const closeAuthModal = document.getElementById("close-auth-modal");
+const authModalForm = document.getElementById("auth-modal-form");
+const authModalTitle = document.getElementById("auth-modal-title");
+const authNameField = document.getElementById("auth-name-field");
+const authSubmitBtn = document.getElementById("auth-submit-btn");
+const authSwitchLabel = document.getElementById("auth-switch-label");
+const authSwitchLink = document.getElementById("auth-switch-link");
+const amountConversion = document.getElementById("amount-conversion");
+const convertedAmount = document.getElementById("converted-amount");
 
-// State Management
-const localStorageTransactions = JSON.parse(localStorage.getItem('transactions'));
-let transactions = localStorage.getItem('transactions') !== null ? localStorageTransactions : [];
-let currentFilter = 'all';
-let currentCategoryFilter = 'all';
-let searchQuery = '';
-let dateRange = { from: null, to: null };
-let amountRange = { min: null, max: null };
-
-// Category definitions
+// Categories
 const categories = {
   food: { name: '🍽️ Food & Dining', color: '#FF6B6B' },
   transport: { name: '🚗 Transportation', color: '#4ECDC4' },
@@ -49,7 +81,559 @@ const categories = {
   other: { name: '📋 Other', color: '#A55EEA' }
 };
 
-// Mobile Navigation
+// =============================================
+// Authentication Functions
+// =============================================
+
+async function register(userData) {
+  const response = await fetch(`${API_BASE_URL}/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(userData)
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Registration failed');
+  }
+
+  const data = await response.json();
+  authToken = data.token;
+  currentUser = data.user;
+  baseCurrency = currentUser.baseCurrency || 'INR';
+
+  localStorage.setItem('authToken', authToken);
+  localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+  return data;
+}
+
+async function login(credentials) {
+  const response = await fetch(`${API_BASE_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(credentials)
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Login failed');
+  }
+
+  const data = await response.json();
+  authToken = data.token;
+  currentUser = data.user;
+  baseCurrency = currentUser.baseCurrency || 'INR';
+
+  localStorage.setItem('authToken', authToken);
+  localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+  return data;
+}
+
+function logout() {
+  authToken = null;
+  currentUser = null;
+  transactions = [];
+
+  localStorage.removeItem('authToken');
+  localStorage.removeItem('currentUser');
+
+  updateAuthUI();
+  displayTransactions();
+  updateValues();
+  showNotification('Logged out successfully', 'success');
+}
+
+function updateAuthUI() {
+  if (currentUser && authToken) {
+    displayUsername.textContent = currentUser.name;
+    authButton.textContent = 'Logout';
+    authButton.classList.add('logout-btn');
+    authButton.onclick = logout;
+  } else {
+    displayUsername.textContent = 'Guest';
+    authButton.textContent = 'Login';
+    authButton.classList.remove('logout-btn');
+    authButton.onclick = () => showAuthModal('login');
+  }
+}
+
+// =============================================
+// Auth Modal Functions
+// =============================================
+
+let isLoginMode = true;
+
+function showAuthModal(mode = 'login') {
+  isLoginMode = mode === 'login';
+  updateAuthModalUI();
+  authModal.style.display = 'flex';
+}
+
+function hideAuthModal() {
+  authModal.style.display = 'none';
+  authModalForm.reset();
+}
+
+function updateAuthModalUI() {
+  if (isLoginMode) {
+    authModalTitle.textContent = 'Login to ExpenseFlow';
+    authNameField.style.display = 'none';
+    authSubmitBtn.textContent = 'Login';
+    authSwitchLabel.textContent = "Don't have an account?";
+    authSwitchLink.textContent = 'Register';
+  } else {
+    authModalTitle.textContent = 'Create Account';
+    authNameField.style.display = 'block';
+    authSubmitBtn.textContent = 'Register';
+    authSwitchLabel.textContent = 'Already have an account?';
+    authSwitchLink.textContent = 'Login';
+  }
+}
+
+if (closeAuthModal) {
+  closeAuthModal.addEventListener('click', hideAuthModal);
+}
+
+if (authModal) {
+  authModal.addEventListener('click', (e) => {
+    if (e.target === authModal) hideAuthModal();
+  });
+}
+
+if (authSwitchLink) {
+  authSwitchLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    isLoginMode = !isLoginMode;
+    updateAuthModalUI();
+  });
+}
+
+if (authModalForm) {
+  authModalForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const email = document.getElementById('auth-email').value;
+    const password = document.getElementById('auth-password').value;
+    const name = document.getElementById('auth-name').value;
+
+    try {
+      if (isLoginMode) {
+        await login({ email, password });
+        showNotification(`Welcome back, ${currentUser.name}!`, 'success');
+      } else {
+        if (!name.trim()) {
+          showNotification('Please enter your name', 'error');
+          return;
+        }
+        await register({ name, email, password });
+        showNotification(`Welcome, ${currentUser.name}!`, 'success');
+      }
+
+      hideAuthModal();
+      updateAuthUI();
+      await loadTransactions();
+      await loadExchangeRates();
+    } catch (error) {
+      showNotification(error.message, 'error');
+    }
+  });
+}
+
+// =============================================
+// Currency Functions
+// =============================================
+
+async function loadExchangeRates() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/currency/rates?base=${baseCurrency}`);
+    if (response.ok) {
+      const data = await response.json();
+      exchangeRates = data.rates || {};
+      return exchangeRates;
+    }
+  } catch (error) {
+    console.error('Failed to load exchange rates:', error);
+  }
+  return {};
+}
+
+function convertToBaseCurrency(amount, fromCurrency) {
+  if (fromCurrency === baseCurrency) return amount;
+
+  const rate = exchangeRates[fromCurrency];
+  if (!rate) return amount;
+
+  // Conversion logic: amount in fromCurrency * (1/rate) = amount in baseCurrency
+  return amount / rate;
+}
+
+function formatCurrency(amount, currencyCode = baseCurrency) {
+  const symbol = CURRENCY_SYMBOLS[currencyCode] || currencyCode;
+  return `${symbol}${Math.abs(amount).toFixed(2)}`;
+}
+
+// Update conversion preview when amount or currency changes
+if (amount && currency) {
+  const updateConversion = async () => {
+    const amountValue = parseFloat(amount.value) || 0;
+    const selectedCurrency = currency.value;
+
+    if (selectedCurrency !== baseCurrency && amountValue > 0) {
+      const converted = convertToBaseCurrency(amountValue, selectedCurrency);
+      convertedAmount.textContent = formatCurrency(converted, baseCurrency);
+      amountConversion.style.display = 'block';
+    } else {
+      amountConversion.style.display = 'none';
+    }
+  };
+
+  amount.addEventListener('input', updateConversion);
+  currency.addEventListener('change', updateConversion);
+}
+
+// =============================================
+// API Functions
+// =============================================
+
+async function fetchExpenses() {
+  if (!authToken) return [];
+
+  const response = await fetch(`${API_BASE_URL}/expenses`, {
+    headers: { 'Authorization': `Bearer ${authToken}` }
+  });
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      logout();
+      throw new Error('Session expired');
+    }
+    throw new Error('Failed to fetch expenses');
+  }
+
+  return await response.json();
+}
+
+async function saveExpenseAPI(expense) {
+  if (!authToken) throw new Error('Not authenticated');
+
+  const response = await fetch(`${API_BASE_URL}/expenses`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${authToken}`
+    },
+    body: JSON.stringify(expense)
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to save expense');
+  }
+
+  return await response.json();
+}
+
+async function deleteExpenseAPI(id) {
+  if (!authToken) throw new Error('Not authenticated');
+
+  const response = await fetch(`${API_BASE_URL}/expenses/${id}`, {
+    method: 'DELETE',
+    headers: { 'Authorization': `Bearer ${authToken}` }
+  });
+
+  if (!response.ok) throw new Error('Failed to delete expense');
+  return await response.json();
+}
+
+// =============================================
+// Transaction Functions
+// =============================================
+
+async function loadTransactions() {
+  if (!authToken) {
+    // Load from localStorage for guest mode
+    transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+    displayTransactions();
+    updateValues();
+    return;
+  }
+
+  try {
+    const expenses = await fetchExpenses();
+    transactions = expenses.map(expense => ({
+      id: expense._id,
+      text: expense.description,
+      amount: expense.type === 'expense' ? -expense.amount : expense.amount,
+      category: expense.category,
+      type: expense.type,
+      currency: expense.currency || 'INR',
+      baseAmount: expense.baseAmount || expense.amount,
+      date: expense.date
+    }));
+
+    displayTransactions();
+    updateValues();
+    updateLocalStorage();
+  } catch (error) {
+    console.error('Failed to load transactions:', error);
+    // Fallback to localStorage
+    transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+    displayTransactions();
+    updateValues();
+    showNotification('Loaded offline data', 'warning');
+  }
+}
+
+async function addTransaction(e) {
+  e.preventDefault();
+
+  if (!text.value.trim() || !amount.value.trim() || !category.value || !type.value) {
+    showNotification('Please fill in all required fields', 'error');
+    return;
+  }
+
+  const amountValue = parseFloat(amount.value);
+  if (isNaN(amountValue) || amountValue === 0) {
+    showNotification('Please enter a valid amount', 'error');
+    return;
+  }
+
+  const selectedCurrency = currency ? currency.value : 'INR';
+  const transactionAmount = type.value === 'expense' ? -Math.abs(amountValue) : Math.abs(amountValue);
+
+  const expense = {
+    description: text.value.trim(),
+    amount: Math.abs(amountValue),
+    category: category.value,
+    type: type.value,
+    currency: selectedCurrency
+  };
+
+  if (authToken && isOnline) {
+    try {
+      const savedExpense = await saveExpenseAPI(expense);
+
+      const transaction = {
+        id: savedExpense._id,
+        text: savedExpense.description,
+        amount: savedExpense.type === 'expense' ? -savedExpense.amount : savedExpense.amount,
+        category: savedExpense.category,
+        type: savedExpense.type,
+        currency: savedExpense.currency,
+        baseAmount: savedExpense.baseAmount,
+        date: savedExpense.date
+      };
+
+      transactions.push(transaction);
+      displayTransactions();
+      updateValues();
+      updateLocalStorage();
+
+      showNotification('Transaction added successfully!', 'success');
+    } catch (error) {
+      showNotification(error.message, 'error');
+      return;
+    }
+  } else {
+    // Offline or guest mode - save locally
+    const transaction = {
+      id: generateID(),
+      text: text.value.trim(),
+      amount: transactionAmount,
+      category: category.value,
+      type: type.value,
+      currency: selectedCurrency,
+      baseAmount: convertToBaseCurrency(Math.abs(transactionAmount), selectedCurrency),
+      date: new Date().toISOString(),
+      offline: true
+    };
+
+    transactions.push(transaction);
+    displayTransactions();
+    updateValues();
+    updateLocalStorage();
+
+    const msg = authToken ? 'Saved offline. Will sync when online.' : 'Transaction saved locally (guest mode)';
+    showNotification(msg, 'warning');
+  }
+
+  // Clear form
+  text.value = '';
+  amount.value = '';
+  category.value = '';
+  type.value = '';
+  if (currency) currency.value = baseCurrency;
+  if (amountConversion) amountConversion.style.display = 'none';
+}
+
+async function removeTransaction(id) {
+  const transactionToRemove = transactions.find(t => t.id === id);
+  if (!transactionToRemove) return;
+
+  if (authToken && isOnline && !transactionToRemove.offline) {
+    try {
+      await deleteExpenseAPI(id);
+    } catch (error) {
+      showNotification('Failed to delete from server', 'error');
+      return;
+    }
+  }
+
+  transactions = transactions.filter(t => t.id !== id);
+  updateLocalStorage();
+  displayTransactions();
+  updateValues();
+  showNotification('Transaction deleted', 'success');
+}
+
+// =============================================
+// Display Functions
+// =============================================
+
+function generateID() {
+  return Math.floor(Math.random() * 1000000000);
+}
+
+function getFilteredTransactions() {
+  let filtered = transactions;
+
+  if (currentFilter === 'income') {
+    filtered = filtered.filter(t => t.amount > 0);
+  } else if (currentFilter === 'expense') {
+    filtered = filtered.filter(t => t.amount < 0);
+  }
+
+  if (currentCategoryFilter !== 'all') {
+    filtered = filtered.filter(t => t.category === currentCategoryFilter);
+  }
+
+  if (searchQuery) {
+    filtered = filtered.filter(t => {
+      const searchText = t.text.toLowerCase();
+      const categoryName = categories[t.category]?.name.toLowerCase() || '';
+      return searchText.includes(searchQuery) || categoryName.includes(searchQuery);
+    });
+  }
+
+  if (dateRange.from || dateRange.to) {
+    filtered = filtered.filter(t => {
+      const transactionDate = new Date(t.date);
+      if (dateRange.from && transactionDate < dateRange.from) return false;
+      if (dateRange.to && transactionDate > dateRange.to) return false;
+      return true;
+    });
+  }
+
+  if (amountRange.min !== null || amountRange.max !== null) {
+    filtered = filtered.filter(t => {
+      const absAmount = Math.abs(t.amount);
+      if (amountRange.min !== null && absAmount < amountRange.min) return false;
+      if (amountRange.max !== null && absAmount > amountRange.max) return false;
+      return true;
+    });
+  }
+
+  return filtered;
+}
+
+function displayTransactions() {
+  list.innerHTML = '';
+
+  const filteredTransactions = getFilteredTransactions();
+
+  if (filteredTransactions.length === 0) {
+    list.innerHTML = `
+      <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+        <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+        <p>No transactions found.</p>
+        <small>${authToken ? 'Add your first transaction below.' : 'Login or add transactions as a guest.'}</small>
+      </div>
+    `;
+    return;
+  }
+
+  filteredTransactions
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .forEach(transaction => addTransactionDOM(transaction));
+}
+
+function addTransactionDOM(transaction) {
+  const item = document.createElement("li");
+  item.classList.add(transaction.amount < 0 ? "minus" : "plus");
+
+  const date = new Date(transaction.date || Date.now());
+  const formattedDate = date.toLocaleDateString('en-IN', {
+    day: '2-digit', month: 'short', year: 'numeric'
+  });
+
+  const categoryInfo = categories[transaction.category] || categories.other;
+  const transactionCurrency = transaction.currency || baseCurrency;
+  const showCurrencyBadge = transactionCurrency !== baseCurrency;
+
+  item.innerHTML = `
+    <div class="transaction-content">
+      <div class="transaction-main">
+        <span class="transaction-text">${transaction.text}</span>
+        <span class="transaction-amount">
+          ${formatCurrency(Math.abs(transaction.amount), transactionCurrency)}
+          ${showCurrencyBadge ? `<span class="currency-badge">${transactionCurrency}</span>` : ''}
+        </span>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem;">
+        <span class="transaction-category" style="background-color: ${categoryInfo.color}20; color: ${categoryInfo.color}; border: 1px solid ${categoryInfo.color}40;">
+          ${categoryInfo.name}
+        </span>
+        <div class="transaction-date">${formattedDate}</div>
+      </div>
+      ${showCurrencyBadge ? `<div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">≈ ${formatCurrency(transaction.baseAmount || transaction.amount, baseCurrency)}</div>` : ''}
+    </div>
+    <button class="delete-btn" onclick="removeTransaction('${transaction.id}')">
+      <i class="fas fa-trash"></i>
+    </button>
+  `;
+
+  list.appendChild(item);
+}
+
+function updateValues() {
+  // Calculate totals in base currency
+  let totalIncome = 0;
+  let totalExpense = 0;
+
+  transactions.forEach(t => {
+    const baseAmount = t.baseAmount || Math.abs(t.amount);
+    if (t.amount > 0) {
+      totalIncome += baseAmount;
+    } else {
+      totalExpense += baseAmount;
+    }
+  });
+
+  const total = totalIncome - totalExpense;
+
+  balance.innerHTML = formatCurrency(total, baseCurrency);
+  money_plus.innerHTML = `+${formatCurrency(totalIncome, baseCurrency)}`;
+  money_minus.innerHTML = `-${formatCurrency(totalExpense, baseCurrency)}`;
+
+  // Visual feedback
+  const balanceCard = document.querySelector('.balance-card');
+  if (balanceCard) {
+    balanceCard.classList.remove('positive', 'negative', 'neutral');
+    balanceCard.classList.add(total > 0 ? 'positive' : total < 0 ? 'negative' : 'neutral');
+  }
+}
+
+function updateLocalStorage() {
+  localStorage.setItem('transactions', JSON.stringify(transactions));
+}
+
+// =============================================
+// Event Listeners
+// =============================================
+
+// Navigation
 if (navToggle) {
   navToggle.addEventListener('click', () => {
     navMenu.classList.toggle('active');
@@ -57,55 +641,17 @@ if (navToggle) {
   });
 }
 
-// Navigation Links
-document.querySelectorAll('.nav-link').forEach(link => {
-  link.addEventListener('click', (e) => {
-    e.preventDefault();
-    
-    // Remove active class from all links
-    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-    
-    // Add active class to clicked link
-    link.classList.add('active');
-    
-    // Close mobile menu if open
-    if (navMenu.classList.contains('active')) {
-      navMenu.classList.remove('active');
-      navToggle.classList.remove('active');
-    }
-    
-    // Smooth scroll to section if it exists
-    const targetId = link.getAttribute('href');
-    if (targetId.startsWith('#')) {
-      const targetElement = document.querySelector(targetId);
-      if (targetElement) {
-        targetElement.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        });
-      }
-    }
-  });
-});
-
-// Filter functionality
+// Filter buttons
 filterBtns.forEach(btn => {
   btn.addEventListener('click', () => {
-    // Remove active class from all buttons
     filterBtns.forEach(b => b.classList.remove('active'));
-    
-    // Add active class to clicked button
     btn.classList.add('active');
-    
-    // Set current filter
     currentFilter = btn.getAttribute('data-filter');
-    
-    // Re-render transactions with filter
     displayTransactions();
   });
 });
 
-// Category filter functionality
+// Category filter
 if (categoryFilter) {
   categoryFilter.addEventListener('change', () => {
     currentCategoryFilter = categoryFilter.value;
@@ -113,20 +659,7 @@ if (categoryFilter) {
   });
 }
 
-// Transaction type change handler
-if (type) {
-  type.addEventListener('change', () => {
-    // Auto-set amount sign based on type
-    const amountInput = document.getElementById('amount');
-    if (type.value === 'expense' && amountInput.value > 0) {
-      amountInput.value = -Math.abs(amountInput.value);
-    } else if (type.value === 'income' && amountInput.value < 0) {
-      amountInput.value = Math.abs(amountInput.value);
-    }
-  });
-}
-
-// Search functionality
+// Search
 if (searchInput) {
   searchInput.addEventListener('input', () => {
     searchQuery = searchInput.value.toLowerCase().trim();
@@ -134,7 +667,7 @@ if (searchInput) {
   });
 }
 
-// Date range filters
+// Date filters
 if (dateFrom) {
   dateFrom.addEventListener('change', () => {
     dateRange.from = dateFrom.value ? new Date(dateFrom.value) : null;
@@ -149,7 +682,7 @@ if (dateTo) {
   });
 }
 
-// Amount range filters
+// Amount filters
 if (amountMin) {
   amountMin.addEventListener('input', () => {
     amountRange.min = amountMin.value ? parseFloat(amountMin.value) : null;
@@ -164,53 +697,46 @@ if (amountMax) {
   });
 }
 
-// Clear filters functionality
+// Clear filters
 if (clearFiltersBtn) {
   clearFiltersBtn.addEventListener('click', () => {
-    // Reset all filters
     currentFilter = 'all';
     currentCategoryFilter = 'all';
     searchQuery = '';
     dateRange = { from: null, to: null };
     amountRange = { min: null, max: null };
-    
-    // Reset UI elements
+
     filterBtns.forEach(btn => btn.classList.remove('active'));
-    filterBtns[0].classList.add('active'); // Set 'All' as active
-    
+    filterBtns[0]?.classList.add('active');
+
     if (categoryFilter) categoryFilter.value = 'all';
     if (searchInput) searchInput.value = '';
     if (dateFrom) dateFrom.value = '';
     if (dateTo) dateTo.value = '';
     if (amountMin) amountMin.value = '';
     if (amountMax) amountMax.value = '';
-    
+
     displayTransactions();
-    showNotification('All filters cleared', 'info');
+    showNotification('Filters cleared', 'info');
   });
 }
 
-// Export to CSV functionality
+// Export CSV
 if (exportCsvBtn) {
-  exportCsvBtn.addEventListener('click', () => {
-    exportDataToCSV();
-  });
+  exportCsvBtn.addEventListener('click', exportDataToCSV);
 }
 
-// Export to JSON functionality
+// Export JSON
 if (exportJsonBtn) {
-  exportJsonBtn.addEventListener('click', () => {
-    exportDataToJSON();
-  });
+  exportJsonBtn.addEventListener('click', exportDataToJSON);
 }
 
-// Import file selection
+// Import file
 if (importFileInput) {
   importFileInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file) {
+    if (e.target.files[0]) {
       importDataBtn.disabled = false;
-      importDataBtn.textContent = `Import ${file.name}`;
+      importDataBtn.textContent = `Import ${e.target.files[0].name}`;
     } else {
       importDataBtn.disabled = true;
       importDataBtn.innerHTML = '<i class="fas fa-download"></i> Import Data';
@@ -218,272 +744,229 @@ if (importFileInput) {
   });
 }
 
-// Import data functionality
 if (importDataBtn) {
   importDataBtn.addEventListener('click', () => {
     const file = importFileInput.files[0];
-    if (file) {
-      importDataFromFile(file);
-    }
+    if (file) importDataFromFile(file);
   });
 }
-  
-// Add Transaction
-function addTransaction(e) {
-  e.preventDefault();
-  
-  if (text.value.trim() === '' || amount.value.trim() === '' || !category.value || !type.value) {
-    showNotification('Please fill in all required fields', 'error');
+
+// Form submit
+if (form) {
+  form.addEventListener('submit', addTransaction);
+}
+
+// Online/Offline status
+window.addEventListener('online', async () => {
+  isOnline = true;
+  document.getElementById('offline-indicator').style.display = 'none';
+  showNotification('Back online!', 'success');
+
+  if (authToken) {
+    await syncOfflineTransactions();
+  }
+});
+
+window.addEventListener('offline', () => {
+  isOnline = false;
+  document.getElementById('offline-indicator').style.display = 'flex';
+  showNotification('You are offline', 'warning');
+});
+
+// =============================================
+// Export/Import Functions
+// =============================================
+
+function exportDataToCSV() {
+  if (transactions.length === 0) {
+    showNotification('No data to export', 'warning');
     return;
   }
-  
-  if (isNaN(amount.value) || amount.value === '0') {
-    showNotification('Please enter a valid amount', 'error');
+
+  const headers = ['Date', 'Description', 'Category', 'Type', 'Amount', 'Currency'];
+  const csvContent = [headers.join(',')];
+
+  transactions.forEach(t => {
+    const date = new Date(t.date).toLocaleDateString('en-IN');
+    const categoryName = categories[t.category]?.name.replace(/[^\w\s]/gi, '') || 'Other';
+    const type = t.amount > 0 ? 'Income' : 'Expense';
+    const row = [`"${date}"`, `"${t.text.replace(/"/g, '""')}"`, `"${categoryName}"`, `"${type}"`, Math.abs(t.amount).toFixed(2), t.currency || 'INR'];
+    csvContent.push(row.join(','));
+  });
+
+  const blob = new Blob([csvContent.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `expenseflow-${new Date().toISOString().split('T')[0]}.csv`;
+  link.click();
+
+  showNotification('Exported to CSV', 'success');
+}
+
+function exportDataToJSON() {
+  if (transactions.length === 0) {
+    showNotification('No data to export', 'warning');
     return;
   }
-  
-  let transactionAmount = +amount.value;
-  
-  // Ensure amount sign matches transaction type
-  if (type.value === 'expense' && transactionAmount > 0) {
-    transactionAmount = -transactionAmount;
-  } else if (type.value === 'income' && transactionAmount < 0) {
-    transactionAmount = Math.abs(transactionAmount);
-  }
-  
-  const transaction = {
-    id: generateID(),
-    text: text.value.trim(),
-    amount: transactionAmount,
-    category: category.value,
-    type: type.value,
-    date: new Date().toISOString()
+
+  const exportData = {
+    exportDate: new Date().toISOString(),
+    baseCurrency,
+    totalTransactions: transactions.length,
+    transactions
   };
-  
-  transactions.push(transaction);
-  
-  displayTransactions();
-  updateValues();
-  updateLocalStorage();
-  
-  // Clear form
-  text.value = '';
-  amount.value = '';
-  category.value = '';
-  type.value = '';
-  
-  // Show success notification
-  showNotification(`${type.value.charAt(0).toUpperCase() + type.value.slice(1)} added successfully!`, 'success');
-}
-  
-// Generate Random ID
-function generateID() {
-  return Math.floor(Math.random() * 1000000000);
+
+  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `expenseflow-${new Date().toISOString().split('T')[0]}.json`;
+  link.click();
+
+  showNotification('Exported to JSON', 'success');
 }
 
-// Filter transactions based on current filter
-function getFilteredTransactions() {
-  let filtered = transactions;
-  
-  // Filter by transaction type
-  switch(currentFilter) {
-    case 'income':
-      filtered = filtered.filter(transaction => transaction.amount > 0);
-      break;
-    case 'expense':
-      filtered = filtered.filter(transaction => transaction.amount < 0);
-      break;
-  }
-  
-  // Filter by category
-  if (currentCategoryFilter !== 'all') {
-    filtered = filtered.filter(transaction => transaction.category === currentCategoryFilter);
-  }
-  
-  // Filter by search query
-  if (searchQuery) {
-    filtered = filtered.filter(transaction => {
-      const searchText = transaction.text.toLowerCase();
-      const categoryName = categories[transaction.category]?.name.toLowerCase() || '';
-      return searchText.includes(searchQuery) || categoryName.includes(searchQuery);
-    });
-  }
-  
-  // Filter by date range
-  if (dateRange.from || dateRange.to) {
-    filtered = filtered.filter(transaction => {
-      const transactionDate = new Date(transaction.date);
-      
-      if (dateRange.from && transactionDate < dateRange.from) {
-        return false;
+function importDataFromFile(file) {
+  const reader = new FileReader();
+  const ext = file.name.split('.').pop().toLowerCase();
+
+  reader.onload = (e) => {
+    try {
+      let imported = [];
+
+      if (ext === 'json') {
+        const data = JSON.parse(e.target.result);
+        imported = data.transactions || data;
+      } else if (ext === 'csv') {
+        imported = parseCSV(e.target.result);
+      } else {
+        throw new Error('Unsupported file format');
       }
-      
-      if (dateRange.to && transactionDate > dateRange.to) {
-        return false;
+
+      const valid = imported.filter(t => t.text && typeof t.amount === 'number' && t.date);
+
+      if (valid.length === 0) {
+        showNotification('No valid transactions found', 'error');
+        return;
       }
-      
-      return true;
-    });
-  }
-  
-  // Filter by amount range
-  if (amountRange.min !== null || amountRange.max !== null) {
-    filtered = filtered.filter(transaction => {
-      const absAmount = Math.abs(transaction.amount);
-      
-      if (amountRange.min !== null && absAmount < amountRange.min) {
-        return false;
+
+      valid.forEach(t => {
+        if (!t.id) t.id = generateID();
+        if (!t.category) t.category = 'other';
+        if (!t.type) t.type = t.amount > 0 ? 'income' : 'expense';
+        if (!t.currency) t.currency = 'INR';
+        t.offline = true;
+      });
+
+      if (mergeDataCheckbox?.checked) {
+        transactions.push(...valid);
+      } else {
+        transactions = valid;
       }
-      
-      if (amountRange.max !== null && absAmount > amountRange.max) {
-        return false;
-      }
-      
-      return true;
-    });
-  }
-  
-  return filtered;
+
+      updateLocalStorage();
+      displayTransactions();
+      updateValues();
+
+      importFileInput.value = '';
+      importDataBtn.disabled = true;
+      importDataBtn.innerHTML = '<i class="fas fa-download"></i> Import Data';
+
+      showNotification(`Imported ${valid.length} transactions`, 'success');
+    } catch (error) {
+      showNotification('Import failed: ' + error.message, 'error');
+    }
+  };
+
+  reader.readAsText(file);
 }
 
-// Display transactions with filtering
-function displayTransactions() {
-  list.innerHTML = '';
-  
-  const filteredTransactions = getFilteredTransactions();
-  
-  if (filteredTransactions.length === 0) {
-    const emptyMessage = document.createElement('div');
-    emptyMessage.className = 'empty-state';
-    emptyMessage.innerHTML = `
-      <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
-        <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
-        <p>No ${currentFilter === 'all' ? '' : currentFilter} transactions found.</p>
-        <small>Start by adding your first transaction below.</small>
-      </div>
-    `;
-    list.appendChild(emptyMessage);
-    return;
-  }
-  
-  filteredTransactions
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
-    .forEach(transaction => addTransactionDOM(transaction));
-}
+function parseCSV(csvText) {
+  const lines = csvText.split('\n');
+  const result = [];
 
-// Add single transaction to DOM
-function addTransactionDOM(transaction) {
-  const sign = transaction.amount < 0 ? "-" : "+";
-  const item = document.createElement("li");
-  
-  item.classList.add(transaction.amount < 0 ? "minus" : "plus");
-  
-  const date = new Date(transaction.date || Date.now());
-  const formattedDate = date.toLocaleDateString('en-IN', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric'
-  });
-  
-  const categoryInfo = categories[transaction.category] || categories.other;
-  
-  item.innerHTML = `
-    <div class="transaction-content">
-      <div class="transaction-main">
-        <span class="transaction-text">${transaction.text}</span>
-        <span class="transaction-amount">₹${Math.abs(transaction.amount).toFixed(2)}</span>
-      </div>
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem;">
-        <span class="transaction-category" style="background-color: ${categoryInfo.color}20; color: ${categoryInfo.color}; border: 1px solid ${categoryInfo.color}40;">
-          ${categoryInfo.name}
-        </span>
-        <div class="transaction-date">${formattedDate}</div>
-      </div>
-    </div>
-    <button class="delete-btn" onclick="removeTransaction(${transaction.id})">
-      <i class="fas fa-trash"></i>
-    </button>
-  `;
-  
-  list.appendChild(item);
-}
-// Update the balance, income, and expense displays
-function updateValues() {
-  const amounts = transactions.map(transaction => transaction.amount);
-  
-  const total = amounts.reduce((acc, item) => acc + item, 0);
-  const income = amounts
-    .filter(item => item > 0)
-    .reduce((acc, item) => acc + item, 0);
-  const expense = amounts
-    .filter(item => item < 0)
-    .reduce((acc, item) => acc + item, 0) * -1;
-  
-  // Format numbers with proper currency symbol
-  balance.innerHTML = `₹${total.toFixed(2)}`;
-  money_plus.innerHTML = `+₹${income.toFixed(2)}`;
-  money_minus.innerHTML = `-₹${expense.toFixed(2)}`;
-  
-  // Add visual feedback for balance state
-  const balanceCard = document.querySelector('.balance-card');
-  if (balanceCard) {
-    balanceCard.classList.remove('positive', 'negative', 'neutral');
-    if (total > 0) {
-      balanceCard.classList.add('positive');
-    } else if (total < 0) {
-      balanceCard.classList.add('negative');
-    } else {
-      balanceCard.classList.add('neutral');
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+
+    const values = line.split(',').map(v => v.replace(/^"|"$/g, '').trim());
+    if (values.length >= 5) {
+      result.push({
+        id: generateID(),
+        date: new Date(values[0]).toISOString(),
+        text: values[1],
+        category: values[2].toLowerCase().replace(/[^\w]/g, '') || 'other',
+        type: values[3].toLowerCase(),
+        amount: values[3].toLowerCase() === 'expense' ? -parseFloat(values[4]) : parseFloat(values[4]),
+        currency: values[5] || 'INR'
+      });
     }
   }
+
+  return result;
 }
 
-// Remove Transaction by ID
-function removeTransaction(id) {
-  const transactionToRemove = transactions.find(t => t.id === id);
-  if (!transactionToRemove) return;
-  
-  transactions = transactions.filter(transaction => transaction.id !== id);
-  updateLocalStorage();
-  displayTransactions();
-  updateValues();
-  
-  // Show notification
-  showNotification('Transaction deleted successfully', 'success');
-}
+// =============================================
+// Sync Offline Transactions
+// =============================================
 
-// Update Local Storage Transaction
-function updateLocalStorage() {
-  localStorage.setItem('transactions', JSON.stringify(transactions));
-}
+async function syncOfflineTransactions() {
+  const offline = transactions.filter(t => t.offline);
+  if (offline.length === 0) return;
 
-// Notification System
-function showNotification(message, type = 'info') {
-  // Remove existing notifications
-  const existingNotification = document.querySelector('.notification');
-  if (existingNotification) {
-    existingNotification.remove();
+  let synced = 0;
+
+  for (const t of offline) {
+    try {
+      const expense = {
+        description: t.text,
+        amount: Math.abs(t.amount),
+        category: t.category,
+        type: t.type,
+        currency: t.currency
+      };
+
+      const saved = await saveExpenseAPI(expense);
+      t.id = saved._id;
+      t.offline = false;
+      synced++;
+    } catch (error) {
+      console.error('Sync failed for:', t, error);
+    }
   }
-  
-  // Create notification element
+
+  updateLocalStorage();
+
+  if (synced > 0) {
+    showNotification(`Synced ${synced} transactions`, 'success');
+  }
+}
+
+// =============================================
+// Notification System
+// =============================================
+
+function showNotification(message, type = 'info') {
+  const existing = document.querySelector('.notification');
+  if (existing) existing.remove();
+
   const notification = document.createElement('div');
   notification.className = `notification notification-${type}`;
   notification.innerHTML = `
     <div class="notification-content">
-      <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
+      <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i>
       <span>${message}</span>
     </div>
     <button class="notification-close"><i class="fas fa-times"></i></button>
   `;
-  
-  // Add notification styles
+
   Object.assign(notification.style, {
     position: 'fixed',
     top: '100px',
     right: '20px',
-    background: type === 'success' ? 'rgba(76, 175, 80, 0.9)' : 
-                type === 'error' ? 'rgba(244, 67, 54, 0.9)' : 
-                'rgba(33, 150, 243, 0.9)',
+    background: type === 'success' ? 'rgba(76, 175, 80, 0.9)' :
+      type === 'error' ? 'rgba(244, 67, 54, 0.9)' :
+        type === 'warning' ? 'rgba(255, 152, 0, 0.9)' :
+          'rgba(33, 150, 243, 0.9)',
     color: 'white',
     padding: '1rem 1.5rem',
     borderRadius: '10px',
@@ -497,18 +980,13 @@ function showNotification(message, type = 'info') {
     boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
     animation: 'slideInRight 0.3s ease-out'
   });
-  
-  // Add close button functionality
-  const closeBtn = notification.querySelector('.notification-close');
-  closeBtn.addEventListener('click', () => {
-    notification.style.animation = 'slideOutRight 0.3s ease-out';
-    setTimeout(() => notification.remove(), 300);
+
+  notification.querySelector('.notification-close').addEventListener('click', () => {
+    notification.remove();
   });
-  
-  // Add to document
+
   document.body.appendChild(notification);
-  
-  // Auto remove after 3 seconds
+
   setTimeout(() => {
     if (notification.parentNode) {
       notification.style.animation = 'slideOutRight 0.3s ease-out';
@@ -517,287 +995,21 @@ function showNotification(message, type = 'info') {
   }, 3000);
 }
 
-// Initialize App
-function Init() {
-  displayTransactions();
-  updateValues();
-  
-  // Add some demo data if no transactions exist
-  if (transactions.length === 0) {
-    const demoTransactions = [
-      { id: generateID(), text: 'Salary', amount: 50000, date: new Date().toISOString() },
-      { id: generateID(), text: 'Groceries', amount: -2500, date: new Date(Date.now() - 86400000).toISOString() },
-      { id: generateID(), text: 'Freelance Project', amount: 15000, date: new Date(Date.now() - 172800000).toISOString() },
-      { id: generateID(), text: 'Electricity Bill', amount: -1200, date: new Date(Date.now() - 259200000).toISOString() }
-    ];
-    
-    // Uncomment the next line to add demo data
-    // transactions = demoTransactions;
-    // updateLocalStorage();
-    // displayTransactions();
-    // updateValues();
-  }
-}
-
-// Add CSS animations for notifications
+// Add notification animation styles
 const notificationStyles = document.createElement('style');
 notificationStyles.textContent = `
-  @keyframes slideInRight {
-    from {
-      transform: translateX(100%);
-      opacity: 0;
-    }
-    to {
-      transform: translateX(0);
-      opacity: 1;
-    }
-  }
-  
-  @keyframes slideOutRight {
-    from {
-      transform: translateX(0);
-      opacity: 1;
-    }
-    to {
-      transform: translateX(100%);
-      opacity: 0;
-    }
-  }
-  
-  .notification-content {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    flex: 1;
-  }
-  
-  .notification-close {
-    background: none;
-    border: none;
-    color: white;
-    cursor: pointer;
-    font-size: 1.2rem;
-    padding: 0.25rem;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.2s ease;
-  }
-  
-  .notification-close:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
+  @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  @keyframes slideOutRight { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+  .notification-content { display: flex; align-items: center; gap: 0.75rem; flex: 1; }
+  .notification-close { background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem; padding: 0.25rem; border-radius: 50%; display: flex; }
+  .notification-close:hover { background: rgba(255,255,255,0.2); }
 `;
 document.head.appendChild(notificationStyles);
 
-// Export data to CSV
-function exportDataToCSV() {
-  if (transactions.length === 0) {
-    showNotification('No data to export', 'warning');
-    return;
-  }
+// =============================================
+// PWA Support
+// =============================================
 
-  const headers = ['Date', 'Description', 'Category', 'Type', 'Amount'];
-  const csvContent = [headers.join(',')];
-
-  transactions.forEach(transaction => {
-    const date = new Date(transaction.date).toLocaleDateString('en-IN');
-    const categoryName = categories[transaction.category]?.name.replace(/[^\w\s]/gi, '') || 'Other';
-    const type = transaction.amount > 0 ? 'Income' : 'Expense';
-    const amount = Math.abs(transaction.amount).toFixed(2);
-    
-    const row = [
-      `"${date}"`,
-      `"${transaction.text.replace(/"/g, '""')}"`,
-      `"${categoryName}"`,
-      `"${type}"`,
-      amount
-    ];
-    csvContent.push(row.join(','));
-  });
-
-  const blob = new Blob([csvContent.join('\n')], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement('a');
-  const url = URL.createObjectURL(blob);
-  link.setAttribute('href', url);
-  link.setAttribute('download', `expense-tracker-${new Date().toISOString().split('T')[0]}.csv`);
-  link.style.visibility = 'hidden';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  
-  showNotification('Data exported to CSV successfully', 'success');
-}
-
-// Export data to JSON
-function exportDataToJSON() {
-  if (transactions.length === 0) {
-    showNotification('No data to export', 'warning');
-    return;
-  }
-
-  const exportData = {
-    exportDate: new Date().toISOString(),
-    totalTransactions: transactions.length,
-    transactions: transactions
-  };
-
-  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-  const link = document.createElement('a');
-  const url = URL.createObjectURL(blob);
-  link.setAttribute('href', url);
-  link.setAttribute('download', `expense-tracker-${new Date().toISOString().split('T')[0]}.json`);
-  link.style.visibility = 'hidden';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  
-  showNotification('Data exported to JSON successfully', 'success');
-}
-
-// Import data from file
-function importDataFromFile(file) {
-  const reader = new FileReader();
-  const fileExtension = file.name.split('.').pop().toLowerCase();
-  
-  reader.onload = function(e) {
-    try {
-      let importedTransactions = [];
-      
-      if (fileExtension === 'json') {
-        const data = JSON.parse(e.target.result);
-        importedTransactions = data.transactions || data;
-      } else if (fileExtension === 'csv') {
-        importedTransactions = parseCSV(e.target.result);
-      } else {
-        throw new Error('Unsupported file format');
-      }
-      
-      // Validate imported data
-      const validTransactions = importedTransactions.filter(transaction => {
-        return transaction.text && 
-               typeof transaction.amount === 'number' && 
-               transaction.date;
-      });
-      
-      if (validTransactions.length === 0) {
-        showNotification('No valid transactions found in file', 'error');
-        return;
-      }
-      
-      // Add IDs to transactions that don't have them
-      validTransactions.forEach(transaction => {
-        if (!transaction.id) {
-          transaction.id = generateID();
-        }
-        if (!transaction.category) {
-          transaction.category = 'other';
-        }
-        if (!transaction.type) {
-          transaction.type = transaction.amount > 0 ? 'income' : 'expense';
-        }
-      });
-      
-      // Merge or replace data based on checkbox
-      if (mergeDataCheckbox.checked) {
-        transactions.push(...validTransactions);
-        showNotification(`Successfully imported and merged ${validTransactions.length} transactions`, 'success');
-      } else {
-        transactions = validTransactions;
-        showNotification(`Successfully imported ${validTransactions.length} transactions (existing data replaced)`, 'success');
-      }
-      
-      // Update UI and storage
-      updateLocalStorage();
-      displayTransactions();
-      updateValues();
-      
-      // Reset import controls
-      importFileInput.value = '';
-      importDataBtn.disabled = true;
-      importDataBtn.innerHTML = '<i class="fas fa-download"></i> Import Data';
-      
-    } catch (error) {
-      console.error('Import error:', error);
-      showNotification('Error importing data: ' + error.message, 'error');
-    }
-  };
-  
-  reader.readAsText(file);
-}
-
-// Parse CSV data
-function parseCSV(csvText) {
-  const lines = csvText.split('\n');
-  const headers = lines[0].split(',').map(header => header.replace(/"/g, '').trim().toLowerCase());
-  const transactions = [];
-  
-  for (let i = 1; i < lines.length; i++) {
-    const line = lines[i].trim();
-    if (line) {
-      const values = parseCSVLine(line);
-      if (values.length >= 5) {
-        const transaction = {
-          id: generateID(),
-          date: new Date(values[0]).toISOString(),
-          text: values[1],
-          category: getCategoryFromName(values[2]),
-          type: values[3].toLowerCase(),
-          amount: values[3].toLowerCase() === 'expense' ? -parseFloat(values[4]) : parseFloat(values[4])
-        };
-        
-        if (!isNaN(transaction.amount) && transaction.text) {
-          transactions.push(transaction);
-        }
-      }
-    }
-  }
-  
-  return transactions;
-}
-
-// Parse CSV line (handles quoted values)
-function parseCSVLine(line) {
-  const values = [];
-  let current = '';
-  let inQuotes = false;
-  
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i];
-    
-    if (char === '"') {
-      if (inQuotes && line[i + 1] === '"') {
-        current += '"';
-        i++;
-      } else {
-        inQuotes = !inQuotes;
-      }
-    } else if (char === ',' && !inQuotes) {
-      values.push(current.trim());
-      current = '';
-    } else {
-      current += char;
-    }
-  }
-  
-  values.push(current.trim());
-  return values;
-}
-
-// Get category key from category name
-function getCategoryFromName(categoryName) {
-  const cleanName = categoryName.toLowerCase().replace(/[^\w\s]/gi, '');
-  for (const [key, category] of Object.entries(categories)) {
-    if (category.name.toLowerCase().replace(/[^\w\s]/gi, '').includes(cleanName) || 
-        cleanName.includes(key)) {
-      return key;
-    }
-  }
-  return 'other';
-}
-
-// PWA Installation
 let deferredPrompt;
 const installPrompt = document.getElementById('install-prompt');
 const installButton = document.getElementById('install-button');
@@ -806,62 +1018,38 @@ const offlineIndicator = document.getElementById('offline-indicator');
 const updateNotification = document.getElementById('update-notification');
 const updateButton = document.getElementById('update-button');
 
-// Service Worker Registration
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
-      .then((registration) => {
-        console.log('SW registered: ', registration);
-        
-        // Check for updates
-        registration.addEventListener('updatefound', () => {
-          const newWorker = registration.installing;
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              showUpdateNotification();
-            }
-          });
-        });
-      })
-      .catch((registrationError) => {
-        console.log('SW registration failed: ', registrationError);
-      });
+      .then((reg) => console.log('SW registered:', reg))
+      .catch((err) => console.log('SW registration failed:', err));
   });
 }
 
-// PWA Install Prompt
 window.addEventListener('beforeinstallprompt', (e) => {
-  console.log('beforeinstallprompt fired');
   e.preventDefault();
   deferredPrompt = e;
-  
-  // Show install prompt after a delay
   setTimeout(() => {
-    if (!localStorage.getItem('pwa-install-dismissed')) {
+    if (installPrompt && !localStorage.getItem('pwa-install-dismissed')) {
       installPrompt.style.display = 'block';
     }
-  }, 10000); // Show after 10 seconds
+  }, 10000);
 });
 
-// Install button click
 if (installButton) {
   installButton.addEventListener('click', async () => {
     if (deferredPrompt) {
       deferredPrompt.prompt();
       const result = await deferredPrompt.userChoice;
-      console.log('User choice:', result);
-      
       if (result.outcome === 'accepted') {
-        showNotification('ExpenseFlow installed successfully!', 'success');
+        showNotification('ExpenseFlow installed!', 'success');
       }
-      
       deferredPrompt = null;
       installPrompt.style.display = 'none';
     }
   });
 }
 
-// Dismiss install prompt
 if (installDismiss) {
   installDismiss.addEventListener('click', () => {
     installPrompt.style.display = 'none';
@@ -869,47 +1057,38 @@ if (installDismiss) {
   });
 }
 
-// Online/Offline Status
-window.addEventListener('online', () => {
-  offlineIndicator.style.display = 'none';
-  showNotification('Back online! 🌍', 'success');
-});
-
-window.addEventListener('offline', () => {
-  offlineIndicator.style.display = 'flex';
-  showNotification('You are offline. Changes will be saved locally.', 'warning');
-});
-
-// Update notification
-function showUpdateNotification() {
-  updateNotification.style.display = 'block';
-}
-
-// Update button click
 if (updateButton) {
   updateButton.addEventListener('click', () => {
     if (navigator.serviceWorker.controller) {
       navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
     }
-    
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       window.location.reload();
     });
   });
 }
 
-// Initialize the app
-Init();
+// =============================================
+// Initialization
+// =============================================
 
-// Event Listeners
-form.addEventListener('submit', addTransaction);
+async function Init() {
+  updateAuthUI();
+  await loadExchangeRates();
+  await loadTransactions();
 
-// Add smooth scroll behavior
-document.addEventListener('DOMContentLoaded', function() {
+  // Set default currency in form
+  if (currency) {
+    currency.value = baseCurrency;
+  }
+
   // Add loading animation
   document.body.style.opacity = '0';
   setTimeout(() => {
     document.body.style.transition = 'opacity 0.5s ease-in-out';
     document.body.style.opacity = '1';
   }, 100);
-});
+}
+
+// Start the app
+Init();
