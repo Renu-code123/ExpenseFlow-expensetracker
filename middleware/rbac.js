@@ -47,8 +47,10 @@ const checkRole = (allowedRoles = []) => {
 module.exports = {
     checkRole,
     ROLES: {
+        OWNER: 'owner',
         ADMIN: 'admin',
-        EDITOR: 'editor',
+        MANAGER: 'manager',
+        MEMBER: 'member',
         VIEWER: 'viewer'
     }
 };
