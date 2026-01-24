@@ -72,8 +72,11 @@ const expenseSchema = new mongoose.Schema({
   isPrivate: {
     type: Boolean,
     default: false
+  },
+  syncedToAccounting: {
+    type: Boolean,
+    default: false
   }
-}, {
   timestamps: true
 });
 
