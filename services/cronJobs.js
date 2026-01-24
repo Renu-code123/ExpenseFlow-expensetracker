@@ -2,26 +2,77 @@ const cron = require('node-cron');
 const User = require('../models/User');
 const Expense = require('../models/Expense');
 const emailService = require('../services/emailService');
+const currencyService = require('../services/currencyService');
 
 class CronJobs {
   static init() {
+    // Process recurring expenses - Daily at 6 AM
+    cron.schedule('0 6 * * *', async () => {
+      console.log('[CronJobs] Processing recurring expenses...');
+      await this.processRecurringExpenses();
+    });
+
+    // Send recurring expense reminders - Daily at 9 AM
+    cron.schedule('0 9 * * *', async () => {
+      console.log('[CronJobs] Sending recurring expense reminders...');
+      await this.sendRecurringReminders();
+    });
+
     // Weekly report - Every Sunday at 9 AM
     cron.schedule('0 9 * * 0', async () => {
-      console.log('Sending weekly reports...');
+      console.log('[CronJobs] Sending weekly reports...');
       await this.sendWeeklyReports();
     });
 
     // Monthly report - 1st day of month at 10 AM
     cron.schedule('0 10 1 * *', async () => {
-      console.log('Sending monthly reports...');
+      console.log('[CronJobs] Sending monthly reports...');
       await this.sendMonthlyReports();
     });
 
     // Budget alerts - Daily at 8 PM
     cron.schedule('0 20 * * *', async () => {
-      console.log('Checking budget alerts...');
+      console.log('[CronJobs] Checking budget alerts...');
       await this.checkBudgetAlerts();
     });
+
+    // Update exchange rates - Every 6 hours
+    cron.schedule('0 */6 * * *', async () => {
+      console.log('Updating exchange rates...');
+      await this.updateExchangeRates();
+    });
+
+    console.log('Cron jobs initialized successfully');
+  }
+
+  static async processRecurringExpenses() {
+    console.log('Processing recurring expenses (Placeholder)');
+    // Implementation would go here
+  }
+
+  static async sendRecurringReminders() {
+    console.log('Sending recurring reminders (Placeholder)');
+    // Implementation would go here
+  }
+
+  static async updateExchangeRates() {
+    try {
+      // Update rates for major base currencies
+      const baseCurrencies = ['USD', 'EUR', 'GBP', 'INR'];
+
+      for (const currency of baseCurrencies) {
+        try {
+          await currencyService.updateExchangeRates(currency);
+          console.log(`Updated exchange rates for ${currency}`);
+        } catch (error) {
+          console.error(`Failed to update rates for ${currency}:`, error.message);
+        }
+      }
+
+      console.log('Exchange rates update completed');
+    } catch (error) {
+      console.error('Exchange rates update error:', error);
+    }
   }
 
   static async sendWeeklyReports() {
