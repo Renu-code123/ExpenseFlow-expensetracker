@@ -226,8 +226,8 @@ app.use('/api/ai', require('./routes/ai'));
 app.use('/api/multicurrency', require('./routes/multicurrency'));
 app.use('/api/collaboration', require('./routes/collaboration'));
 app.use('/api/audit-compliance', require('./routes/auditCompliance'));
-app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/fraud-detection', require('./routes/fraudDetection'));
+app.use('/api/integrations', require('./routes/integrations'));
 
 // Root route to serve the UI
 app.get('/', (req, res) => {
