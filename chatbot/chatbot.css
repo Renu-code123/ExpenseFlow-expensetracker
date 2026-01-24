@@ -1,21 +1,73 @@
-<div id="expenseflow-chatbot">
-  <button id="chatbot-toggle" aria-label="Open chatbot">💬</button>
+#expenseflow-chatbot {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+  font-family: system-ui, sans-serif;
+}
 
-  <div id="chatbot-window" class="hidden">
-    <div class="chatbot-header">
-      <span>ExpenseFlow Assistant</span>
-      <button id="chatbot-close">✕</button>
-    </div>
+#chatbot-toggle {
+  background: #4f46e5;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  font-size: 24px;
+  cursor: pointer;
+}
 
-    <div id="chatbot-messages"></div>
+#chatbot-window {
+  position: absolute;
+  bottom: 70px;
+  right: 0;
+  width: 320px;
+  height: 420px;
+  background: #111827;
+  color: #fff;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
 
-    <div class="chatbot-input">
-      <input
-        type="text"
-        id="chatbot-input"
-        placeholder="Ask about expenses, budgets, tips..."
-      />
-      <button id="chatbot-send">Send</button>
-    </div>
-  </div>
-</div>
+.hidden {
+  display: none;
+}
+
+.chatbot-header {
+  padding: 12px;
+  background: #1f2933;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#chatbot-messages {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+  font-size: 14px;
+}
+
+.chatbot-input {
+  display: flex;
+  padding: 8px;
+  gap: 6px;
+}
+
+.chatbot-input input {
+  flex: 1;
+  padding: 6px;
+  border-radius: 6px;
+  border: none;
+}
+
+.chatbot-input button {
+  background: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+}

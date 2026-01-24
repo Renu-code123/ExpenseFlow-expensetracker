@@ -17,6 +17,7 @@ fetch("./chatbot/chatbot.html")
     const messagesEl = document.getElementById("chatbot-messages");
     const inputEl = document.getElementById("chatbot-input");
     const sendBtn = document.getElementById("chatbot-send");
+
     toggleBtn.onclick = () => {
       windowEl.style.display =
         windowEl.style.display === "none" ? "flex" : "none";
