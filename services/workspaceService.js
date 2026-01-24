@@ -49,10 +49,10 @@ class WorkspaceService {
         const workspace = await Workspace.findById(workspaceId);
         if (!workspace) throw new Error('Workspace not found');
 
-        // Only admin can update
+        // Only owner or admin can update
         const member = workspace.members.find(m => m.user.toString() === userId.toString());
-        if (!member || member.role !== 'admin') {
-            throw new Error('Only admins can update workspace settings');
+        if (!member || (member.role !== 'admin' && workspace.owner.toString() !== userId.toString())) {
+            throw new Error('Only owners and admins can update workspace settings');
         }
 
         Object.assign(workspace, data);
@@ -67,10 +67,11 @@ class WorkspaceService {
         const workspace = await Workspace.findById(workspaceId);
         if (!workspace) throw new Error('Workspace not found');
 
-        // Check if requester is admin
+        // Check if requester is owner or admin
         const adminMember = workspace.members.find(m => m.user.toString() === adminId.toString());
-        if (!adminMember || adminMember.role !== 'admin') {
-            throw new Error('Only admins can remove members');
+        const isOwner = workspace.owner.toString() === adminId.toString();
+        if (!isOwner && (!adminMember || adminMember.role !== 'admin')) {
+            throw new Error('Only owners and admins can remove members');
         }
 
         // Cannot remove owner
@@ -91,8 +92,9 @@ class WorkspaceService {
         if (!workspace) throw new Error('Workspace not found');
 
         const adminMember = workspace.members.find(m => m.user.toString() === adminId.toString());
-        if (!adminMember || adminMember.role !== 'admin') {
-            throw new Error('Only admins can change roles');
+        const isOwner = workspace.owner.toString() === adminId.toString();
+        if (!isOwner && (!adminMember || adminMember.role !== 'admin')) {
+            throw new Error('Only owners and admins can change roles');
         }
 
         const member = workspace.members.find(m => m.user.toString() === targetUserId.toString());

@@ -66,6 +66,18 @@ const categories = {
   other: { name: '📋 Other', color: '#A55EEA' }
 };
 
+const formatAppCurrency = (value, { showPlus = false, absolute = false } = {}) => {
+  const formatter = window.i18n?.formatCurrency;
+  const numericValue = Number(absolute ? Math.abs(value) : value) || 0;
+  const formatted = typeof formatter === 'function'
+    ? formatter(numericValue)
+    : (function(){ const sym = window.i18n?.getCurrencySymbol?.(window.i18n?.getCurrency?.() || '') || ''; return `${sym}${numericValue.toFixed(2)}`; })();
+  if (showPlus && numericValue > 0 && !formatted.startsWith('+') && !formatted.startsWith('-')) {
+    return `+${formatted}`;
+  }
+  return formatted;
+};
+
 // ========================
 // API Functions
 // ========================
@@ -291,13 +303,13 @@ function addTransactionDOM(transaction) {
 
   const categoryInfo = categories[transaction.category] || categories.other;
   const date = new Date(transaction.date);
-  const formattedDate = date.toLocaleDateString('en-IN');
+  const formattedDate = date.toLocaleDateString(window.i18n?.getLocale?.() || 'en-US');
 
   item.innerHTML = `
     <div class="transaction-content">
       <div class="transaction-main">
         <span class="transaction-text">${transaction.text}</span>
-        <span class="transaction-amount">₹${Math.abs(transaction.amount).toFixed(2)}</span>
+        <span class="transaction-amount">${formatAppCurrency(transaction.amount, { absolute: true })}</span>
       </div>
       <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
         <span class="transaction-category" style="background-color: ${categoryInfo.color}20; color: ${categoryInfo.color};">
@@ -321,17 +333,17 @@ function updateValues() {
   const income = amounts.filter(item => item > 0).reduce((acc, item) => acc + item, 0);
   const expense = amounts.filter(item => item < 0).reduce((acc, item) => acc + item, 0) * -1;
 
-  if (balance) balance.innerHTML = `₹${total.toFixed(2)}`;
-  if (money_plus) money_plus.innerHTML = `+₹${income.toFixed(2)}`;
-  if (money_minus) money_minus.innerHTML = `-₹${expense.toFixed(2)}`;
+  if (balance) balance.innerHTML = formatAppCurrency(total);
+  if (money_plus) money_plus.innerHTML = formatAppCurrency(income, { showPlus: true });
+  if (money_minus) money_minus.innerHTML = formatAppCurrency(-expense);
 
   // Update quick stats if they exist
   const quickBalance = document.getElementById('quick-balance');
   const quickIncome = document.getElementById('quick-income');
   const quickExpense = document.getElementById('quick-expense');
-  if (quickBalance) quickBalance.textContent = `₹${total.toFixed(2)}`;
-  if (quickIncome) quickIncome.textContent = `₹${income.toFixed(2)}`;
-  if (quickExpense) quickExpense.textContent = `₹${expense.toFixed(2)}`;
+  if (quickBalance) quickBalance.textContent = formatAppCurrency(total);
+  if (quickIncome) quickIncome.textContent = formatAppCurrency(income);
+  if (quickExpense) quickExpense.textContent = formatAppCurrency(expense);
 }
 
 function updateLocalStorage() {
