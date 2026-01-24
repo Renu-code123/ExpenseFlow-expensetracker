@@ -4,9 +4,11 @@ const axios = require('axios');
 const { Notification, NotificationPreferences } = require('../models/Notification');
 const emailService = require('./emailService');
 
+let ioInstance = null;
+
 // Configure web push only if VAPID keys are provided and valid
-if (process.env.VAPID_PUBLIC_KEY && 
-    process.env.VAPID_PRIVATE_KEY && 
+if (process.env.VAPID_PUBLIC_KEY &&
+    process.env.VAPID_PRIVATE_KEY &&
     process.env.VAPID_SUBJECT &&
     process.env.VAPID_PUBLIC_KEY.length > 10) {
   try {
@@ -28,6 +30,10 @@ if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
 }
 
 class NotificationService {
+  // Set the io instance for dependency injection
+  static setIo(io) {
+    ioInstance = io;
+  }
   
   // Send notification through multiple channels
   async sendNotification(userId, notificationData) {
@@ -83,7 +89,7 @@ class NotificationService {
   // Send in-app notification via Socket.IO
   async sendInAppNotification(notification) {
     try {
-      const io = global.io;
+      const io = ioInstance;
       if (io) {
         io.to(`user_${notification.user}`).emit('notification', {
           id: notification._id,
