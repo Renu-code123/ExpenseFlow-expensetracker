@@ -1,4 +1,10 @@
-# TODO: Improve CONTRIBUTING.md and CODE_OF_CONDUCT.md
+# TODO: Feature Implementation Audit and Completion
 
-- [x] Update CONTRIBUTING.md: Correct development setup for Node.js backend and add testing guidelines
-- [x] Update CODE_OF_CONDUCT.md: Add project-specific contact information for reporting violations
+## Tasks
+- [x] Analyze codebase and identify gaps
+- [x] Complete Currency Routes implementation
+- [x] Implement Groups Feature (service, routes, models)
+- [x] Implement Expense Splitting Feature (service, routes, models)
+- [x] Verify End-to-End Integration of all features
+- [x] Update Documentation (README.md, BACKEND.md) to reflect current status
+- [x] Test all implemented features
