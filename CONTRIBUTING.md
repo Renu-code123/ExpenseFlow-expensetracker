@@ -128,10 +128,13 @@ If you need help or have questions:
 - Create a new issue with the "question" label
 - Reach out to the maintainers
 
-## Recognition
+## 🌟 Recognition
 
-All contributors will be recognized in our README. md file.  Thank you for helping make ExpenseFlow better! 
+All contributors will be acknowledged in our README.md file.  
+Thank you for helping improve ExpenseFlow!
+
+⭐ If you like this project, don’t forget to star ⭐ the repository — your support means a lot.
 
 ---
 
-**Happy Contributing!  🎉**
+**Happy Contributing! 🎉**
