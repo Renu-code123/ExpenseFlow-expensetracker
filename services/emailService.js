@@ -13,6 +13,22 @@ class EmailService {
     });
   }
 
+  formatCurrency(amount, user, options = {}) {
+    const currency = user?.preferredCurrency || 'INR';
+    const locale = user?.locale || 'en-US';
+
+    try {
+      return new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency,
+        minimumFractionDigits: options.minimumFractionDigits ?? 2,
+        maximumFractionDigits: options.maximumFractionDigits ?? 2
+      }).format(Number(amount) || 0);
+    } catch (err) {
+      return `${currency} ${Number(amount || 0).toFixed(options.minimumFractionDigits ?? 2)}`;
+    }
+  }
+
   async sendWelcomeEmail(user) {
     const mailOptions = {
       from: process.env.EMAIL_FROM,
@@ -65,6 +81,7 @@ class EmailService {
 
   async sendMonthlyReport(user, reportData) {
     const { totalExpenses, totalIncome, balance, topCategories } = reportData;
+    const format = (value) => this.formatCurrency(value, user);
 
     const mailOptions = {
       from: process.env.EMAIL_FROM,
@@ -79,22 +96,22 @@ class EmailService {
           <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
               <span><strong>Total Income:</strong></span>
-              <span style="color: #28a745;">₹${totalIncome.toFixed(2)}</span>
+              <span style="color: #28a745;">${format(totalIncome)}</span>
             </div>
             <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
               <span><strong>Total Expenses:</strong></span>
-              <span style="color: #dc3545;">₹${totalExpenses.toFixed(2)}</span>
+              <span style="color: #dc3545;">${format(totalExpenses)}</span>
             </div>
             <hr>
             <div style="display: flex; justify-content: space-between;">
               <span><strong>Balance:</strong></span>
-              <span style="color: ${balance >= 0 ? '#28a745' : '#dc3545'};">₹${balance.toFixed(2)}</span>
+              <span style="color: ${balance >= 0 ? '#28a745' : '#dc3545'};">${format(balance)}</span>
             </div>
           </div>
 
           <h3>Top Spending Categories:</h3>
           <ul>
-            ${topCategories.map(cat => `<li>${cat.name}: ₹${cat.amount.toFixed(2)}</li>`).join('')}
+            ${topCategories.map(cat => `<li>${cat.name}: ${format(cat.amount)}</li>`).join('')}
           </ul>
           
           <p>Keep tracking your expenses to maintain financial health!</p>
@@ -107,6 +124,7 @@ class EmailService {
 
   async sendBudgetAlert(user, category, spent, budget) {
     const percentage = (spent / budget) * 100;
+    const format = (value) => this.formatCurrency(value, user);
 
     const mailOptions = {
       from: process.env.EMAIL_FROM,
@@ -123,13 +141,13 @@ class EmailService {
               <strong>Category:</strong> ${category}
             </div>
             <div style="margin-bottom: 10px;">
-              <strong>Spent:</strong> ₹${spent.toFixed(2)}
+              <strong>Spent:</strong> ${format(spent)}
             </div>
             <div style="margin-bottom: 10px;">
-              <strong>Budget:</strong> ₹${budget.toFixed(2)}
+              <strong>Budget:</strong> ${format(budget)}
             </div>
             <div>
-              <strong>Remaining:</strong> ₹${(budget - spent).toFixed(2)}
+              <strong>Remaining:</strong> ${format(budget - spent)}
             </div>
           </div>
           
@@ -143,6 +161,7 @@ class EmailService {
 
   async sendWeeklyReport(user, reportData) {
     const { weeklyExpenses, totalSpent, avgDaily } = reportData;
+    const format = (value) => this.formatCurrency(value, user);
 
     const mailOptions = {
       from: process.env.EMAIL_FROM,
@@ -156,16 +175,16 @@ class EmailService {
           
           <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <div style="margin-bottom: 10px;">
-              <strong>Total Spent:</strong> ₹${totalSpent.toFixed(2)}
+              <strong>Total Spent:</strong> ${format(totalSpent)}
             </div>
             <div>
-              <strong>Daily Average:</strong> ₹${avgDaily.toFixed(2)}
+              <strong>Daily Average:</strong> ${format(avgDaily)}
             </div>
           </div>
 
           <h3>Daily Breakdown:</h3>
           <ul>
-            ${weeklyExpenses.map(day => `<li>${day.date}: ₹${day.amount.toFixed(2)}</li>`).join('')}
+            ${weeklyExpenses.map(day => `<li>${day.date}: ${format(day.amount)}</li>`).join('')}
           </ul>
           
           <p>Stay on track with your financial goals!</p>
@@ -178,7 +197,8 @@ class EmailService {
 
   async sendSubscriptionReminder(user, recurringExpense) {
     const dueDate = new Date(recurringExpense.nextDueDate);
-    const formattedDate = dueDate.toLocaleDateString('en-IN', {
+    const format = (value) => this.formatCurrency(value, user);
+    const formattedDate = dueDate.toLocaleDateString(user?.locale || 'en-US', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
@@ -208,7 +228,7 @@ class EmailService {
             <h3 style="margin: 0 0 15px 0; color: white;">${recurringExpense.description}</h3>
             <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
               <span>Amount:</span>
-              <strong>₹${recurringExpense.amount.toFixed(2)}</strong>
+              <strong>${format(recurringExpense.amount)}</strong>
             </div>
             <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
               <span>Category:</span>

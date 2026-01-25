@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#64ffda">
+  <meta name="description" content="Learn about the goals and purpose of ExpenseFlow - your smart expense tracking companion">
+  <meta name="keywords" content="expense tracker, budget, finance, money management, goals, financial awareness">
+  <meta name="author" content="ExpenseFlow">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <!-- PWA Meta Tags -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ExpenseFlow">
+  <meta name="msapplication-TileColor" content="#0f0f23">
+  <meta name="msapplication-navbutton-color" content="#64ffda">
+
+  <!-- Manifest -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Apple Touch Icons -->
+  <link rel="apple-touch-icon"
+    href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iNDIiIGZpbGw9InVybCgjZ3JhZGllbnQwX2xpbmVhclswXSkiLz4KPHBhdGggZD0iTTQ4IDY0SDQ4LjA0OEgxNDRWMTI4SDk2VjE0NEgxNDRDMTUyLjgzNyAxNDQgMTYwIDEzNi44MzcgMTYwIDEyOFY2NEM1OCA1Ni4xNjMgNTIuMDQzIDQ4IDQ4IEg0OEM0MC4wNzEgNDggMzIgNTYuMDcxIDMyIDY0VjEyOEMzMiAxMzUuOTI5IDQwLjA3MSAxNDQgNDggMTQ0SDgwVjEyOEg0OFY2NFoiIGZpbGw9IiM2NGZmZGEiLz4KPHBhdGggZD0iTTY0IDgwSDgwVjk2SDY0VjgwWiIgZmlsbD0iIzY0ZmZkYSIvPgo8cGF0aCBkPSJNOTYgODBIMTI4Vjk2SDk2VjgwWiIgZmlsbD0iIzY0ZmZkYSIvPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudDBfbGluZWFyWzBdIiB4MT0iMCIgeTE9IjAiIHgyPSIxOTIiIHkyPSIxOTIiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1jb2xvcj0iIzY2N2VlYSIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM3NjRiYTIiLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4K">
+
+  <title>ExpenseFlow - Our Goals & Purpose</title>
+  <link rel="stylesheet" href="expensetracker.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* =========================
+   MOBILE RESPONSIVE STYLES
+   ========================= */
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+      }
+
+      .nav-menu {
+        position: absolute;
+        top: 70px;
+        left: 0;
+        width: 100%;
+        background: #0f0f23;
+        flex-direction: column;
+        align-items: center;
+        display: none;
+      }
+
+      .nav-menu.active {
+        display: flex;
+      }
+
+      .nav-link {
+        padding: 1rem;
+        width: 100%;
+        text-align: center;
+      }
+
+      .nav-toggle {
+        display: block;
+        cursor: pointer;
+      }
+
+      .goals-content {
+        padding: 1rem;
+      }
+
+      .goal-card {
+        margin-bottom: 1.5rem;
+      }
+    }
+
+    .goals-hero {
+      text-align: center;
+      padding: 4rem 2rem 2rem;
+      background: linear-gradient(135deg, rgba(100, 255, 218, 0.1) 0%, rgba(255, 107, 157, 0.1) 100%);
+      margin-top: 80px;
+    }
+
+    .goals-hero h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .goals-hero p {
+      font-size: 1.2rem;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .goals-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .goals-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .goal-card {
+      background: var(--bg-glass);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 2rem;
+      transition: all 0.3s ease;
+    }
+
+    .goal-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-hover);
+      border-color: var(--accent-primary);
+    }
+
+    .goal-card .icon {
+      font-size: 3rem;
+      color: var(--accent-primary);
+      margin-bottom: 1rem;
+    }
+
+    .goal-card h3 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+    }
+
+    .goal-card p {
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .back-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--primary-gradient);
+      color: white;
+      padding: 1rem 2rem;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      margin-top: 2rem;
+    }
+
+    .back-button:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .mission-section {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .mission-section h2 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+    }
+
+    .mission-section p {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      max-width: 800px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header -->
+  <header class="header">
+    <nav class="navbar">
+      <div class="nav-container">
+        <div class="nav-logo">
+          <i class="fas fa-wallet"></i>
+          <span>ExpenseFlow</span>
+        </div>
+        <div class="nav-menu" id="nav-menu">
+          <a href="dashboard.html" class="nav-link">Dashboard</a>
+          <a href="analytics.html" class="nav-link">Analytics</a>
+          <a href="goals.html" class="nav-link active">Goals</a>
+          <a href="settings.html" class="nav-link">Settings</a>
+          <a href="Monthlysummary.html" class="nav-link">Monthly/Yearly Summary</a>
+          <a href="./contributor.html" class="nav-link">Contributors</a>
+        </div>
+        <div class="nav-toggle" id="nav-toggle">
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <section class="goals-hero">
+      <h1><i class="fas fa-bullseye"></i> Our Goals & Purpose</h1>
+      <p>Discover what drives ExpenseFlow and how we're helping users take control of their financial future</p>
+    </section>
+
+    <div class="goals-content">
+      <section class="mission-section">
+        <h2>Our Mission</h2>
+        <p>ExpenseFlow is designed to simplify personal finance management by providing a clean, intuitive, and distraction-free interface. We help users track expenses and income efficiently while gaining better visibility into their spending habits.</p>
+      </section>
+
+      <div class="goals-grid">
+        <div class="goal-card">
+          <div class="icon">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <h3>Financial Awareness</h3>
+          <p>Help users build better financial habits by providing clear insights into their spending patterns and financial health.</p>
+        </div>
+
+        <div class="goal-card">
+          <div class="icon">
+            <i class="fas fa-graduation-cap"></i>
+          </div>
+          <h3>Educational Tool</h3>
+          <p>Serve as a practical tool for students and beginners learning about personal finance management and budgeting.</p>
+        </div>
+
+        <div class="goal-card">
+          <div class="icon">
+            <i class="fas fa-code"></i>
+          </div>
+          <h3>Developer Learning</h3>
+          <p>Provide a beginner-friendly project for developers to understand real-world UI logic, backend integration, and full-stack development.</p>
+        </div>
+
+        <div class="goal-card">
+          <div class="icon">
+            <i class="fas fa-shield-alt"></i>
+          </div>
+          <h3>Security & Privacy</h3>
+          <p>Ensure user data is protected with robust security measures, input sanitization, and privacy-first design principles.</p>
+        </div>
+
+        <div class="goal-card">
+          <div class="icon">
+            <i class="fas fa-mobile-alt"></i>
+          </div>
+          <h3>Accessibility</h3>
+          <p>Make financial management accessible to everyone with a responsive design that works seamlessly across all devices.</p>
+        </div>
+
+        <div class="goal-card">
+          <div class="icon">
+            <i class="fas fa-infinity"></i>
+          </div>
+          <h3>Continuous Innovation</h3>
+          <p>Build a scalable foundation for future enhancements, from AI-powered features to advanced analytics and integrations.</p>
+        </div>
+      </div>
+
+      <div style="text-align: center;">
+        <a href="dashboard.html" class="back-button">
+          <i class="fas fa-arrow-left"></i>
+          Back to Dashboard
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Mobile menu toggle
+    const navToggle = document.getElementById('nav-toggle');
+    const navMenu = document.getElementById('nav-menu');
+
+    navToggle.addEventListener('click', () => {
+      navMenu.classList.toggle('active');
+    });
+
+    // Close mobile menu when clicking a link
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', () => {
+        navMenu.classList.remove('active');
+      });
+    });
+  </script>
+</body>
+
+</html>

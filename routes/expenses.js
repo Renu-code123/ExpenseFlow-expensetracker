@@ -131,18 +131,65 @@ router.post('/', auth, async (req, res) => {
     const expense = new Expense(expenseData);
     await expense.save();
 
+    // Check if expense requires approval
+    const approvalService = require('../services/approvalService');
+    let requiresApproval = false;
+    let workflow = null;
+
+    if (expenseData.workspace) {
+        requiresApproval = await approvalService.requiresApproval(expenseData, expenseData.workspace);
+    }
+
+    if (requiresApproval) {
+        try {
+            workflow = await approvalService.submitForApproval(expense._id, req.user._id);
+            expense.status = 'pending_approval';
+            expense.approvalWorkflow = workflow._id;
+            await expense.save();
+        } catch (approvalError) {
+            console.error('Failed to submit for approval:', approvalError.message);
+            // Continue with normal flow if approval submission fails
+        }
+    }
+
     // Update budget and goal progress using converted amount if available
     const amountForBudget = expenseData.convertedAmount || value.amount;
     if (value.type === 'expense') {
-      await budgetService.checkBudgetAlerts(req.user._id);
+        await budgetService.checkBudgetAlerts(req.user._id);
     }
     await budgetService.updateGoalProgress(req.user._id, value.type === 'expense' ? -amountForBudget : amountForBudget, value.category);
 
     // Emit real-time update to all user's connected devices
     const io = req.app.get('io');
-    io.to(`user_${req.user._id}`).emit('expense_created', expense);
+    
+    // Prepare the expense object with display amounts for socket emission
+    const expenseForSocket = expense.toObject();
+    if (expenseCurrency !== user.preferredCurrency) {
+      expenseForSocket.displayAmount = expenseData.convertedAmount;
+      expenseForSocket.displayCurrency = user.preferredCurrency;
+    } else {
+      expenseForSocket.displayAmount = expense.amount;
+      expenseForSocket.displayCurrency = expenseCurrency;
+    }
+    
+    io.to(`user_${req.user._id}`).emit('expense_created', expenseForSocket);
 
-    res.status(201).json(expense);
+    const response = {
+        ...expense.toObject(),
+        requiresApproval,
+        workflow: workflow ? { _id: workflow._id, status: workflow.status } : null
+    };
+
+    // Add display amounts to response
+    if (expenseCurrency !== user.preferredCurrency) {
+      response.displayAmount = expenseData.convertedAmount;
+      response.displayCurrency = user.preferredCurrency;
+    } else {
+      response.displayAmount = expense.amount;
+      response.displayCurrency = expenseCurrency;
+    }
+
+    res.status(201).json(response);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -198,9 +245,31 @@ router.put('/:id', auth, async (req, res) => {
 
     // Emit real-time update
     const io = req.app.get('io');
-    io.to(`user_${req.user._id}`).emit('expense_updated', expense);
+    
+    // Prepare the expense object with display amounts for socket emission
+    const expenseForSocket = expense.toObject();
+    if (expenseCurrency !== user.preferredCurrency) {
+      expenseForSocket.displayAmount = updateData.convertedAmount || expense.amount;
+      expenseForSocket.displayCurrency = user.preferredCurrency;
+    } else {
+      expenseForSocket.displayAmount = expense.amount;
+      expenseForSocket.displayCurrency = expenseCurrency;
+    }
+    
+    io.to(`user_${req.user._id}`).emit('expense_updated', expenseForSocket);
 
-    res.json(expense);
+    const response = expense.toObject();
+    
+    // Add display amounts to response
+    if (expenseCurrency !== user.preferredCurrency) {
+      response.displayAmount = updateData.convertedAmount || expense.amount;
+      response.displayCurrency = user.preferredCurrency;
+    } else {
+      response.displayAmount = expense.amount;
+      response.displayCurrency = expenseCurrency;
+    }
+
+    res.json(response);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
