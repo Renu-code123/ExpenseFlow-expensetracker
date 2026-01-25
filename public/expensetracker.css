@@ -6517,3 +6517,28 @@ button {
 .toast.error {
   border-left: 4px solid #ff6b6b;
 }
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.password-hint {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: #cfd3ff;
+}
+
+.password-hint ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 6px 0 0;
+}
+
+.password-hint li {
+  margin: 4px 0;
+}
+
+.password-hint li.valid {
+  display: none;
+}
