@@ -42,19 +42,33 @@ if (registerForm) {
         const email = document.getElementById("email").value.trim();
         const password = document.getElementById("password").value.trim();
 
-        function isStrongPassword(password) {
-        return (
-            password.length >= 8 &&
-            /[A-Z]/.test(password) &&
-            /[a-z]/.test(password) &&
-            /[0-9]/.test(password) &&
-            /[^A-Za-z0-9]/.test(password)
-        );
+        function getPasswordErrors(password) {
+        const errors = [];
+
+        if (password.length < 8) {
+            errors.push("at least 8 characters");
+        }
+        if (!/[A-Z]/.test(password)) {
+            errors.push("one uppercase letter");
+        }
+        if (!/[a-z]/.test(password)) {
+            errors.push("one lowercase letter");
+        }
+        if (!/[0-9]/.test(password)) {
+            errors.push("one number");
+        }
+        if (!/[^A-Za-z0-9]/.test(password)) {
+            errors.push("one special character");
         }
 
-        if (!isStrongPassword(password)) {
-        alert(
-            "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character."
+        return errors;
+        }
+
+        const passwordErrors = getPasswordErrors(password);
+
+        if (passwordErrors.length > 0) {
+        showToast(
+            "Password must contain: " + passwordErrors.join(", ")
         );
         return;
         }
@@ -99,3 +113,14 @@ function logout() {
   window.location.href = '/login.html';
 }
 
+function showToast(message) {
+  const toast = document.getElementById("toast");
+  if (!toast) return;
+
+  toast.textContent = message;
+  toast.classList.add("show", "error");
+
+  setTimeout(() => {
+    toast.classList.remove("show", "error");
+  }, 3000);
+}
