@@ -57,7 +57,7 @@ Create a `.env` file in the root directory:
 ```env
 MONGODB_URI=mongodb://localhost:27017/expenseflow
 # Or for cloud MongoDB Atlas:
-# MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/expenseflow
+# MONGODB_URI=mongodb+srv://<username>:<password>@<cluster-url>/<database-name>
 
 JWT_SECRET=your-super-secret-jwt-key
 JWT_EXPIRES_IN=7d

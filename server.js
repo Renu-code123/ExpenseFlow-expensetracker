@@ -33,11 +33,12 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'"],
-      fontSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrcAttr: ["'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:", "https://res.cloudinary.com"],
+      connectSrc: ["'self'", "https://fonts.googleapis.com", "https://fonts.gstatic.com", "https://api.exchangerate-api.com", "https://api.frankfurter.app", "https://res.cloudinary.com"],
+      fontSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com"],
       objectSrc: ["'none'"],
       mediaSrc: ["'self'"],
       frameSrc: ["'none'"]
@@ -46,45 +47,24 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false
 }));
 
-// CORS configuration - Strict origin validation
+// CORS configuration
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-
-    // Define allowed origins with strict validation
     const allowedOrigins = [
       'http://localhost:3000',
       'http://localhost:3001',
       process.env.FRONTEND_URL
     ].filter(Boolean);
 
-    // Additional security: validate origin format
-    try {
-      const url = new URL(origin);
-      // Only allow http/https protocols
-      if (!['http:', 'https:'].includes(url.protocol)) {
-        return callback(new Error('Invalid protocol'));
-      }
-      // Prevent localhost in production
-      if (process.env.NODE_ENV === 'production' && url.hostname === 'localhost') {
-        return callback(new Error('Localhost not allowed in production'));
-      }
-    } catch (error) {
-      return callback(new Error('Invalid origin format'));
-    }
-
-    if (allowedOrigins.includes(origin)) {
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.warn(`CORS blocked request from origin: ${origin}`);
-      callback(new Error('Not allowed by CORS policy'));
+      callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  optionsSuccessStatus: 200 // Some legacy browsers choke on 204
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Rate limiting
@@ -102,12 +82,13 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Static files
+app.use(express.static('public'));
 app.use(express.static('.'));
 
 // Security logging middleware
 app.use((req, res, next) => {
   const originalSend = res.send;
-  res.send = function(data) {
+  res.send = function (data) {
     // Log failed requests
     if (res.statusCode >= 400) {
       securityMonitor.logSecurityEvent(req, 'suspicious_activity', {
@@ -120,12 +101,11 @@ app.use((req, res, next) => {
   next();
 });
 
-// Make io available to the routes
+// Make io available to the  routes
 app.set('io', io);
 
-// Set io instance in notification service
-const notificationService = require('./services/notificationService');
-notificationService.setIo(io);
+// Make io globally available for notifications
+global.io = io;
 
 // Database connection
 mongoose.connect(process.env.MONGODB_URI)
