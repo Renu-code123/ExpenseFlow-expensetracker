@@ -4,7 +4,11 @@ const Expense = require('../models/Expense');
 const emailService = require('../services/emailService');
 const currencyService = require('../services/currencyService');
 const investmentService = require('../services/investmentService');
+const insightService = require('../services/insightService');
+const subscriptionDetector = require('../services/subscriptionDetector');
 const Portfolio = require('../models/Portfolio');
+const FinancialInsight = require('../models/FinancialInsight');
+const Subscription = require('../models/Subscription');
 
 class CronJobs {
   static init() {
@@ -60,6 +64,30 @@ class CronJobs {
     cron.schedule('0 18 * * 1-5', async () => {
       console.log('[CronJobs] Taking portfolio snapshots...');
       await this.takePortfolioSnapshots();
+    });
+
+    // Generate financial insights - Daily at 7 AM
+    cron.schedule('0 7 * * *', async () => {
+      console.log('[CronJobs] Generating financial insights...');
+      await this.generateDailyInsights();
+    });
+
+    // Detect subscriptions - Weekly on Monday at 8 AM
+    cron.schedule('0 8 * * 1', async () => {
+      console.log('[CronJobs] Detecting subscriptions...');
+      await this.detectSubscriptions();
+    });
+
+    // Check subscription renewals - Daily at 10 AM
+    cron.schedule('0 10 * * *', async () => {
+      console.log('[CronJobs] Checking subscription renewals...');
+      await this.checkSubscriptionRenewals();
+    });
+
+    // Cleanup old insights - Weekly on Sunday at 2 AM
+    cron.schedule('0 2 * * 0', async () => {
+      console.log('[CronJobs] Cleaning up old insights...');
+      await this.cleanupOldInsights();
     });
 
     console.log('Cron jobs initialized successfully');
@@ -328,6 +356,96 @@ class CronJobs {
       console.log(`[CronJobs] Portfolio snapshots taken: ${snapshotsTaken}`);
     } catch (error) {
       console.error('[CronJobs] Portfolio snapshot error:', error);
+    }
+  }
+  // Generate daily financial insights for all users
+  static async generateDailyInsights() {
+    try {
+      const users = await User.find({ isActive: true });
+      let insightsGenerated = 0;
+
+      for (const user of users) {
+        try {
+          await insightService.generateInsights(user._id);
+          insightsGenerated++;
+        } catch (error) {
+          console.error(`Failed to generate insights for user ${user._id}:`, error.message);
+        }
+      }
+
+      console.log(`[CronJobs] Insights generated for ${insightsGenerated} users`);
+    } catch (error) {
+      console.error('[CronJobs] Generate insights error:', error);
+    }
+  }
+
+  // Detect subscriptions for all users
+  static async detectSubscriptions() {
+    try {
+      const users = await User.find({ isActive: true });
+      let totalDetected = 0;
+
+      for (const user of users) {
+        try {
+          const detected = await subscriptionDetector.detectSubscriptions(user._id);
+          totalDetected += detected.length;
+        } catch (error) {
+          console.error(`Failed to detect subscriptions for user ${user._id}:`, error.message);
+        }
+      }
+
+      console.log(`[CronJobs] Detected ${totalDetected} subscriptions`);
+    } catch (error) {
+      console.error('[CronJobs] Detect subscriptions error:', error);
+    }
+  }
+
+  // Check and send subscription renewal reminders
+  static async checkSubscriptionRenewals() {
+    try {
+      const users = await User.find({ isActive: true });
+      let remindersSent = 0;
+
+      for (const user of users) {
+        try {
+          const upcoming = await subscriptionDetector.checkUpcomingRenewals(user._id, 3);
+
+          for (const subscription of upcoming) {
+            const daysUntil = subscription.days_until_billing;
+            
+            await emailService.sendEmail({
+              to: user.email,
+              subject: `Subscription Renewal: ${subscription.name}`,
+              html: `<h2>Upcoming Subscription Renewal</h2><p>Your ${subscription.name} subscription will renew in ${daysUntil} day(s).</p>`
+            });
+
+            await subscriptionDetector.markReminderSent(subscription._id);
+            remindersSent++;
+          }
+        } catch (error) {
+          console.error(`Failed to check renewals for user ${user._id}:`, error.message);
+        }
+      }
+
+      console.log(`[CronJobs] Subscription reminders sent: ${remindersSent}`);
+    } catch (error) {
+      console.error('[CronJobs] Subscription renewals error:', error);
+    }
+  }
+
+  // Cleanup insights older than 90 days
+  static async cleanupOldInsights() {
+    try {
+      const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
+      
+      const result = await FinancialInsight.deleteMany({
+        createdAt: { $lt: ninetyDaysAgo },
+        isActioned: false
+      });
+
+      console.log(`[CronJobs] Cleaned up ${result.deletedCount} old insights`);
+    } catch (error) {
+      console.error('[CronJobs] Cleanup insights error:', error);
     }
   }
 }
