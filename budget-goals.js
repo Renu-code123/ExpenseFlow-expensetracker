@@ -65,6 +65,12 @@ class BudgetGoalsManager {
         </div>
 
         <div class="dashboard-content">
+          <div class="monthly-budget-section">
+            <div id="monthly-budget-card" class="budget-card">
+              <!-- Monthly budget content will be populated by JavaScript -->
+            </div>
+          </div>
+
           <div class="budgets-section">
             <h3>📊 Current Budgets</h3>
             <div id="budgets-list" class="items-list"></div>
@@ -202,7 +208,8 @@ class BudgetGoalsManager {
         this.loadGoalsSummary(),
         this.loadBudgets(),
         this.loadGoals(),
-        this.loadBudgetAlerts()
+        this.loadBudgetAlerts(),
+        this.loadMonthlyBudget()
       ]);
     } catch (error) {
       this.showNotification('Failed to load dashboard data', 'error');
@@ -356,6 +363,23 @@ class BudgetGoalsManager {
     }
   }
 
+  // Load monthly budget data
+  async loadMonthlyBudget() {
+    try {
+      const response = await fetch(`${this.apiUrl}/budgets/monthly-limit`, {
+        headers: { 'Authorization': `Bearer ${this.authToken}` }
+      });
+
+      if (!response.ok) throw new Error('Failed to load monthly budget');
+      const monthlyBudget = await response.json();
+
+      this.displayMonthlyBudget(monthlyBudget);
+      this.checkMonthlyBudgetWarnings(monthlyBudget);
+    } catch (error) {
+      console.error('Monthly budget loading error:', error);
+    }
+  }
+
   // Display alerts
   displayAlerts(alerts) {
     const container = document.getElementById('budget-alerts');
@@ -382,6 +406,71 @@ class BudgetGoalsManager {
     });
   }
 
+  // Display monthly budget
+  displayMonthlyBudget(monthlyBudget) {
+    const container = document.getElementById('monthly-budget-card');
+    if (!container) return;
+
+    const { limit, spent, remaining, percentage } = monthlyBudget;
+    const isOverBudget = percentage > 100;
+    const isNearLimit = percentage > 80;
+
+    container.className = `budget-card ${isOverBudget ? 'over-budget' : isNearLimit ? 'near-limit' : ''}`;
+
+    container.innerHTML = `
+      <div class="budget-card-header">
+        <h3>💰 Monthly Budget</h3>
+        <button id="edit-monthly-budget" class="edit-btn">✏️</button>
+      </div>
+      <div class="budget-card-content">
+        <div class="budget-amounts">
+          <div class="amount-item">
+            <span class="label">Limit:</span>
+            <span class="value">${this.formatCurrency(limit)}</span>
+          </div>
+          <div class="amount-item">
+            <span class="label">Spent:</span>
+            <span class="value ${isOverBudget ? 'over-budget-text' : ''}">${this.formatCurrency(spent)}</span>
+          </div>
+          <div class="amount-item">
+            <span class="label">Remaining:</span>
+            <span class="value ${remaining < 0 ? 'negative' : ''}">${this.formatCurrency(Math.max(0, remaining))}</span>
+          </div>
+        </div>
+        <div class="budget-progress">
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${Math.min(percentage, 100)}%"></div>
+          </div>
+          <div class="progress-text">
+            <span>${percentage.toFixed(1)}%</span>
+            ${isOverBudget ? '<span class="warning-text">OVER BUDGET!</span>' : ''}
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Add event listener for edit button
+    document.getElementById('edit-monthly-budget').addEventListener('click', () => this.showMonthlyBudgetModal(monthlyBudget.limit));
+  }
+
+  // Check monthly budget warnings
+  checkMonthlyBudgetWarnings(monthlyBudget) {
+    const { limit, spent, percentage } = monthlyBudget;
+
+    if (limit === 0) {
+      this.showNotification('Set a monthly budget limit to track your spending! 💡', 'info');
+      return;
+    }
+
+    if (percentage > 100) {
+      this.showNotification(`🚨 You've exceeded your monthly budget by ${this.formatCurrency(spent - limit)}!`, 'error');
+    } else if (percentage > 90) {
+      this.showNotification(`⚠️ You're at ${percentage.toFixed(1)}% of your monthly budget limit.`, 'warning');
+    } else if (percentage > 75) {
+      this.showNotification(`📊 You've used ${percentage.toFixed(1)}% of your monthly budget.`, 'info');
+    }
+  }
+
   // Show budget modal
   showBudgetModal() {
     document.getElementById('budget-modal').style.display = 'flex';
@@ -402,6 +491,51 @@ class BudgetGoalsManager {
   hideGoalModal() {
     document.getElementById('goal-modal').style.display = 'none';
     document.getElementById('goal-form').reset();
+  }
+
+  // Show monthly budget modal
+  showMonthlyBudgetModal(currentLimit = 0) {
+    // Create modal if it doesn't exist
+    if (!document.getElementById('monthly-budget-modal')) {
+      this.createMonthlyBudgetModal();
+    }
+
+    document.getElementById('monthly-budget-limit').value = currentLimit;
+    document.getElementById('monthly-budget-modal').style.display = 'flex';
+  }
+
+  // Hide monthly budget modal
+  hideMonthlyBudgetModal() {
+    document.getElementById('monthly-budget-modal').style.display = 'none';
+    document.getElementById('monthly-budget-form').reset();
+  }
+
+  // Create monthly budget modal
+  createMonthlyBudgetModal() {
+    const modalHTML = `
+      <div id="monthly-budget-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+          <h3>💰 Set Monthly Budget Limit</h3>
+          <form id="monthly-budget-form">
+            <div class="form-group">
+              <label for="monthly-budget-limit">Monthly Spending Limit ($)</label>
+              <input type="number" id="monthly-budget-limit" placeholder="Enter monthly limit" min="0" step="0.01" required>
+              <small>Set a monthly spending limit to track your expenses and get warnings when approaching or exceeding the limit.</small>
+            </div>
+            <div class="modal-actions">
+              <button type="submit">Save Limit</button>
+              <button type="button" id="close-monthly-budget-modal">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+    // Add event listeners
+    document.getElementById('close-monthly-budget-modal').addEventListener('click', () => this.hideMonthlyBudgetModal());
+    document.getElementById('monthly-budget-form').addEventListener('submit', (e) => this.handleMonthlyBudgetSubmit(e));
   }
 
   // Handle budget form submission
@@ -476,6 +610,32 @@ class BudgetGoalsManager {
     }
   }
 
+  // Handle monthly budget form submission
+  async handleMonthlyBudgetSubmit(e) {
+    e.preventDefault();
+
+    const limit = parseFloat(document.getElementById('monthly-budget-limit').value);
+
+    try {
+      const response = await fetch(`${this.apiUrl}/budgets/monthly-limit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.authToken}`
+        },
+        body: JSON.stringify({ limit })
+      });
+
+      if (!response.ok) throw new Error('Failed to update monthly budget limit');
+
+      this.showNotification('Monthly budget limit updated successfully! 💰', 'success');
+      this.hideMonthlyBudgetModal();
+      this.loadMonthlyBudget(); // Refresh the monthly budget display
+    } catch (error) {
+      this.showNotification(error.message, 'error');
+    }
+  }
+
   // Add dashboard styles
   addDashboardStyles() {
     const style = document.createElement('style');
@@ -497,6 +657,40 @@ class BudgetGoalsManager {
       .progress-fill { height: 100%; background: linear-gradient(90deg, #4f46e5, #9333ea); border-radius: 8px; }
       .goal-item { background: white; padding: 25px; border-radius: 20px; margin-bottom: 20px; border-left: 8px solid #4f46e5; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
       .goal-item h4 { font-size: 1.25rem; margin-bottom: 10px; color: #1e293b; }
+
+      /* Monthly Budget Card Styles */
+      .budget-card { background: white; padding: 25px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 2px solid #e2e8f0; transition: all 0.3s ease; }
+      .budget-card.over-budget { border-color: #ef4444; background: linear-gradient(135deg, #fef2f2, #ffffff); }
+      .budget-card.near-limit { border-color: #f59e0b; background: linear-gradient(135deg, #fffbeb, #ffffff); }
+      .budget-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+      .budget-card-header h3 { margin: 0; color: #1e293b; font-size: 1.25rem; }
+      .edit-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 5px; border-radius: 5px; transition: background-color 0.2s; }
+      .edit-btn:hover { background-color: #f1f5f9; }
+      .budget-amounts { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+      .amount-item { text-align: center; }
+      .amount-item .label { display: block; color: #64748b; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px; }
+      .amount-item .value { display: block; font-size: 1.4rem; font-weight: 800; color: #0f172a; }
+      .amount-item .value.over-budget-text { color: #ef4444; }
+      .amount-item .value.negative { color: #ef4444; }
+      .budget-progress { margin-top: 20px; }
+      .progress-text { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-weight: 600; }
+      .warning-text { color: #ef4444; font-weight: 800; animation: pulse 2s infinite; }
+      @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+      /* Modal Styles */
+      .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+      .modal-content { background: white; padding: 30px; border-radius: 20px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; }
+      .modal-content h3 { margin-top: 0; color: #1e293b; }
+      .form-group { margin-bottom: 20px; }
+      .form-group label { display: block; margin-bottom: 5px; font-weight: 600; color: #374151; }
+      .form-group input { width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 1rem; }
+      .form-group small { display: block; margin-top: 5px; color: #6b7280; font-size: 0.85rem; }
+      .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+      .modal-actions button { padding: 10px 20px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+      .modal-actions button[type="submit"] { background: #4f46e5; color: white; }
+      .modal-actions button[type="submit"]:hover { background: #4338ca; }
+      .modal-actions button[type="button"] { background: #f3f4f6; color: #374151; }
+      .modal-actions button[type="button"]:hover { background: #e5e7eb; }
     `;
     document.head.appendChild(style);
   }

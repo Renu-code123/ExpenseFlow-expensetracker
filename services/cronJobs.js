@@ -1,6 +1,7 @@
 const cron = require('node-cron');
 const User = require('../models/User');
 const Expense = require('../models/Expense');
+const BankConnection = require('../models/BankConnection');
 const emailService = require('../services/emailService');
 const currencyService = require('../services/currencyService');
 const investmentService = require('../services/investmentService');
