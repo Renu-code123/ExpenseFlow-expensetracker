@@ -1,132 +1,189 @@
 class Dashboard {
     constructor() {
-        this.token = localStorage.getItem('token');
         this.init();
     }
 
     init() {
-        if (!this.token) {
-            window.location.href = 'login.html';
-            return;
-        }
-
-        this.loadDashboardData();
+        this.loadMockData();
         this.setupEventListeners();
+        this.initializeChart();
     }
 
-    async loadDashboardData() {
-        try {
-            await Promise.all([
-                this.loadUserInfo(),
-                this.loadStats(),
-                this.loadRecentTransactions()
-            ]);
-        } catch (error) {
-            console.error('Error loading dashboard:', error);
-        }
+    loadMockData() {
+        // Mock data for demo
+        document.getElementById('total-balance').textContent = '$5,247.83';
+        document.getElementById('month-income').textContent = '$8,500.00';
+        document.getElementById('month-expenses').textContent = '$3,252.17';
+        document.getElementById('savings-rate').textContent = '62%';
+        document.getElementById('user-name').textContent = 'Welcome, John Doe';
+        
+        this.loadMockTransactions();
+        this.loadMockBudgets();
+        this.loadMockGoals();
     }
 
-    async loadUserInfo() {
-        try {
-            const response = await fetch('/api/auth/profile', {
-                headers: { 'Authorization': `Bearer ${this.token}` }
-            });
-            const user = await response.json();
-            document.getElementById('user-name').textContent = `Welcome, ${user.name}`;
-        } catch (error) {
-            console.error('Error loading user info:', error);
-        }
+    loadMockTransactions() {
+        const transactions = [
+            { description: 'Grocery Shopping', amount: -85.50, category: 'food', date: '2024-01-20' },
+            { description: 'Salary Deposit', amount: 3500.00, category: 'income', date: '2024-01-19' },
+            { description: 'Netflix Subscription', amount: -15.99, category: 'entertainment', date: '2024-01-18' },
+            { description: 'Gas Station', amount: -45.20, category: 'transport', date: '2024-01-17' },
+            { description: 'Coffee Shop', amount: -12.75, category: 'food', date: '2024-01-16' }
+        ];
+        
+        const transactionsList = document.getElementById('transactions-list');
+        transactionsList.innerHTML = transactions.map(t => `
+            <div class="transaction-item">
+                <div class="transaction-info">
+                    <strong>${t.description}</strong>
+                    <small>${new Date(t.date).toLocaleDateString()}</small>
+                </div>
+                <div class="transaction-amount ${t.amount > 0 ? 'income' : 'expense'}">
+                    ${t.amount > 0 ? '+' : ''}$${Math.abs(t.amount).toFixed(2)}
+                </div>
+            </div>
+        `).join('');
     }
 
-    async loadStats() {
-        try {
-            const response = await fetch('/api/expenses/stats', {
-                headers: { 'Authorization': `Bearer ${this.token}` }
-            });
-            const stats = await response.json();
-            
-            document.getElementById('total-balance').textContent = `$${stats.totalBalance || 0}`;
-            document.getElementById('month-expenses').textContent = `$${stats.monthExpenses || 0}`;
-            document.getElementById('budget-left').textContent = `$${stats.budgetLeft || 0}`;
-            document.getElementById('transaction-count').textContent = stats.transactionCount || 0;
-        } catch (error) {
-            console.error('Error loading stats:', error);
-        }
+    loadMockBudgets() {
+        const budgets = [
+            { category: 'Food', spent: 285, limit: 400, percentage: 71 },
+            { category: 'Transport', spent: 120, limit: 200, percentage: 60 },
+            { category: 'Entertainment', spent: 95, limit: 150, percentage: 63 }
+        ];
+        
+        const budgetList = document.getElementById('budget-list');
+        budgetList.innerHTML = budgets.map(b => `
+            <div class="budget-item">
+                <div class="budget-info">
+                    <span class="budget-category">${b.category}</span>
+                    <span class="budget-amount">$${b.spent} / $${b.limit}</span>
+                </div>
+                <div class="budget-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${b.percentage}%"></div>
+                    </div>
+                    <span class="progress-text">${b.percentage}%</span>
+                </div>
+            </div>
+        `).join('');
     }
 
-    async loadRecentTransactions() {
-        try {
-            const response = await fetch('/api/expenses?limit=5', {
-                headers: { 'Authorization': `Bearer ${this.token}` }
-            });
-            const data = await response.json();
-            
-            const transactionsList = document.getElementById('transactions-list');
-            transactionsList.innerHTML = '';
-            
-            if (data.data && data.data.length > 0) {
-                data.data.forEach(transaction => {
-                    const item = document.createElement('div');
-                    item.className = 'transaction-item';
-                    item.innerHTML = `
-                        <div>
-                            <strong>${transaction.description}</strong>
-                            <br>
-                            <small>${new Date(transaction.date).toLocaleDateString()}</small>
-                        </div>
-                        <div>
-                            <span class="${transaction.type === 'expense' ? 'expense' : 'income'}">
-                                ${transaction.type === 'expense' ? '-' : '+'}$${transaction.amount}
-                            </span>
-                        </div>
-                    `;
-                    transactionsList.appendChild(item);
-                });
-            } else {
-                transactionsList.innerHTML = '<p>No transactions found</p>';
+    loadMockGoals() {
+        const goals = [
+            { name: 'Emergency Fund', current: 2500, target: 5000, percentage: 50 },
+            { name: 'Vacation', current: 750, target: 2000, percentage: 38 },
+            { name: 'New Laptop', current: 800, target: 1200, percentage: 67 }
+        ];
+        
+        const goalsList = document.getElementById('goals-list');
+        goalsList.innerHTML = goals.map(g => `
+            <div class="goal-item">
+                <div class="goal-info">
+                    <span class="goal-name">${g.name}</span>
+                    <span class="goal-amount">$${g.current} / $${g.target}</span>
+                </div>
+                <div class="goal-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${g.percentage}%"></div>
+                    </div>
+                    <span class="progress-text">${g.percentage}%</span>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    initializeChart() {
+        const ctx = document.getElementById('expense-chart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Jan 15', 'Jan 16', 'Jan 17', 'Jan 18', 'Jan 19', 'Jan 20', 'Jan 21'],
+                datasets: [{
+                    label: 'Daily Expenses',
+                    data: [65, 45, 80, 35, 95, 85, 70],
+                    borderColor: '#4CAF50',
+                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#cccccc'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#cccccc'
+                        }
+                    }
+                }
             }
-        } catch (error) {
-            console.error('Error loading transactions:', error);
-        }
+        });
     }
 
     setupEventListeners() {
-        document.getElementById('logout-btn').addEventListener('click', () => {
-            localStorage.removeItem('token');
-            window.location.href = 'login.html';
-        });
-
+        // Remove logout functionality
+        document.getElementById('logout-btn').style.display = 'none';
+        
+        // Modal controls
         document.getElementById('add-expense-btn').addEventListener('click', () => {
-            window.location.href = 'add-expense.html';
+            this.openTransactionModal('expense');
         });
-
-        document.getElementById('view-budgets-btn').addEventListener('click', () => {
-            window.location.href = 'budgets.html';
+        
+        document.getElementById('add-income-btn').addEventListener('click', () => {
+            this.openTransactionModal('income');
         });
-
+        
+        document.getElementById('modal-close').addEventListener('click', () => {
+            this.closeTransactionModal();
+        });
+        
+        document.getElementById('cancel-btn').addEventListener('click', () => {
+            this.closeTransactionModal();
+        });
+        
+        // Other action buttons
+        document.getElementById('view-analytics-btn').addEventListener('click', () => {
+            alert('Analytics page coming soon!');
+        });
+        
         document.getElementById('export-data-btn').addEventListener('click', () => {
-            this.exportData();
+            alert('Export functionality coming soon!');
         });
     }
 
-    async exportData() {
-        try {
-            const response = await fetch('/api/expenses/export?format=csv', {
-                headers: { 'Authorization': `Bearer ${this.token}` }
-            });
-            
-            if (response.ok) {
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'expenses.csv';
-                a.click();
-                window.URL.revokeObjectURL(url);
-            }
-        } catch (error) {
-            console.error('Error exporting data:', error);
-        }
+    openTransactionModal(type) {
+        const modal = document.getElementById('transaction-modal');
+        const typeSelect = document.getElementById('transaction-type');
+        
+        modal.style.display = 'flex';
+        typeSelect.value = type;
+        
+        document.getElementById('modal-title').textContent = 
+            type === 'expense' ? 'Add Expense' : 'Add Income';
+    }
+
+    closeTransactionModal() {
+        const modal = document.getElementById('transaction-modal');
+        modal.style.display = 'none';
+        document.getElementById('transaction-form').reset();
     }
 }
 
