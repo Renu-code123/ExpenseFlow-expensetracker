@@ -18,7 +18,9 @@
    HELP CENTER – SAFE UI ENHANCEMENTS
    (NO PARENT LAYOUT CHANGES)
 ========================= */
-
+html{
+  scroll-behavior: smooth;
+}
 /* Improve card alignment only */
 .balance-card {
   border-radius: 16px;
@@ -449,10 +451,23 @@
   color: #000; /* pure black */
 }
 
+.back-to-top {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background: #4f46e5;
+  color: white;
+  padding: 12px 14px;
+  border-radius: 50%;
+  text-decoration: none;
+  font-size: 18px;
+}
+
+
   </style>
 </head>
 
-<body>
+<body id="top">
 
 <!-- HEADER -->
 <header class="header">
@@ -655,6 +670,9 @@
     </div>
   </div>
 </footer>
+
+<!-- Back to top button -->
+<a href="#top" class="back-to-top">↑</a>
 
 </body>
 </html>
