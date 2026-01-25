@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings & Profile - ExpenseFlow</title>
+    <link rel="stylesheet" href="settings.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+    <div class="settings-container">
+        <header class="settings-header">
+            <div class="header-left">
+                <a href="dashboard-clean.html" class="back-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+                <h1><i class="fas fa-cog"></i> Settings & Profile</h1>
+            </div>
+        </header>
+
+        <main class="settings-main">
+            <!-- Settings Navigation -->
+            <div class="settings-nav">
+                <button class="nav-item active" data-tab="profile">
+                    <i class="fas fa-user"></i> Profile
+                </button>
+                <button class="nav-item" data-tab="preferences">
+                    <i class="fas fa-sliders-h"></i> Preferences
+                </button>
+                <button class="nav-item" data-tab="security">
+                    <i class="fas fa-shield-alt"></i> Security
+                </button>
+                <button class="nav-item" data-tab="notifications">
+                    <i class="fas fa-bell"></i> Notifications
+                </button>
+                <button class="nav-item" data-tab="data">
+                    <i class="fas fa-database"></i> Data & Privacy
+                </button>
+            </div>
+
+            <!-- Settings Content -->
+            <div class="settings-content">
+                <!-- Profile Tab -->
+                <div id="profile-tab" class="tab-content active">
+                    <div class="profile-section">
+                        <div class="profile-header">
+                            <div class="profile-avatar">
+                                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=120&h=120&fit=crop&crop=face" alt="Profile" id="profile-image">
+                                <button class="avatar-edit-btn" id="change-avatar-btn">
+                                    <i class="fas fa-camera"></i>
+                                </button>
+                            </div>
+                            <div class="profile-info">
+                                <h2 id="profile-name">John Doe</h2>
+                                <p id="profile-email">john.doe@example.com</p>
+                                <span class="profile-badge">Premium Member</span>
+                            </div>
+                        </div>
+
+                        <div class="profile-form">
+                            <div class="form-section">
+                                <h3>Personal Information</h3>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="first-name">First Name</label>
+                                        <input type="text" id="first-name" value="John">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="last-name">Last Name</label>
+                                        <input type="text" id="last-name" value="Doe">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="email">Email Address</label>
+                                    <input type="email" id="email" value="john.doe@example.com">
+                                </div>
+                                <div class="form-group">
+                                    <label for="phone">Phone Number</label>
+                                    <input type="tel" id="phone" value="+1 (555) 123-4567">
+                                </div>
+                                <div class="form-group">
+                                    <label for="bio">Bio</label>
+                                    <textarea id="bio" rows="3" placeholder="Tell us about yourself...">Financial enthusiast focused on smart money management and achieving financial goals.</textarea>
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="button" class="btn-secondary">Cancel</button>
+                                <button type="button" class="btn-primary" id="save-profile-btn">
+                                    <i class="fas fa-save"></i> Save Changes
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preferences Tab -->
+                <div id="preferences-tab" class="tab-content">
+                    <div class="preferences-section">
+                        <div class="form-section">
+                            <h3>Currency & Region</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="currency">Default Currency</label>
+                                    <select id="currency">
+                                        <option value="USD">🇺🇸 USD - US Dollar</option>
+                                        <option value="EUR">🇪🇺 EUR - Euro</option>
+                                        <option value="GBP">🇬🇧 GBP - British Pound</option>
+                                        <option value="INR">🇮🇳 INR - Indian Rupee</option>
+                                        <option value="JPY">🇯🇵 JPY - Japanese Yen</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="timezone">Timezone</label>
+                                    <select id="timezone">
+                                        <option value="UTC-8">Pacific Time (UTC-8)</option>
+                                        <option value="UTC-5">Eastern Time (UTC-5)</option>
+                                        <option value="UTC+0">GMT (UTC+0)</option>
+                                        <option value="UTC+5:30">India Standard Time (UTC+5:30)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="language">Language</label>
+                                <select id="language">
+                                    <option value="en">English</option>
+                                    <option value="es">Español</option>
+                                    <option value="fr">Français</option>
+                                    <option value="de">Deutsch</option>
+                                    <option value="hi">हिन्दी</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>Display Settings</h3>
+                            <div class="toggle-group">
+                                <div class="toggle-item">
+                                    <div class="toggle-info">
+                                        <label>Dark Mode</label>
+                                        <small>Use dark theme for better viewing in low light</small>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="dark-mode" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                <div class="toggle-item">
+                                    <div class="toggle-info">
+                                        <label>Compact View</label>
+                                        <small>Show more information in less space</small>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="compact-view">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                <div class="toggle-item">
+                                    <div class="toggle-info">
+                                        <label>Show Animations</label>
+                                        <small>Enable smooth transitions and animations</small>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="animations" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn-primary" id="save-preferences-btn">
+                                <i class="fas fa-save"></i> Save Preferences
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security Tab -->
+                <div id="security-tab" class="tab-content">
+                    <div class="security-section">
+                        <div class="form-section">
+                            <h3>Password & Authentication</h3>
+                            <div class="form-group">
+                                <label for="current-password">Current Password</label>
+                                <input type="password" id="current-password" placeholder="Enter current password">
+                            </div>
+                            <div class="form-group">
+                                <label for="new-password">New Password</label>
+                                <input type="password" id="new-password" placeholder="Enter new password">
+                            </div>
+                            <div class="form-group">
+                                <label for="confirm-password">Confirm New Password</label>
+                                <input type="password" id="confirm-password" placeholder="Confirm new password">
+                            </div>
+                            <button type="button" class="btn-primary" id="change-password-btn">
+                                <i class="fas fa-key"></i> Change Password
+                            </button>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>Two-Factor Authentication</h3>
+                            <div class="security-item">
+                                <div class="security-info">
+                                    <h4>Authenticator App</h4>
+                                    <p>Use an authenticator app for additional security</p>
+                                    <span class="status-badge enabled">Enabled</span>
+                                </div>
+                                <button class="btn-secondary" id="manage-2fa-btn">Manage</button>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>Login Sessions</h3>
+                            <div class="sessions-list">
+                                <div class="session-item">
+                                    <div class="session-info">
+                                        <h4>Current Session</h4>
+                                        <p>Chrome on Windows • New York, NY</p>
+                                        <small>Active now</small>
+                                    </div>
+                                    <span class="session-badge current">Current</span>
+                                </div>
+                                <div class="session-item">
+                                    <div class="session-info">
+                                        <h4>Mobile App</h4>
+                                        <p>iPhone • New York, NY</p>
+                                        <small>2 hours ago</small>
+                                    </div>
+                                    <button class="btn-danger-sm">Revoke</button>
+                                </div>
+                            </div>
+                            <button type="button" class="btn-danger" id="revoke-all-btn">
+                                <i class="fas fa-sign-out-alt"></i> Sign Out All Devices
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notifications Tab -->
+                <div id="notifications-tab" class="tab-content">
+                    <div class="notifications-section">
+                        <div class="form-section">
+                            <h3>Email Notifications</h3>
+                            <div class="toggle-group">
+                                <div class="toggle-item">
+                                    <div class="toggle-info">
+                                        <label>Budget Alerts</label>
+                                        <small>Get notified when you're close to budget limits</small>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="budget-alerts" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                <div class="toggle-item">
+                                    <div class="toggle-info">
+                                        <label>Weekly Reports</label>
+                                        <small>Receive weekly spending summaries</small>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="weekly-reports" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                <div class="toggle-item">
+                                    <div class="toggle-info">
+                                        <label>Goal Reminders</label>
+                                        <small>Get reminded about your financial goals</small>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="goal-reminders">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>Push Notifications</h3>
+                            <div class="toggle-group">
+                                <div class="toggle-item">
+                                    <div class="toggle-info">
+                                        <label>Transaction Alerts</label>
+                                        <small>Instant notifications for new transactions</small>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="transaction-alerts" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                <div class="toggle-item">
+                                    <div class="toggle-info">
+                                        <label>Security Alerts</label>
+                                        <small>Important security and login notifications</small>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="security-alerts" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn-primary" id="save-notifications-btn">
+                                <i class="fas fa-save"></i> Save Notification Settings
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data & Privacy Tab -->
+                <div id="data-tab" class="tab-content">
+                    <div class="data-section">
+                        <div class="form-section">
+                            <h3>Data Export</h3>
+                            <p>Download a copy of your data in various formats</p>
+                            <div class="export-options">
+                                <button class="btn-secondary" id="export-csv-btn">
+                                    <i class="fas fa-file-csv"></i> Export as CSV
+                                </button>
+                                <button class="btn-secondary" id="export-json-btn">
+                                    <i class="fas fa-file-code"></i> Export as JSON
+                                </button>
+                                <button class="btn-secondary" id="export-pdf-btn">
+                                    <i class="fas fa-file-pdf"></i> Export as PDF Report
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>Privacy Settings</h3>
+                            <div class="toggle-group">
+                                <div class="toggle-item">
+                                    <div class="toggle-info">
+                                        <label>Analytics & Insights</label>
+                                        <small>Allow us to analyze your data to provide better insights</small>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="analytics-consent" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                <div class="toggle-item">
+                                    <div class="toggle-info">
+                                        <label>Marketing Communications</label>
+                                        <small>Receive tips, updates, and promotional content</small>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="marketing-consent">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section danger-zone">
+                            <h3>Danger Zone</h3>
+                            <div class="danger-actions">
+                                <div class="danger-item">
+                                    <div class="danger-info">
+                                        <h4>Delete All Data</h4>
+                                        <p>Permanently delete all your transactions, budgets, and goals</p>
+                                    </div>
+                                    <button class="btn-danger" id="delete-data-btn">Delete Data</button>
+                                </div>
+                                <div class="danger-item">
+                                    <div class="danger-info">
+                                        <h4>Delete Account</h4>
+                                        <p>Permanently delete your account and all associated data</p>
+                                    </div>
+                                    <button class="btn-danger" id="delete-account-btn">Delete Account</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="settings.js"></script>
+</body>
+</html>
