@@ -3,6 +3,7 @@ const User = require('../models/User');
 const Expense = require('../models/Expense');
 const emailService = require('../services/emailService');
 const currencyService = require('../services/currencyService');
+const approvalService = require('../services/approvalService');
 
 class CronJobs {
   static init() {
@@ -40,6 +41,12 @@ class CronJobs {
     cron.schedule('0 */6 * * *', async () => {
       console.log('Updating exchange rates...');
       await this.updateExchangeRates();
+    });
+
+    // Cleanup expired approval requests - Daily at 2 AM
+    cron.schedule('0 2 * * *', async () => {
+      console.log('[CronJobs] Cleaning up expired approval requests...');
+      await this.cleanupExpiredApprovals();
     });
 
     console.log('Cron jobs initialized successfully');
@@ -226,6 +233,15 @@ class CronJobs {
       }
     } catch (error) {
       console.error('Budget alert error:', error);
+    }
+  }
+
+  static async cleanupExpiredApprovals() {
+    try {
+      const cleanedCount = await approvalService.cleanupExpiredRequests();
+      console.log(`Cleaned up ${cleanedCount} expired approval requests`);
+    } catch (error) {
+      console.error('Approval cleanup error:', error);
     }
   }
 }
