@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - ExpenseFlow</title>
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <h1>ExpenseFlow Dashboard</h1>
+            <div class="user-info">
+                <span id="user-name">Welcome, User</span>
+                <button id="logout-btn">Logout</button>
+            </div>
+        </header>
+
+        <main class="dashboard-main">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Balance</h3>
+                    <p class="stat-value" id="total-balance">$0.00</p>
+                </div>
+                <div class="stat-card">
+                    <h3>This Month</h3>
+                    <p class="stat-value" id="month-expenses">$0.00</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Budget Left</h3>
+                    <p class="stat-value" id="budget-left">$0.00</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Transactions</h3>
+                    <p class="stat-value" id="transaction-count">0</p>
+                </div>
+            </div>
+
+            <div class="dashboard-content">
+                <div class="chart-section">
+                    <h2>Spending Overview</h2>
+                    <canvas id="expense-chart"></canvas>
+                </div>
+
+                <div class="recent-transactions">
+                    <h2>Recent Transactions</h2>
+                    <div id="transactions-list">
+                        <!-- Transactions will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="quick-actions">
+                <button class="action-btn" id="add-expense-btn">Add Expense</button>
+                <button class="action-btn" id="view-budgets-btn">View Budgets</button>
+                <button class="action-btn" id="export-data-btn">Export Data</button>
+            </div>
+        </main>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>
