@@ -182,4 +182,59 @@ taxProfileSchema.statics.getDefaultDeductions = function(country = 'IN') {
   return [];
 };
 
-module.exports = mongoose.model('TaxProfile', taxProfileSchema);
+// Method to get tax brackets based on profile settings
+taxProfileSchema.methods.getTaxBrackets = function() {
+  if (this.taxBrackets && this.taxBrackets.length > 0) {
+    return this.taxBrackets;
+  }
+  return TaxProfile.getDefaultBrackets(this.country, this.regime);
+};
+
+// Method to calculate tax bracket for given income
+taxProfileSchema.methods.calculateTaxBracket = function(taxableIncome) {
+  const brackets = this.getTaxBrackets();
+  for (const bracket of brackets) {
+    const max = bracket.maxIncome || Infinity;
+    if (taxableIncome >= bracket.minIncome && taxableIncome <= max) {
+      return {
+        rate: bracket.rate,
+        bracketMin: bracket.minIncome,
+        bracketMax: bracket.maxIncome,
+        fixedAmount: bracket.fixedAmount
+      };
+    }
+  }
+  return brackets[brackets.length - 1];
+};
+
+// Static method to get standard deduction by country and filing status
+taxProfileSchema.statics.getStandardDeduction = function(country, filingStatus, year = 2024) {
+  const deductions = {
+    US: {
+      2024: {
+        individual: 14600,
+        married_jointly: 29200,
+        married_separately: 14600,
+        head_of_household: 21900
+      }
+    },
+    IN: {
+      2024: {
+        individual: 50000,
+        salaried: 50000
+      }
+    },
+    UK: {
+      2024: {
+        individual: 12570 // Personal allowance
+      }
+    }
+  };
+  
+  const countryDeductions = deductions[country]?.[year] || deductions.US[2024];
+  return countryDeductions[filingStatus] || countryDeductions.individual || 0;
+};
+
+const TaxProfile = mongoose.model('TaxProfile', taxProfileSchema);
+
+module.exports = TaxProfile;

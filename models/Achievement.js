@@ -87,5 +87,139 @@ const achievementSchema = new mongoose.Schema({
 achievementSchema.index({ code: 1 });
 achievementSchema.index({ category: 1, isActive: 1 });
 achievementSchema.index({ tier: 1 });
+achievementSchema.index({ 'requirement.type': 1 });
+
+// Get tier color
+achievementSchema.methods.getTierColor = function() {
+  const colors = {
+    bronze: '#CD7F32',
+    silver: '#C0C0C0',
+    gold: '#FFD700',
+    platinum: '#E5E4E2',
+    diamond: '#B9F2FF'
+  };
+  return colors[this.tier] || colors.bronze;
+};
+
+// Static method to get default achievements
+achievementSchema.statics.getDefaultAchievements = function() {
+  return [
+    // Budget achievements
+    {
+      code: 'BUDGET_BEGINNER',
+      name: 'Budget Beginner',
+      description: 'Stay under budget for 7 consecutive days',
+      icon: '📊',
+      category: 'budgeting',
+      tier: 'bronze',
+      points: 50,
+      requirement: { type: 'budget_streak', value: 7, timeframe: 'daily' },
+      rarity: 'common'
+    },
+    {
+      code: 'BUDGET_MASTER',
+      name: 'Budget Master',
+      description: 'Stay under budget for 3 consecutive months',
+      icon: '🏆',
+      category: 'budgeting',
+      tier: 'gold',
+      points: 500,
+      requirement: { type: 'budget_streak', value: 90, timeframe: 'daily' },
+      rarity: 'rare'
+    },
+    // Savings achievements
+    {
+      code: 'FIRST_SAVINGS',
+      name: 'First Savings',
+      description: 'Save your first ₹1,000',
+      icon: '💰',
+      category: 'savings',
+      tier: 'bronze',
+      points: 25,
+      requirement: { type: 'savings_amount', value: 1000 },
+      rarity: 'common'
+    },
+    {
+      code: 'SAVINGS_CHAMPION',
+      name: 'Savings Champion',
+      description: 'Save ₹50,000 total',
+      icon: '🏅',
+      category: 'savings',
+      tier: 'gold',
+      points: 400,
+      requirement: { type: 'savings_amount', value: 50000 },
+      rarity: 'rare'
+    },
+    // Streak achievements
+    {
+      code: 'WEEK_WARRIOR',
+      name: 'Week Warrior',
+      description: 'Log expenses for 7 consecutive days',
+      icon: '⚡',
+      category: 'streaks',
+      tier: 'bronze',
+      points: 50,
+      requirement: { type: 'login_streak', value: 7 },
+      rarity: 'common'
+    },
+    {
+      code: 'MONTH_MASTER',
+      name: 'Month Master',
+      description: 'Log expenses for 30 consecutive days',
+      icon: '🌟',
+      category: 'streaks',
+      tier: 'silver',
+      points: 200,
+      requirement: { type: 'login_streak', value: 30 },
+      rarity: 'uncommon'
+    },
+    // Milestone achievements
+    {
+      code: 'FIRST_EXPENSE',
+      name: 'First Expense',
+      description: 'Log your first expense',
+      icon: '✨',
+      category: 'milestones',
+      tier: 'bronze',
+      points: 10,
+      requirement: { type: 'expense_tracking', value: 1 },
+      rarity: 'common'
+    },
+    {
+      code: 'EXPENSE_EXPERT',
+      name: 'Expense Expert',
+      description: 'Log 1,000 expenses',
+      icon: '📚',
+      category: 'milestones',
+      tier: 'gold',
+      points: 500,
+      requirement: { type: 'expense_tracking', value: 1000 },
+      rarity: 'rare'
+    },
+    // Social achievements
+    {
+      code: 'SOCIAL_BUTTERFLY',
+      name: 'Social Butterfly',
+      description: 'Invite your first friend',
+      icon: '🦋',
+      category: 'social',
+      tier: 'bronze',
+      points: 30,
+      requirement: { type: 'social_engagement', value: 1 },
+      rarity: 'common'
+    },
+    {
+      code: 'CHALLENGE_CHAMPION',
+      name: 'Challenge Champion',
+      description: 'Complete 10 challenges',
+      icon: '🏅',
+      category: 'challenges',
+      tier: 'gold',
+      points: 400,
+      requirement: { type: 'challenge_wins', value: 10 },
+      rarity: 'rare'
+    }
+  ];
+};
 
 module.exports = mongoose.model('Achievement', achievementSchema);

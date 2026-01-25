@@ -3,6 +3,7 @@ const User = require('../models/User');
 const Expense = require('../models/Expense');
 const emailService = require('../services/emailService');
 const currencyService = require('../services/currencyService');
+const taxService = require('../services/taxService');
 const subscriptionService = require('../services/subscriptionService');
 const gamificationService = require('../services/gamificationService');
 const recurringService = require('../services/recurringService');
@@ -69,7 +70,25 @@ class CronJobs {
       await this.updateExchangeRates();
     });
 
-    // Seed default achievements and challenges on startup (run once)
+    // Quarterly tax payment reminders - Check daily at 8 AM
+    cron.schedule('0 8 * * *', async () => {
+      console.log('[CronJobs] Checking quarterly tax reminders...');
+      await this.sendQuarterlyTaxReminders();
+    });
+
+    // Year-end tax reminder - December 1st and 15th at 9 AM
+    cron.schedule('0 9 1,15 12 *', async () => {
+      console.log('[CronJobs] Sending year-end tax reminders...');
+      await this.sendYearEndTaxReminders();
+    });
+
+    // Missing receipt reminders - Weekly on Monday at 10 AM
+    cron.schedule('0 10 * * 1', async () => {
+      console.log('[CronJobs] Sending missing receipt reminders...');
+      await this.sendMissingReceiptReminders();
+    });
+
+    // Seed default achievements and challenges on startup
     this.seedGamificationData();
 
     console.log('Cron jobs initialized successfully');
@@ -311,6 +330,113 @@ class CronJobs {
       }
     } catch (error) {
       console.error('Budget alert error:', error);
+    }
+  }
+
+  static async sendQuarterlyTaxReminders() {
+    try {
+      const TaxProfile = require('../models/TaxProfile');
+      const now = new Date();
+      
+      // Quarterly due dates (US)
+      const quarterlyDueDates = [
+        { quarter: 1, month: 3, day: 15 }, // April 15
+        { quarter: 2, month: 5, day: 15 }, // June 15
+        { quarter: 3, month: 8, day: 15 }, // September 15
+        { quarter: 4, month: 0, day: 15 }  // January 15 (next year)
+      ];
+
+      // Check if we're within 7 days of a due date
+      for (const dueDate of quarterlyDueDates) {
+        const year = dueDate.quarter === 4 ? now.getFullYear() + 1 : now.getFullYear();
+        const due = new Date(year, dueDate.month, dueDate.day);
+        const daysUntilDue = Math.ceil((due - now) / (1000 * 60 * 60 * 24));
+
+        if (daysUntilDue === 7 || daysUntilDue === 1) {
+          // Find users with self-employment income who have tax profiles
+          const profiles = await TaxProfile.find({
+            employmentType: { $in: ['self_employed', 'freelancer', 'business_owner'] },
+            'notifications.quarterlyReminders': true
+          }).populate('user');
+
+          for (const profile of profiles) {
+            try {
+              await taxService.sendQuarterlyReminder(profile.user._id, dueDate.quarter);
+            } catch (e) {
+              console.error(`Failed to send tax reminder to user ${profile.user._id}:`, e);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Quarterly tax reminder error:', error);
+    }
+  }
+
+  static async sendYearEndTaxReminders() {
+    try {
+      const TaxProfile = require('../models/TaxProfile');
+      const notificationService = require('./notificationService');
+
+      const profiles = await TaxProfile.find({
+        'notifications.yearEndReminders': true
+      });
+
+      for (const profile of profiles) {
+        try {
+          const checklist = await taxService.getYearEndChecklist(profile.user);
+          const incompleteItems = checklist.filter(item => !item.completed);
+
+          if (incompleteItems.length > 0) {
+            await notificationService.sendNotification(profile.user, {
+              title: 'Year-End Tax Checklist Reminder',
+              message: `You have ${incompleteItems.length} items to complete before year-end for tax optimization.`,
+              type: 'tax_reminder',
+              priority: 'high',
+              data: { incompleteCount: incompleteItems.length }
+            });
+          }
+        } catch (e) {
+          console.error(`Failed to send year-end reminder to user ${profile.user}:`, e);
+        }
+      }
+    } catch (error) {
+      console.error('Year-end tax reminder error:', error);
+    }
+  }
+
+  static async sendMissingReceiptReminders() {
+    try {
+      const Deduction = require('../models/Deduction');
+      const TaxProfile = require('../models/TaxProfile');
+      const notificationService = require('./notificationService');
+      const taxYear = new Date().getFullYear();
+
+      const profiles = await TaxProfile.find({
+        'notifications.documentReminders': true
+      });
+
+      for (const profile of profiles) {
+        try {
+          const missingDocs = await Deduction.findMissingDocumentation(profile.user, taxYear);
+          
+          if (missingDocs.length > 0) {
+            const totalAmount = missingDocs.reduce((sum, d) => sum + d.amount, 0);
+            
+            await notificationService.sendNotification(profile.user, {
+              title: 'Missing Receipt Reminder',
+              message: `${missingDocs.length} deductions worth $${totalAmount.toLocaleString()} are missing receipts.`,
+              type: 'document_reminder',
+              priority: 'medium',
+              data: { count: missingDocs.length, totalAmount }
+            });
+          }
+        } catch (e) {
+          console.error(`Failed to send receipt reminder to user ${profile.user}:`, e);
+        }
+      }
+    } catch (error) {
+      console.error('Missing receipt reminder error:', error);
     }
   }
 }
