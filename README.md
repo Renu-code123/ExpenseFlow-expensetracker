@@ -10,6 +10,7 @@ The application features a robust Node.js/Express backend with MongoDB database,
 - 🚀 [Live Demo](https://expenseflow-pearl.vercel.app)
 - 📚 [Backend Documentation](BACKEND.md)
 - 🗄️ [Database Documentation](DATABASE.md)
+- 🛡️ [Setup & Security](SETUP_AND_SECURITY.md)
 - ⚙️ [Getting Started](#getting-started)
 - 🐛 [Report a Bug](https://github.com/Renu-code123/ExpenseFlow/issues)
 - ✨ [Request a Feature](https://github.com/Renu-code123/ExpenseFlow/issues)
@@ -25,13 +26,14 @@ The application features a robust Node.js/Express backend with MongoDB database,
 - [📂 Folder Structure](#-folder-structure)  
 - [🚀 How to Run Locally](#-how-to-run-locally)  
 - [📸 Screenshots](#-screenshots)  
-- [🧩 Future Enhancements](#-future-enhancements)  
-- [🎯 Learning Outcomes](#-learning-outcomes)  
-- [🤝 Contributing](#-contributing)  
-- [🧾 License](#-license)  
-- [👩‍💻 Author](#-author)  
-- [💬 Quote](#-quote)  
-- [🌟 Show Some Love](#-show-some-love)   
+   - [🧩 Future Enhancements](#-future-enhancements)  
+   - [🎯 Learning Outcomes](#-learning-outcomes)  
+   - [🤝 Contributing](#-contributing)  
+   - [🧾 License](#-license)  
+   - [👩‍💻 Author](#-author)  
+   - [💬 Quote](#-quote)  
+   - [🌟 Show Some Love](#-show-some-love)   
+   - [🛡️ Setup & Security](SETUP_AND_SECURITY.md)
 
 ---
 
@@ -205,9 +207,8 @@ ExpenseFlow/
 ├── README.md                        # Project documentation
 ├── BACKEND.md                       # Backend documentation
 ├── DATABASE.md                      # Database documentation
-├── TODO.md                          # Development tasks
 ├── CONTRIBUTING.md                  # Contribution guidelines
-├── Code_of_conduct.md               # Code of conduct
+├── CODE_OF_CONDUCT.md               # Code of conduct
 └── LICENSE                          # MIT License
 ```
 
