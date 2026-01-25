@@ -1,157 +1,125 @@
 const mongoose = require('mongoose');
 
-// Schema for storing generated financial insights
 const financialInsightSchema = new mongoose.Schema({
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  // Insight type
-  type: {
-    type: String,
-    required: true,
-    enum: [
-      'forecast',           // Spending forecast
-      'anomaly',            // Unusual transaction
-      'health_score',       // Financial health update
-      'recommendation',     // Savings tip
-      'trend',              // Trend detection
-      'budget_optimization', // Budget suggestion
-      'seasonal',           // Seasonal pattern
-      'category_alert',     // Category overspending
-      'goal_insight',       // Goal-related insight
-      'comparison'          // Peer comparison
-    ]
-  },
-  // Insight title
-  title: {
-    type: String,
-    required: true,
-    maxlength: 200
-  },
-  // Detailed message
-  message: {
-    type: String,
-    required: true,
-    maxlength: 1000
-  },
-  // Priority level (1 = highest)
-  priority: {
-    type: Number,
-    default: 5,
-    min: 1,
-    max: 10
-  },
-  // Severity/impact
-  severity: {
-    type: String,
-    enum: ['info', 'success', 'warning', 'critical'],
-    default: 'info'
-  },
-  // Category if applicable
-  category: {
-    type: String,
-    enum: ['food', 'transport', 'entertainment', 'utilities', 'healthcare', 'shopping', 'other', 'all']
-  },
-  // Associated data
-  data: {
-    // For forecasts
-    predictedAmount: Number,
-    confidence: Number,
-    
-    // For anomalies
-    actualAmount: Number,
-    expectedAmount: Number,
-    deviation: Number,
-    expenseId: mongoose.Schema.Types.ObjectId,
-    
-    // For health score
-    score: Number,
-    previousScore: Number,
-    factors: [{
-      name: String,
-      score: Number,
-      weight: Number,
-      status: String
-    }],
-    
-    // For recommendations
-    potentialSavings: Number,
-    actionItems: [String],
-    
-    // For trends
-    trendDirection: String,
-    trendPercentage: Number,
-    
-    // For budget optimization
-    currentBudget: Number,
-    suggestedBudget: Number,
-    reason: String,
-    
-    // Generic metadata
-    metadata: mongoose.Schema.Types.Mixed
-  },
-  // Whether user has viewed this insight
-  viewed: {
-    type: Boolean,
-    default: false
-  },
-  viewedAt: Date,
-  // Whether user dismissed this insight
-  dismissed: {
-    type: Boolean,
-    default: false
-  },
-  dismissedAt: Date,
-  // Whether user acted on this insight
-  actedUpon: {
-    type: Boolean,
-    default: false
-  },
-  // Insight validity period
-  validUntil: {
-    type: Date
-  },
-  // For recurring insights - prevent duplicates
-  insightHash: {
-    type: String,
-    index: true
-  }
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+        index: true
+    },
+    type: {
+        type: String,
+        enum: [
+            'anomaly',
+            'pattern',
+            'forecast',
+            'recommendation',
+            'health_score',
+            'subscription_alert',
+            'bill_optimization',
+            'peer_comparison'
+        ],
+        required: true
+    },
+    severity: {
+        type: String,
+        enum: ['low', 'medium', 'high', 'critical'],
+        default: 'medium'
+    },
+    title: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    description: {
+        type: String,
+        required: true
+    },
+    category: {
+        type: String,
+        enum: ['food', 'transport', 'entertainment', 'utilities', 'healthcare', 'shopping', 'other'],
+        default: 'other'
+    },
+    confidence: {
+        type: Number,
+        min: 0,
+        max: 1,
+        default: 0.5
+    },
+    amount: {
+        type: Number,
+        default: 0
+    },
+    savings_potential: {
+        type: Number,
+        default: 0
+    },
+    metadata: {
+        transaction_id: mongoose.Schema.Types.ObjectId,
+        merchant: String,
+        pattern_type: String,
+        forecast_period: String,
+        anomaly_score: Number,
+        comparison_data: mongoose.Schema.Types.Mixed,
+        recommendations: [String]
+    },
+    isRead: {
+        type: Boolean,
+        default: false
+    },
+    isActioned: {
+        type: Boolean,
+        default: false
+    },
+    actionTaken: {
+        type: String,
+        trim: true
+    },
+    expiresAt: {
+        type: Date,
+        default: () => new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
+    }
 }, {
-  timestamps: true
+    timestamps: true
 });
 
-// Indexes
+// Indexes for performance
 financialInsightSchema.index({ user: 1, type: 1, createdAt: -1 });
-financialInsightSchema.index({ user: 1, viewed: 1 });
-financialInsightSchema.index({ user: 1, dismissed: 1 });
-financialInsightSchema.index({ validUntil: 1 }, { expireAfterSeconds: 0 });
+financialInsightSchema.index({ user: 1, isRead: 1 });
+financialInsightSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 }); // TTL index
 
-// Static: Get unread insights for user
-financialInsightSchema.statics.getUnread = async function(userId, limit = 10) {
-  return await this.find({
-    user: userId,
-    viewed: false,
-    dismissed: false,
-    $or: [
-      { validUntil: { $gt: new Date() } },
-      { validUntil: null }
-    ]
-  })
-    .sort({ priority: 1, createdAt: -1 })
-    .limit(limit);
+// Mark as read
+financialInsightSchema.methods.markAsRead = function() {
+    this.isRead = true;
+    return this.save();
 };
 
-// Static: Get insights by type
-financialInsightSchema.statics.getByType = async function(userId, type, limit = 20) {
-  return await this.find({
-    user: userId,
-    type,
-    dismissed: false
-  })
-    .sort({ createdAt: -1 })
-    .limit(limit);
+// Mark as actioned
+financialInsightSchema.methods.markAsActioned = function(action) {
+    this.isActioned = true;
+    this.actionTaken = action;
+    return this.save();
+};
+
+// Get unread count for user
+financialInsightSchema.statics.getUnreadCount = function(userId) {
+    return this.countDocuments({ user: userId, isRead: false });
+};
+
+// Get insights by type
+financialInsightSchema.statics.getByType = function(userId, type, limit = 10) {
+    return this.find({ user: userId, type })
+        .sort({ createdAt: -1 })
+        .limit(limit);
+};
+
+// Get critical insights
+financialInsightSchema.statics.getCriticalInsights = function(userId) {
+    return this.find({
+        user: userId,
+        severity: { $in: ['high', 'critical'] },
+        isRead: false
+    }).sort({ severity: -1, createdAt: -1 });
 };
 
 module.exports = mongoose.model('FinancialInsight', financialInsightSchema);
