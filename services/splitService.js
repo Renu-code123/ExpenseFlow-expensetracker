@@ -1,357 +1,412 @@
-const SplitExpense = require('../models/SplitExpense');
-const Settlement = require('../models/Settlement');
+const ExpenseSplit = require('../models/ExpenseSplit');
+const Expense = require('../models/Expense');
 const Group = require('../models/Group');
 const User = require('../models/User');
+const notificationService = require('./notificationService');
 
 class SplitService {
-    /**
-     * Calculate split amounts based on split type
-     * @param {number} totalAmount - Total amount to split
-     * @param {Array} members - Array of member objects
-     * @param {string} splitType - Type of split (equal, exact, percentage, shares)
-     * @param {Object} splitData - Additional split data
-     * @returns {Array} Array of split objects with calculated amounts
-     */
-    calculateSplits(totalAmount, members, splitType, splitData = {}) {
-        const splits = [];
+  /**
+   * Create a new expense split
+   * @param {string} expenseId - Expense ID
+   * @param {string} groupId - Group ID
+   * @param {string} createdBy - User ID who created the split
+   * @param {Object} splitData - Split configuration
+   * @returns {Promise<Object>} Created split
+   */
+  async createSplit(expenseId, groupId, createdBy, splitData) {
+    try {
+      // Verify expense exists and belongs to user
+      const expense = await Expense.findOne({ _id: expenseId, user: createdBy });
+      if (!expense) {
+        throw new Error('Expense not found or access denied');
+      }
 
-        switch (splitType) {
-            case 'equal':
-                const equalAmount = parseFloat((totalAmount / members.length).toFixed(2));
-                let remainder = parseFloat((totalAmount - (equalAmount * members.length)).toFixed(2));
-                
-                members.forEach((member, index) => {
-                    let amount = equalAmount;
-                    // Add remainder to first person to ensure exact total
-                    if (index === 0 && remainder !== 0) {
-                        amount = parseFloat((amount + remainder).toFixed(2));
-                    }
-                    
-                    splits.push({
-                        user: member.user,
-                        name: member.name,
-                        email: member.email,
-                        amount: amount,
-                        paid: false
-                    });
-                });
-                break;
+      // Verify group exists and user is member
+      const group = await Group.findById(groupId);
+      if (!group || !group.isMember(createdBy)) {
+        throw new Error('Group not found or access denied');
+      }
 
-            case 'exact':
-                if (!splitData.amounts || splitData.amounts.length !== members.length) {
-                    throw new Error('Exact amounts required for all members');
-                }
-                
-                const totalExact = splitData.amounts.reduce((sum, amt) => sum + parseFloat(amt), 0);
-                if (Math.abs(totalExact - totalAmount) > 0.01) {
-                    throw new Error('Sum of exact amounts must equal total amount');
-                }
-                
-                members.forEach((member, index) => {
-                    splits.push({
-                        user: member.user,
-                        name: member.name,
-                        email: member.email,
-                        amount: parseFloat(splitData.amounts[index].toFixed(2)),
-                        paid: false
-                    });
-                });
-                break;
+      // Get active group members
+      const activeMembers = group.members.filter(m => m.isActive && m.user.toString() !== createdBy.toString());
+      if (activeMembers.length === 0) {
+        throw new Error('No other active members in the group to split with');
+      }
 
-            case 'percentage':
-                if (!splitData.percentages || splitData.percentages.length !== members.length) {
-                    throw new Error('Percentages required for all members');
-                }
-                
-                const totalPercentage = splitData.percentages.reduce((sum, pct) => sum + pct, 0);
-                if (Math.abs(totalPercentage - 100) > 0.01) {
-                    throw new Error('Percentages must sum to 100');
-                }
-                
-                let remainderPct = totalAmount;
-                members.forEach((member, index) => {
-                    const percentage = splitData.percentages[index];
-                    let amount;
-                    
-                    if (index === members.length - 1) {
-                        // Last person gets remainder to ensure exact total
-                        amount = remainderPct;
-                    } else {
-                        amount = parseFloat(((totalAmount * percentage) / 100).toFixed(2));
-                        remainderPct -= amount;
-                    }
-                    
-                    splits.push({
-                        user: member.user,
-                        name: member.name,
-                        email: member.email,
-                        amount: amount,
-                        percentage: percentage,
-                        paid: false
-                    });
-                });
-                break;
+      // Prepare participants based on split method
+      const participants = [];
 
-            case 'shares':
-                if (!splitData.shares || splitData.shares.length !== members.length) {
-                    throw new Error('Shares required for all members');
-                }
-                
-                const totalShares = splitData.shares.reduce((sum, share) => sum + share, 0);
-                if (totalShares === 0) {
-                    throw new Error('Total shares must be greater than 0');
-                }
-                
-                const amountPerShare = totalAmount / totalShares;
-                let remainderShares = totalAmount;
-                
-                members.forEach((member, index) => {
-                    const shares = splitData.shares[index];
-                    let amount;
-                    
-                    if (index === members.length - 1) {
-                        // Last person gets remainder
-                        amount = remainderShares;
-                    } else {
-                        amount = parseFloat((amountPerShare * shares).toFixed(2));
-                        remainderShares -= amount;
-                    }
-                    
-                    splits.push({
-                        user: member.user,
-                        name: member.name,
-                        email: member.email,
-                        amount: amount,
-                        shares: shares,
-                        paid: false
-                    });
-                });
-                break;
+      if (splitData.splitMethod === 'equal') {
+        // Equal split among all active members including creator
+        const totalParticipants = activeMembers.length + 1; // +1 for creator
+        const equalAmount = expense.amount / totalParticipants;
 
-            default:
-                throw new Error('Invalid split type');
-        }
-
-        return splits;
-    }
-
-    /**
-     * Create a split expense
-     * @param {Object} expenseData - Expense data
-     * @returns {Promise<Object>} Created split expense
-     */
-    async createSplitExpense(expenseData) {
-        const { paidBy, members, totalAmount, splitType, splitData, groupId } = expenseData;
-
-        // Validate group membership if group expense
-        if (groupId) {
-            const group = await Group.findById(groupId);
-            if (!group) {
-                throw new Error('Group not found');
-            }
-            
-            // Ensure all members are in the group
-            const groupMemberIds = group.getActiveMembers().map(m => m.user.toString());
-            const allMembersInGroup = members.every(m => 
-                groupMemberIds.includes(m.user.toString())
-            );
-            
-            if (!allMembersInGroup) {
-                throw new Error('All members must be part of the group');
-            }
-        }
-
-        // Calculate splits
-        const splits = this.calculateSplits(totalAmount, members, splitType, splitData);
-
-        // Mark paidBy user's split as paid
-        const paidBySplit = splits.find(s => s.user.toString() === paidBy.user.toString());
-        if (paidBySplit) {
-            paidBySplit.paid = true;
-            paidBySplit.paidAt = new Date();
-        }
-
-        // Create split expense
-        const splitExpense = new SplitExpense({
-            ...expenseData,
-            splits: splits
+        // Add creator
+        participants.push({
+          user: createdBy,
+          amount: equalAmount,
+          isPaid: true, // Creator has already paid
+          paidAt: new Date()
         });
 
-        await splitExpense.save();
-
-        // Update group total if applicable
-        if (groupId) {
-            await Group.findByIdAndUpdate(groupId, {
-                $inc: { totalExpenses: totalAmount }
-            });
-        }
-
-        return splitExpense;
-    }
-
-    /**
-     * Simplify debts between users (minimize transactions)
-     * @param {Array} balances - Array of balance objects
-     * @returns {Array} Simplified transactions
-     */
-    simplifyDebts(balances) {
-        const creditors = []; // People who are owed money
-        const debtors = [];   // People who owe money
-
-        balances.forEach(balance => {
-            if (balance.amount > 0.01) {
-                creditors.push({ ...balance });
-            } else if (balance.amount < -0.01) {
-                debtors.push({ ...balance, amount: -balance.amount });
-            }
+        // Add other members
+        activeMembers.forEach(member => {
+          participants.push({
+            user: member.user,
+            amount: equalAmount,
+            isPaid: false
+          });
         });
-
-        const transactions = [];
-
-        // Sort by amount (highest first)
-        creditors.sort((a, b) => b.amount - a.amount);
-        debtors.sort((a, b) => b.amount - a.amount);
-
-        let i = 0, j = 0;
-
-        while (i < creditors.length && j < debtors.length) {
-            const creditor = creditors[i];
-            const debtor = debtors[j];
-
-            const amount = Math.min(creditor.amount, debtor.amount);
-
-            if (amount > 0.01) {
-                transactions.push({
-                    from: debtor.userId,
-                    fromName: debtor.name,
-                    to: creditor.userId,
-                    toName: creditor.name,
-                    amount: parseFloat(amount.toFixed(2))
-                });
-            }
-
-            creditor.amount -= amount;
-            debtor.amount -= amount;
-
-            if (creditor.amount < 0.01) i++;
-            if (debtor.amount < 0.01) j++;
+      } else if (splitData.splitMethod === 'custom') {
+        // Custom split with specified amounts
+        if (!splitData.participants || !Array.isArray(splitData.participants)) {
+          throw new Error('Participants array required for custom split');
         }
 
-        return transactions;
+        // Validate participants are group members
+        for (const participant of splitData.participants) {
+          const isMember = group.members.some(m =>
+            m.user.toString() === participant.user.toString() && m.isActive
+          );
+          if (!isMember) {
+            throw new Error('All participants must be active group members');
+          }
+        }
+
+        participants.push(...splitData.participants);
+      }
+
+      // Create the split
+      const split = new ExpenseSplit({
+        expense: expenseId,
+        group: groupId,
+        splitMethod: splitData.splitMethod,
+        participants: participants,
+        totalAmount: expense.amount,
+        currency: expense.currency || 'USD',
+        createdBy: createdBy,
+        notes: splitData.notes
+      });
+
+      await split.save();
+
+      // Populate the result
+      await split.populate([
+        { path: 'expense', select: 'description amount category type date' },
+        { path: 'group', select: 'name' },
+        { path: 'participants.user', select: 'name email' },
+        { path: 'createdBy', select: 'name' }
+      ]);
+
+      // Send notifications to participants
+      await this.notifySplitCreated(split);
+
+      return split;
+    } catch (error) {
+      console.error('Create split error:', error);
+      throw error;
     }
+  }
 
-    /**
-     * Record a settlement between users
-     * @param {Object} settlementData - Settlement data
-     * @returns {Promise<Object>} Created settlement
-     */
-    async recordSettlement(settlementData) {
-        const { paidBy, paidTo, amount, groupId } = settlementData;
+  /**
+   * Mark a participant as paid
+   * @param {string} splitId - Split ID
+   * @param {string} userId - User ID marking payment
+   * @returns {Promise<Object>} Updated split
+   */
+  async markAsPaid(splitId, userId) {
+    try {
+      const split = await ExpenseSplit.findById(splitId);
+      if (!split) {
+        throw new Error('Split not found');
+      }
 
-        // Validate users are different
-        if (paidBy.user.toString() === paidTo.user.toString()) {
-            throw new Error('Cannot settle with yourself');
+      // Verify user is a participant
+      const participant = split.participants.find(p =>
+        p.user.toString() === userId.toString()
+      );
+      if (!participant) {
+        throw new Error('User is not a participant in this split');
+      }
+
+      if (participant.isPaid) {
+        throw new Error('Already marked as paid');
+      }
+
+      // Mark as paid
+      await split.markAsPaid(userId);
+
+      // Populate and return
+      await split.populate([
+        { path: 'expense', select: 'description amount category type date' },
+        { path: 'group', select: 'name' },
+        { path: 'participants.user', select: 'name email' },
+        { path: 'createdBy', select: 'name' }
+      ]);
+
+      // Send notification
+      await this.notifyPaymentReceived(split, userId);
+
+      return split;
+    } catch (error) {
+      console.error('Mark as paid error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get user's pending splits
+   * @param {string} userId - User ID
+   * @returns {Promise<Array>} Array of pending splits
+   */
+  async getUserPendingSplits(userId) {
+    try {
+      return await ExpenseSplit.findUserPendingSplits(userId);
+    } catch (error) {
+      console.error('Get user pending splits error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get splits for an expense
+   * @param {string} expenseId - Expense ID
+   * @param {string} userId - User ID (for authorization)
+   * @returns {Promise<Array>} Array of splits
+   */
+  async getSplitsForExpense(expenseId, userId) {
+    try {
+      // Verify user owns the expense
+      const expense = await Expense.findOne({ _id: expenseId, user: userId });
+      if (!expense) {
+        throw new Error('Expense not found or access denied');
+      }
+
+      return await ExpenseSplit.findByExpense(expenseId);
+    } catch (error) {
+      console.error('Get splits for expense error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get split by ID
+   * @param {string} splitId - Split ID
+   * @param {string} userId - User ID (for authorization)
+   * @returns {Promise<Object>} Split object
+   */
+  async getSplitById(splitId, userId) {
+    try {
+      const split = await ExpenseSplit.findById(splitId)
+        .populate('expense', 'description amount category type date')
+        .populate('group', 'name members')
+        .populate('participants.user', 'name email')
+        .populate('createdBy', 'name');
+
+      if (!split) {
+        throw new Error('Split not found');
+      }
+
+      // Check if user is participant or creator
+      const isParticipant = split.participants.some(p =>
+        p.user._id.toString() === userId.toString()
+      );
+      const isCreator = split.createdBy._id.toString() === userId.toString();
+
+      if (!isParticipant && !isCreator) {
+        throw new Error('Access denied');
+      }
+
+      return split;
+    } catch (error) {
+      console.error('Get split by ID error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Send reminder for unpaid split
+   * @param {string} splitId - Split ID
+   * @param {string} userId - User ID sending reminder
+   * @param {string} participantId - Participant to remind
+   * @returns {Promise<Object>} Updated split
+   */
+  async sendReminder(splitId, userId, participantId) {
+    try {
+      const split = await ExpenseSplit.findById(splitId);
+      if (!split) {
+        throw new Error('Split not found');
+      }
+
+      // Verify sender is creator or participant
+      const isCreator = split.createdBy.toString() === userId.toString();
+      const isParticipant = split.participants.some(p =>
+        p.user.toString() === userId.toString()
+      );
+
+      if (!isCreator && !isParticipant) {
+        throw new Error('Access denied');
+      }
+
+      // Verify target is a participant and not paid
+      const targetParticipant = split.participants.find(p =>
+        p.user.toString() === participantId.toString() && !p.isPaid
+      );
+
+      if (!targetParticipant) {
+        throw new Error('Invalid participant or already paid');
+      }
+
+      // Add reminder record
+      await split.addReminder(participantId, 'email');
+
+      // Send notification
+      await notificationService.sendNotification(participantId, {
+        title: 'Payment Reminder',
+        message: `Reminder: You owe ₹${targetParticipant.amount} for "${split.expense.description}"`,
+        type: 'expense_reminder',
+        priority: 'medium',
+        data: {
+          splitId: split._id,
+          expenseId: split.expense,
+          amount: targetParticipant.amount
         }
+      });
 
-        // Create settlement
-        const settlement = new Settlement(settlementData);
-        await settlement.save();
+      return split;
+    } catch (error) {
+      console.error('Send reminder error:', error);
+      throw error;
+    }
+  }
 
-        // Update group settled amount if applicable
-        if (groupId) {
-            await Group.findByIdAndUpdate(groupId, {
-                $inc: { settledAmount: amount }
+  /**
+   * Get split statistics for user
+   * @param {string} userId - User ID
+   * @returns {Promise<Object>} Statistics object
+   */
+  async getUserSplitStatistics(userId) {
+    try {
+      const splits = await ExpenseSplit.find({
+        $or: [
+          { createdBy: userId },
+          { 'participants.user': userId }
+        ]
+      }).populate('participants.user', 'name');
+
+      const stats = {
+        totalSplits: splits.length,
+        pendingPayments: 0,
+        completedPayments: 0,
+        totalOwed: 0,
+        totalOwedTo: 0,
+        pendingSplits: []
+      };
+
+      splits.forEach(split => {
+        const userParticipant = split.participants.find(p =>
+          p.user._id.toString() === userId.toString()
+        );
+
+        if (userParticipant) {
+          if (userParticipant.isPaid) {
+            stats.completedPayments++;
+          } else {
+            stats.pendingPayments++;
+            stats.totalOwed += userParticipant.amount;
+            stats.pendingSplits.push({
+              splitId: split._id,
+              expense: split.expense.description,
+              amount: userParticipant.amount,
+              group: split.group.name
             });
+          }
         }
 
-        // Mark related split expenses as paid
-        if (settlementData.relatedExpenses && settlementData.relatedExpenses.length > 0) {
-            for (const expenseId of settlementData.relatedExpenses) {
-                const expense = await SplitExpense.findById(expenseId);
-                if (expense) {
-                    await expense.markSplitPaid(paidBy.user);
-                }
+        // Calculate amount owed to user (if creator)
+        if (split.createdBy.toString() === userId.toString()) {
+          const unpaidAmount = split.participants
+            .filter(p => !p.isPaid && p.user.toString() !== userId.toString())
+            .reduce((sum, p) => sum + p.amount, 0);
+          stats.totalOwedTo += unpaidAmount;
+        }
+      });
+
+      return stats;
+    } catch (error) {
+      console.error('Get user split statistics error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Notify participants when split is created
+   * @param {Object} split - Split object
+   */
+  async notifySplitCreated(split) {
+    try {
+      const unpaidParticipants = split.participants.filter(p => !p.isPaid);
+
+      for (const participant of unpaidParticipants) {
+        await notificationService.sendNotification(participant.user._id || participant.user, {
+          title: 'New Expense Split',
+          message: `You owe ₹${participant.amount} for "${split.expense.description}"`,
+          type: 'expense_split',
+          priority: 'medium',
+          data: {
+            splitId: split._id,
+            expenseId: split.expense._id || split.expense,
+            amount: participant.amount
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Notify split created error:', error);
+    }
+  }
+
+  /**
+   * Notify when payment is received
+   * @param {Object} split - Split object
+   * @param {string} paidBy - User who paid
+   */
+  async notifyPaymentReceived(split, paidBy) {
+    try {
+      // Notify the creator
+      if (split.createdBy._id.toString() !== paidBy.toString()) {
+        await notificationService.sendNotification(split.createdBy, {
+          title: 'Payment Received',
+          message: `Payment received for "${split.expense.description}"`,
+          type: 'payment_received',
+          priority: 'low',
+          data: {
+            splitId: split._id,
+            expenseId: split.expense._id || split.expense,
+            paidBy: paidBy
+          }
+        });
+      }
+
+      // Check if split is now complete
+      if (split.status === 'completed') {
+        // Notify all participants that split is complete
+        for (const participant of split.participants) {
+          await notificationService.sendNotification(participant.user._id || participant.user, {
+            title: 'Split Completed',
+            message: `All payments received for "${split.expense.description}"`,
+            type: 'split_completed',
+            priority: 'low',
+            data: {
+              splitId: split._id,
+              expenseId: split.expense._id || split.expense
             }
+          });
         }
-
-        return settlement;
+      }
+    } catch (error) {
+      console.error('Notify payment received error:', error);
     }
-
-    /**
-     * Get balance summary for a user
-     * @param {string} userId - User ID
-     * @param {string} groupId - Optional group ID
-     * @returns {Promise<Object>} Balance summary
-     */
-    async getBalanceSummary(userId, groupId = null) {
-        let balances;
-
-        if (groupId) {
-            balances = await SplitExpense.getGroupBalances(groupId);
-            // Filter balances involving the user
-            balances = balances.filter(b => 
-                b.from.toString() === userId.toString() || 
-                b.to.toString() === userId.toString()
-            );
-        } else {
-            balances = await SplitExpense.calculateUserBalance(userId);
-        }
-
-        const settlements = await Settlement.getSettlementSummary(userId, groupId);
-
-        return {
-            balances: balances,
-            settlements: settlements,
-            simplifiedDebts: this.simplifyDebts(balances)
-        };
-    }
-
-    /**
-     * Get user's split expenses
-     * @param {string} userId - User ID
-     * @param {Object} options - Query options
-     * @returns {Promise<Array>} Array of split expenses
-     */
-    async getUserSplitExpenses(userId, options = {}) {
-        const query = {
-            $or: [
-                { 'paidBy.user': userId },
-                { 'splits.user': userId }
-            ]
-        };
-
-        if (options.groupId) {
-            query.group = options.groupId;
-        }
-
-        if (options.isSettled !== undefined) {
-            query.isSettled = options.isSettled;
-        }
-
-        return await SplitExpense.find(query)
-            .populate('group', 'name icon')
-            .sort({ date: -1 })
-            .limit(options.limit || 50);
-    }
-
-    /**
-     * Get group expenses
-     * @param {string} groupId - Group ID
-     * @param {Object} options - Query options
-     * @returns {Promise<Array>} Array of split expenses
-     */
-    async getGroupExpenses(groupId, options = {}) {
-        const query = { group: groupId };
-
-        if (options.isSettled !== undefined) {
-            query.isSettled = options.isSettled;
-        }
-
-        return await SplitExpense.find(query)
-            .populate('paidBy.user splits.user', 'name email')
-            .sort({ date: -1 })
-            .limit(options.limit || 100);
-    }
+  }
 }
 
 module.exports = new SplitService();

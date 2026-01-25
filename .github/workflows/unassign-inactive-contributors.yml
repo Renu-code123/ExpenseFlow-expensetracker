@@ -65,9 +65,9 @@ jobs:
                   issue_number: issue.number,
                   body: `⚠️ **Inactivity Warning**
 
-                ${assigneesMention}, this issue has been inactive for **15 hours**.
+                  ${assigneesMention}, this issue has been inactive for **15 hours**.
 
-                Please provide an update within the next **15 hours**, or you may be **automatically unassigned**.`
+                  Please provide an update within the next **15 hours**, or you may be **automatically unassigned**.`
                 });
 
                 console.log(`Warning sent for issue #${issue.number}`);
@@ -91,8 +91,8 @@ jobs:
                   issue_number: issue.number,
                   body: `ℹ️ **Unassigned due to inactivity**
 
-You have been automatically unassigned after **30 hours of inactivity**.  
-Feel free to reassign yourself if you wish to continue working on this issue.`
+                  You have been automatically unassigned after **30 hours of inactivity**.  
+                  Feel free to reassign yourself if you wish to continue working on this issue.`
                 });
 
                 console.log(`Unassigned contributors from issue #${issue.number}`);
