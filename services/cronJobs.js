@@ -1,6 +1,7 @@
 const cron = require('node-cron');
 const User = require('../models/User');
 const Expense = require('../models/Expense');
+const BankConnection = require('../models/BankConnection');
 const emailService = require('../services/emailService');
 const currencyService = require('../services/currencyService');
 const taxService = require('../services/taxService');
@@ -70,26 +71,28 @@ class CronJobs {
       await this.updateExchangeRates();
     });
 
-    // Quarterly tax payment reminders - Check daily at 8 AM
-    cron.schedule('0 8 * * *', async () => {
-      console.log('[CronJobs] Checking quarterly tax reminders...');
-      await this.sendQuarterlyTaxReminders();
+    // Sync bank transactions - Every 4 hours for daily sync, every 15 min for realtime
+    cron.schedule('0 */4 * * *', async () => {
+      console.log('[CronJobs] Syncing bank transactions (daily)...');
+      await this.syncBankTransactions('daily');
     });
 
-    // Year-end tax reminder - December 1st and 15th at 9 AM
-    cron.schedule('0 9 1,15 12 *', async () => {
-      console.log('[CronJobs] Sending year-end tax reminders...');
-      await this.sendYearEndTaxReminders();
+    cron.schedule('*/15 * * * *', async () => {
+      console.log('[CronJobs] Syncing bank transactions (realtime)...');
+      await this.syncBankTransactions('realtime');
     });
 
-    // Missing receipt reminders - Weekly on Monday at 10 AM
-    cron.schedule('0 10 * * 1', async () => {
-      console.log('[CronJobs] Sending missing receipt reminders...');
-      await this.sendMissingReceiptReminders();
+    // Check bank connection health - Daily at 7 AM
+    cron.schedule('0 7 * * *', async () => {
+      console.log('[CronJobs] Checking bank connection health...');
+      await this.checkBankConnectionHealth();
     });
 
-    // Seed default achievements and challenges on startup
-    this.seedGamificationData();
+    // Weekly bank sync (for weekly sync preference) - Every Monday at 6 AM
+    cron.schedule('0 6 * * 1', async () => {
+      console.log('[CronJobs] Syncing bank transactions (weekly)...');
+      await this.syncBankTransactions('weekly');
+    });
 
     console.log('Cron jobs initialized successfully');
   }
@@ -333,110 +336,99 @@ class CronJobs {
     }
   }
 
-  static async sendQuarterlyTaxReminders() {
+  /**
+   * Sync bank transactions based on frequency preference
+   */
+  static async syncBankTransactions(frequency) {
     try {
-      const TaxProfile = require('../models/TaxProfile');
-      const now = new Date();
-      
-      // Quarterly due dates (US)
-      const quarterlyDueDates = [
-        { quarter: 1, month: 3, day: 15 }, // April 15
-        { quarter: 2, month: 5, day: 15 }, // June 15
-        { quarter: 3, month: 8, day: 15 }, // September 15
-        { quarter: 4, month: 0, day: 15 }  // January 15 (next year)
-      ];
+      const transactionImportService = require('./transactionImportService');
+      const openBankingService = require('./openBankingService');
 
-      // Check if we're within 7 days of a due date
-      for (const dueDate of quarterlyDueDates) {
-        const year = dueDate.quarter === 4 ? now.getFullYear() + 1 : now.getFullYear();
-        const due = new Date(year, dueDate.month, dueDate.day);
-        const daysUntilDue = Math.ceil((due - now) / (1000 * 60 * 60 * 24));
+      // Find connections due for sync with this frequency
+      const connections = await BankConnection.find({
+        status: 'active',
+        'syncConfig.syncEnabled': true,
+        'syncConfig.frequency': frequency,
+        $or: [
+          { 'syncConfig.nextSyncAt': { $lte: new Date() } },
+          { 'syncConfig.nextSyncAt': { $exists: false } }
+        ]
+      });
 
-        if (daysUntilDue === 7 || daysUntilDue === 1) {
-          // Find users with self-employment income who have tax profiles
-          const profiles = await TaxProfile.find({
-            employmentType: { $in: ['self_employed', 'freelancer', 'business_owner'] },
-            'notifications.quarterlyReminders': true
-          }).populate('user');
+      console.log(`[BankSync] Found ${connections.length} connections to sync (${frequency})`);
 
-          for (const profile of profiles) {
+      for (const connection of connections) {
+        try {
+          // Sync balances first
+          await openBankingService.syncBalances(connection._id);
+          
+          // Sync transactions
+          const result = await transactionImportService.syncTransactions(connection._id);
+          
+          console.log(`[BankSync] Synced ${connection.institution.name}: ${result.imported} new, ${result.duplicates} duplicates`);
+        } catch (error) {
+          console.error(`[BankSync] Error syncing ${connection.institution?.name}:`, error.message);
+          
+          // Update connection health
+          connection.updateHealth(false);
+          await connection.save();
+        }
+      }
+    } catch (error) {
+      console.error('[BankSync] Sync job error:', error);
+    }
+  }
+
+  /**
+   * Check and report on unhealthy bank connections
+   */
+  static async checkBankConnectionHealth() {
+    try {
+      // Find unhealthy connections
+      const unhealthyConnections = await BankConnection.findUnhealthy();
+
+      if (unhealthyConnections.length > 0) {
+        console.log(`[BankHealth] Found ${unhealthyConnections.length} unhealthy connections`);
+
+        for (const connection of unhealthyConnections) {
+          // Notify user about connection issues
+          if (connection.user?.email) {
             try {
-              await taxService.sendQuarterlyReminder(profile.user._id, dueDate.quarter);
-            } catch (e) {
-              console.error(`Failed to send tax reminder to user ${profile.user._id}:`, e);
+              await emailService.sendBankConnectionAlert(connection.user, {
+                institution: connection.institution.name,
+                status: connection.status,
+                error: connection.error?.displayMessage || 'Connection requires attention',
+                lastSync: connection.syncConfig.lastSyncAt
+              });
+            } catch (emailError) {
+              console.error('[BankHealth] Failed to send alert email:', emailError.message);
+            }
+          }
+        }
+      }
+
+      // Find connections requiring re-authentication
+      const reauthConnections = await BankConnection.find({
+        status: 'requires_reauth'
+      }).populate('user', 'email name');
+
+      if (reauthConnections.length > 0) {
+        console.log(`[BankHealth] Found ${reauthConnections.length} connections requiring re-auth`);
+
+        for (const connection of reauthConnections) {
+          if (connection.user?.email) {
+            try {
+              await emailService.sendBankReauthRequired(connection.user, {
+                institution: connection.institution.name
+              });
+            } catch (emailError) {
+              console.error('[BankHealth] Failed to send reauth email:', emailError.message);
             }
           }
         }
       }
     } catch (error) {
-      console.error('Quarterly tax reminder error:', error);
-    }
-  }
-
-  static async sendYearEndTaxReminders() {
-    try {
-      const TaxProfile = require('../models/TaxProfile');
-      const notificationService = require('./notificationService');
-
-      const profiles = await TaxProfile.find({
-        'notifications.yearEndReminders': true
-      });
-
-      for (const profile of profiles) {
-        try {
-          const checklist = await taxService.getYearEndChecklist(profile.user);
-          const incompleteItems = checklist.filter(item => !item.completed);
-
-          if (incompleteItems.length > 0) {
-            await notificationService.sendNotification(profile.user, {
-              title: 'Year-End Tax Checklist Reminder',
-              message: `You have ${incompleteItems.length} items to complete before year-end for tax optimization.`,
-              type: 'tax_reminder',
-              priority: 'high',
-              data: { incompleteCount: incompleteItems.length }
-            });
-          }
-        } catch (e) {
-          console.error(`Failed to send year-end reminder to user ${profile.user}:`, e);
-        }
-      }
-    } catch (error) {
-      console.error('Year-end tax reminder error:', error);
-    }
-  }
-
-  static async sendMissingReceiptReminders() {
-    try {
-      const Deduction = require('../models/Deduction');
-      const TaxProfile = require('../models/TaxProfile');
-      const notificationService = require('./notificationService');
-      const taxYear = new Date().getFullYear();
-
-      const profiles = await TaxProfile.find({
-        'notifications.documentReminders': true
-      });
-
-      for (const profile of profiles) {
-        try {
-          const missingDocs = await Deduction.findMissingDocumentation(profile.user, taxYear);
-          
-          if (missingDocs.length > 0) {
-            const totalAmount = missingDocs.reduce((sum, d) => sum + d.amount, 0);
-            
-            await notificationService.sendNotification(profile.user, {
-              title: 'Missing Receipt Reminder',
-              message: `${missingDocs.length} deductions worth $${totalAmount.toLocaleString()} are missing receipts.`,
-              type: 'document_reminder',
-              priority: 'medium',
-              data: { count: missingDocs.length, totalAmount }
-            });
-          }
-        } catch (e) {
-          console.error(`Failed to send receipt reminder to user ${profile.user}:`, e);
-        }
-      }
-    } catch (error) {
-      console.error('Missing receipt reminder error:', error);
+      console.error('[BankHealth] Health check error:', error);
     }
   }
 }
