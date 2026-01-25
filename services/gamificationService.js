@@ -1056,6 +1056,121 @@ class GamificationService {
       await challenge.save();
     }
   }
+
+  /**
+   * Seed default achievements
+   */
+  async seedAchievements() {
+    const defaultAchievements = [
+      {
+        name: 'First Login',
+        description: 'Welcome to ExpenseFlow! Complete your first login.',
+        icon: '🎉',
+        type: 'milestone',
+        points: 100,
+        criteria: { action: 'first_login' },
+        isActive: true
+      },
+      {
+        name: 'Expense Tracker',
+        description: 'Add your first expense to start tracking.',
+        icon: '💰',
+        type: 'milestone',
+        points: 50,
+        criteria: { action: 'first_expense' },
+        isActive: true
+      },
+      {
+        name: 'Budget Master',
+        description: 'Create your first budget to manage spending.',
+        icon: '📊',
+        type: 'milestone',
+        points: 75,
+        criteria: { action: 'first_budget' },
+        isActive: true
+      },
+      {
+        name: 'Goal Setter',
+        description: 'Set your first financial goal.',
+        icon: '🎯',
+        type: 'milestone',
+        points: 75,
+        criteria: { action: 'first_goal' },
+        isActive: true
+      },
+      {
+        name: 'Streak Master',
+        description: 'Maintain a 7-day expense tracking streak.',
+        icon: '🔥',
+        type: 'streak',
+        points: 200,
+        criteria: { streak: 7 },
+        isActive: true
+      },
+      {
+        name: 'Savings Champion',
+        description: 'Save $1000 in a month.',
+        icon: '💎',
+        type: 'savings',
+        points: 500,
+        criteria: { amount: 1000, period: 'monthly' },
+        isActive: true
+      }
+    ];
+
+    for (const achievementData of defaultAchievements) {
+      const existing = await Achievement.findOne({ name: achievementData.name });
+      if (!existing) {
+        const achievement = new Achievement(achievementData);
+        await achievement.save();
+      }
+    }
+  }
+
+  /**
+   * Create system challenges
+   */
+  async createSystemChallenges() {
+    const now = new Date();
+    const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+    const systemChallenges = [
+      {
+        title: 'Weekly Savings Challenge',
+        description: 'Save at least $50 this week by reducing unnecessary expenses.',
+        type: 'savings',
+        targetAmount: 50,
+        startDate: now,
+        endDate: nextWeek,
+        rewardPoints: 150,
+        isSystem: true,
+        status: 'active'
+      },
+      {
+        title: 'Monthly Budget Hero',
+        description: 'Stay within 80% of your monthly budget limit.',
+        type: 'budget',
+        targetAmount: 0.8, // 80% of budget
+        startDate: now,
+        endDate: nextMonth,
+        rewardPoints: 300,
+        isSystem: true,
+        status: 'active'
+      }
+    ];
+
+    for (const challengeData of systemChallenges) {
+      const existing = await Challenge.findOne({
+        title: challengeData.title,
+        startDate: challengeData.startDate
+      });
+      if (!existing) {
+        const challenge = new Challenge(challengeData);
+        await challenge.save();
+      }
+    }
+  }
 }
 
 module.exports = new GamificationService();
