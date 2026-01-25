@@ -31,7 +31,7 @@ if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
 
 class NotificationService {
   // Set the io instance for dependency injection
-  static setIo(io) {
+  setIo(io) {
     ioInstance = io;
   }
   
