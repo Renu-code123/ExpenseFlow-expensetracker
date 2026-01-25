@@ -4,6 +4,23 @@ const AnalyticsCache = require('../models/AnalyticsCache');
 const mongoose = require('mongoose');
 
 class AnalyticsService {
+    constructor() {
+        this.defaultCurrency = process.env.DEFAULT_CURRENCY || 'INR';
+        this.defaultLocale = process.env.DEFAULT_LOCALE || 'en-US';
+    }
+
+    formatCurrency(amount, locale = this.defaultLocale, currency = this.defaultCurrency) {
+        try {
+            return new Intl.NumberFormat(locale, {
+                style: 'currency',
+                currency,
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(Number(amount) || 0);
+        } catch (err) {
+            return `${currency} ${Number(amount || 0).toFixed(2)}`;
+        }
+    }
     /**
      * Get spending trends over time (daily, weekly, monthly)
      */
@@ -426,7 +443,7 @@ class AnalyticsService {
                 type: 'category',
                 priority: 2,
                 title: 'Top Spending Category',
-                message: `${this.capitalizeFirst(topCategory[0])} accounts for ${percentage}% of your expenses (₹${topCategory[1].toFixed(2)})`,
+                message: `${this.capitalizeFirst(topCategory[0])} accounts for ${percentage}% of your expenses (${this.formatCurrency(topCategory[1])})`,
                 category: topCategory[0],
                 amount: topCategory[1],
                 suggestion: percentage > 40

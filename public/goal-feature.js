@@ -1,6 +1,14 @@
 // Financial Goals Management Feature for ExpenseFlow
 const GOALS_API_URL = 'http://localhost:3000/api/goals';
 
+const goalCurrencyFormatter = (value) => {
+    const formatter = window.i18n?.formatCurrency;
+    if (typeof formatter === 'function') return formatter(value);
+    const numericValue = Number(value) || 0;
+    const symbol = window.i18n?.getCurrencySymbol?.(window.i18n?.getCurrency?.() || '') || '';
+    return `${symbol}${numericValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+};
+
 // State management
 let goalsData = [];
 let activeGoalId = null;
@@ -163,7 +171,7 @@ function renderGoalCard(goal) {
       <div class="goal-progress-section">
         <div class="progress-labels">
           <span class="progress-percent">${progress}%</span>
-          <span class="progress-amount">₹${goal.currentAmount.toLocaleString()} / ₹${goal.targetAmount.toLocaleString()}</span>
+          <span class="progress-amount">${goalCurrencyFormatter(goal.currentAmount)} / ${goalCurrencyFormatter(goal.targetAmount)}</span>
         </div>
         <div class="goal-progress-bar">
           <div class="goal-progress-fill" style="width: ${progress}%; background-color: ${goal.color}"></div>
