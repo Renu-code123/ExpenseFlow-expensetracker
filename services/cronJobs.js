@@ -1,6 +1,7 @@
 const cron = require('node-cron');
 const User = require('../models/User');
 const Expense = require('../models/Expense');
+const BankConnection = require('../models/BankConnection');
 const emailService = require('../services/emailService');
 const currencyService = require('../services/currencyService');
 const investmentService = require('../services/investmentService');
@@ -24,6 +25,24 @@ class CronJobs {
       await this.sendRecurringReminders();
     });
 
+    // Send subscription renewal reminders - Daily at 9:30 AM
+    cron.schedule('30 9 * * *', async () => {
+      console.log('[CronJobs] Sending subscription renewal reminders...');
+      await this.sendSubscriptionReminders();
+    });
+
+    // Send trial ending reminders - Daily at 10 AM
+    cron.schedule('0 10 * * *', async () => {
+      console.log('[CronJobs] Sending trial ending reminders...');
+      await this.sendTrialReminders();
+    });
+
+    // Process daily gamification updates - Daily at midnight
+    cron.schedule('0 0 * * *', async () => {
+      console.log('[CronJobs] Processing daily gamification updates...');
+      await this.processDailyGamification();
+    });
+
     // Weekly report - Every Sunday at 9 AM
     cron.schedule('0 9 * * 0', async () => {
       console.log('[CronJobs] Sending weekly reports...');
@@ -34,6 +53,12 @@ class CronJobs {
     cron.schedule('0 10 1 * *', async () => {
       console.log('[CronJobs] Sending monthly reports...');
       await this.sendMonthlyReports();
+    });
+
+    // Reset monthly gamification points - 1st day of month at midnight
+    cron.schedule('0 0 1 * *', async () => {
+      console.log('[CronJobs] Resetting monthly gamification points...');
+      await this.resetMonthlyGamification();
     });
 
     // Budget alerts - Daily at 8 PM
@@ -94,13 +119,68 @@ class CronJobs {
   }
 
   static async processRecurringExpenses() {
-    console.log('Processing recurring expenses (Placeholder)');
-    // Implementation would go here
+    try {
+      await recurringService.processRecurringExpenses();
+    } catch (error) {
+      console.error('[CronJobs] Recurring expenses error:', error);
+    }
   }
 
   static async sendRecurringReminders() {
-    console.log('Sending recurring reminders (Placeholder)');
-    // Implementation would go here
+    try {
+      await recurringService.sendUpcomingReminders();
+    } catch (error) {
+      console.error('[CronJobs] Recurring reminders error:', error);
+    }
+  }
+
+  static async sendSubscriptionReminders() {
+    try {
+      await subscriptionService.sendRenewalReminders();
+    } catch (error) {
+      console.error('[CronJobs] Subscription reminders error:', error);
+    }
+  }
+
+  static async sendTrialReminders() {
+    try {
+      await subscriptionService.sendTrialReminders();
+    } catch (error) {
+      console.error('[CronJobs] Trial reminders error:', error);
+    }
+  }
+
+  static async processDailyGamification() {
+    try {
+      await gamificationService.processDailyChallenges();
+    } catch (error) {
+      console.error('[CronJobs] Gamification processing error:', error);
+    }
+  }
+
+  static async resetMonthlyGamification() {
+    try {
+      const UserGamification = require('../models/UserGamification');
+      await UserGamification.updateMany(
+        {},
+        { 
+          'points.currentMonth': 0,
+          'points.lastMonthReset': new Date()
+        }
+      );
+      console.log('[CronJobs] Monthly gamification points reset');
+    } catch (error) {
+      console.error('[CronJobs] Monthly reset error:', error);
+    }
+  }
+
+  static async seedGamificationData() {
+    try {
+      await gamificationService.seedAchievements();
+      await gamificationService.createSystemChallenges();
+    } catch (error) {
+      console.error('[CronJobs] Gamification seed error:', error);
+    }
   }
 
   static async updateExchangeRates() {

@@ -5,6 +5,23 @@ const RECURRING_API_URL = 'http://localhost:3000/api/recurring';
 let recurringExpenses = [];
 let recurringStatistics = null;
 
+const getRecurringLocale = () => (window.i18n?.getLocale?.() && window.i18n.getLocale()) || 'en-US';
+const getRecurringCurrency = () => (window.i18n?.getCurrency?.() && window.i18n.getCurrency()) || window.currentUserCurrency || 'INR';
+
+function formatRecurringCurrency(value, options = {}) {
+    if (window.i18n?.formatCurrency) {
+        return window.i18n.formatCurrency(value, {
+            currency: getRecurringCurrency(),
+            locale: getRecurringLocale(),
+            minimumFractionDigits: options.minimumFractionDigits ?? 2,
+            maximumFractionDigits: options.maximumFractionDigits ?? 2
+        });
+    }
+
+    const amount = Number(value || 0);
+    return `${getRecurringCurrency()} ${amount.toFixed(options.minimumFractionDigits ?? 2)}`;
+}
+
 // ========================
 // API Functions
 // ========================
@@ -243,7 +260,7 @@ function renderRecurringCard(recurring) {
     };
 
     const statusClass = recurring.isPaused ? 'paused' : daysUntilDue <= 3 ? 'due-soon' : 'active';
-    const statusText = recurring.isPaused ? 'Paused' : daysUntilDue <= 0 ? 'Due Today' : daysUntilDue <= 3 ? `Due in ${daysUntilDue} days` : `Due ${dueDate.toLocaleDateString('en-IN')}`;
+    const statusText = recurring.isPaused ? 'Paused' : daysUntilDue <= 0 ? 'Due Today' : daysUntilDue <= 3 ? `Due in ${daysUntilDue} days` : `Due ${dueDate.toLocaleDateString(window.i18n?.getLocale?.() || 'en-US')}`;
 
     return `
     <div class="recurring-card ${statusClass}" data-id="${recurring._id}">
@@ -254,7 +271,7 @@ function renderRecurringCard(recurring) {
           <span class="recurring-category">${recurring.category}</span>
         </div>
         <div class="recurring-amount ${recurring.type}">
-          ${recurring.type === 'income' ? '+' : '-'}₹${recurring.amount.toFixed(2)}
+                    ${recurring.type === 'income' ? '+' : '-'}${formatRecurringCurrency(recurring.amount)}
         </div>
       </div>
       
@@ -269,7 +286,7 @@ function renderRecurringCard(recurring) {
         </div>
         <div class="recurring-detail">
           <i class="fas fa-chart-line"></i>
-          <span>₹${getMonthlyEstimate(recurring).toFixed(2)}/month</span>
+                    <span>${formatRecurringCurrency(getMonthlyEstimate(recurring))}/month</span>
         </div>
       </div>
 
@@ -319,24 +336,24 @@ function renderRecurringStatistics() {
         <span class="stat-label">Paused</span>
       </div>
     </div>
-    <div class="recurring-stat-card expense">
-      <div class="stat-icon"><i class="fas fa-arrow-down"></i></div>
-      <div class="stat-content">
-        <span class="stat-value">₹${recurringStatistics.monthlyExpenseTotal.toFixed(0)}</span>
-        <span class="stat-label">Monthly Expenses</span>
-      </div>
-    </div>
+        <div class="recurring-stat-card expense">
+            <div class="stat-icon"><i class="fas fa-arrow-down"></i></div>
+            <div class="stat-content">
+                <span class="stat-value">${formatRecurringCurrency(recurringStatistics.monthlyExpenseTotal, { maximumFractionDigits: 0 })}</span>
+                <span class="stat-label">Monthly Expenses</span>
+            </div>
+        </div>
     <div class="recurring-stat-card income">
       <div class="stat-icon"><i class="fas fa-arrow-up"></i></div>
       <div class="stat-content">
-        <span class="stat-value">₹${recurringStatistics.monthlyIncomeTotal.toFixed(0)}</span>
+                <span class="stat-value">${formatRecurringCurrency(recurringStatistics.monthlyIncomeTotal, { maximumFractionDigits: 0 })}</span>
         <span class="stat-label">Monthly Income</span>
       </div>
     </div>
     <div class="recurring-stat-card ${recurringStatistics.netMonthly >= 0 ? 'positive' : 'negative'}">
       <div class="stat-icon"><i class="fas fa-balance-scale"></i></div>
       <div class="stat-content">
-        <span class="stat-value">${recurringStatistics.netMonthly >= 0 ? '+' : ''}₹${recurringStatistics.netMonthly.toFixed(0)}</span>
+                <span class="stat-value">${recurringStatistics.netMonthly >= 0 ? '+' : ''}${formatRecurringCurrency(recurringStatistics.netMonthly, { maximumFractionDigits: 0 })}</span>
         <span class="stat-label">Net Monthly</span>
       </div>
     </div>

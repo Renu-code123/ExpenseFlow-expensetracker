@@ -114,4 +114,75 @@ router.post('/monthly', auth, async (req, res) => {
   }
 });
 
+// Set monthly budget limit
+router.post('/monthly-limit', auth, async (req, res) => {
+  try {
+    const { limit } = req.body;
+    if (typeof limit !== 'number' || limit < 0) {
+      return res.status(400).json({ error: 'Invalid budget limit' });
+    }
+
+    const User = require('../models/User');
+    await User.findByIdAndUpdate(req.user._id, { monthlyBudgetLimit: limit });
+
+    res.json({ message: 'Monthly budget limit updated successfully', limit });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get monthly budget limit and status
+router.get('/monthly-limit', auth, async (req, res) => {
+  try {
+    const User = require('../models/User');
+    const Expense = require('../models/Expense');
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Calculate current month's expenses
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+
+    const monthlyExpenses = await Expense.aggregate([
+      {
+        $match: {
+          user: req.user._id,
+          type: 'expense',
+          date: { $gte: startOfMonth, $lte: endOfMonth }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: '$amount' }
+        }
+      }
+    ]);
+
+    const totalSpent = monthlyExpenses.length > 0 ? monthlyExpenses[0].total : 0;
+    const limit = user.monthlyBudgetLimit || 0;
+    const remaining = limit - totalSpent;
+    const percentage = limit > 0 ? (totalSpent / limit) * 100 : 0;
+    const isExceeded = totalSpent > limit && limit > 0;
+    const isNearLimit = percentage >= 80 && !isExceeded;
+
+    res.json({
+      limit,
+      totalSpent,
+      remaining: Math.max(0, remaining),
+      percentage: Math.min(100, percentage),
+      isExceeded,
+      isNearLimit,
+      daysInMonth: endOfMonth.getDate(),
+      currentDay: now.getDate()
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
