@@ -245,7 +245,12 @@ app.use('/api/splits', require('./routes/splits'));
 app.use('/api/workspaces', require('./routes/workspaces'));
 app.use('/api/approvals', require('./routes/approvals'));
 app.use('/api/investments', require('./routes/investments'));
-app.use('/api/gamification', require('./routes/gamification'));
+app.use('/api/ai', require('./routes/ai'));
+app.use('/api/multicurrency', require('./routes/multicurrency'));
+app.use('/api/collaboration', require('./routes/collaboration'));
+app.use('/api/audit-compliance', require('./routes/auditCompliance'));
+app.use('/api/fraud-detection', require('./routes/fraudDetection'));
+app.use('/api/integrations', require('./routes/integrations'));
 
 // Root route to serve the UI
 app.get('/', (req, res) => {
