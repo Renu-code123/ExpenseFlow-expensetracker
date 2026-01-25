@@ -161,13 +161,33 @@ router.post('/', auth, async (req, res) => {
 
     // Emit real-time update to all user's connected devices
     const io = req.app.get('io');
-    io.to(`user_${req.user._id}`).emit('expense_created', expense);
+    
+    // Prepare the expense object with display amounts for socket emission
+    const expenseForSocket = expense.toObject();
+    if (expenseCurrency !== user.preferredCurrency) {
+      expenseForSocket.displayAmount = expenseData.convertedAmount;
+      expenseForSocket.displayCurrency = user.preferredCurrency;
+    } else {
+      expenseForSocket.displayAmount = expense.amount;
+      expenseForSocket.displayCurrency = expenseCurrency;
+    }
+    
+    io.to(`user_${req.user._id}`).emit('expense_created', expenseForSocket);
 
     const response = {
         ...expense.toObject(),
         requiresApproval,
         workflow: workflow ? { _id: workflow._id, status: workflow.status } : null
     };
+
+    // Add display amounts to response
+    if (expenseCurrency !== user.preferredCurrency) {
+      response.displayAmount = expenseData.convertedAmount;
+      response.displayCurrency = user.preferredCurrency;
+    } else {
+      response.displayAmount = expense.amount;
+      response.displayCurrency = expenseCurrency;
+    }
 
     res.status(201).json(response);
   } catch (error) {
@@ -225,9 +245,31 @@ router.put('/:id', auth, async (req, res) => {
 
     // Emit real-time update
     const io = req.app.get('io');
-    io.to(`user_${req.user._id}`).emit('expense_updated', expense);
+    
+    // Prepare the expense object with display amounts for socket emission
+    const expenseForSocket = expense.toObject();
+    if (expenseCurrency !== user.preferredCurrency) {
+      expenseForSocket.displayAmount = updateData.convertedAmount || expense.amount;
+      expenseForSocket.displayCurrency = user.preferredCurrency;
+    } else {
+      expenseForSocket.displayAmount = expense.amount;
+      expenseForSocket.displayCurrency = expenseCurrency;
+    }
+    
+    io.to(`user_${req.user._id}`).emit('expense_updated', expenseForSocket);
 
-    res.json(expense);
+    const response = expense.toObject();
+    
+    // Add display amounts to response
+    if (expenseCurrency !== user.preferredCurrency) {
+      response.displayAmount = updateData.convertedAmount || expense.amount;
+      response.displayCurrency = user.preferredCurrency;
+    } else {
+      response.displayAmount = expense.amount;
+      response.displayCurrency = expenseCurrency;
+    }
+
+    res.json(response);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
