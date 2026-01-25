@@ -42,6 +42,18 @@ class CronJobs {
       await this.updateExchangeRates();
     });
 
+    // Update portfolio prices - Every 15 minutes during market hours
+    cron.schedule('*/15 9-16 * * 1-5', async () => {
+      console.log('[CronJobs] Updating portfolio prices...');
+      await this.updatePortfolioPrices();
+    });
+
+    // Daily portfolio metrics update - Daily at 5 PM
+    cron.schedule('0 17 * * *', async () => {
+      console.log('[CronJobs] Updating portfolio metrics...');
+      await this.updateDailyPortfolioMetrics();
+    });
+
     console.log('Cron jobs initialized successfully');
   }
 
@@ -228,6 +240,6 @@ class CronJobs {
       console.error('Budget alert error:', error);
     }
   }
+$newMethods}
 }
-
 module.exports = CronJobs;
