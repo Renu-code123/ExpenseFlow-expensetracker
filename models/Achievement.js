@@ -1,10 +1,15 @@
 const mongoose = require('mongoose');
 
 const achievementSchema = new mongoose.Schema({
-  name: {
+  code: {
     type: String,
     required: true,
     unique: true,
+    trim: true
+  },
+  name: {
+    type: String,
+    required: true,
     trim: true,
     maxlength: 100
   },
@@ -12,7 +17,7 @@ const achievementSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true,
-    maxlength: 500
+    maxlength: 300
   },
   icon: {
     type: String,
@@ -22,7 +27,7 @@ const achievementSchema = new mongoose.Schema({
   category: {
     type: String,
     required: true,
-    enum: ['budget', 'savings', 'streak', 'social', 'goals', 'analytics', 'milestones', 'special']
+    enum: ['savings', 'budgeting', 'tracking', 'social', 'challenges', 'streaks', 'milestones', 'special']
   },
   tier: {
     type: String,
@@ -31,79 +36,58 @@ const achievementSchema = new mongoose.Schema({
   },
   points: {
     type: Number,
-    required: true,
-    default: 100,
+    default: 10,
     min: 0
   },
-  criteria: {
+  requirement: {
     type: {
       type: String,
       required: true,
       enum: [
-        'budget_under_streak',
-        'savings_amount',
-        'savings_streak',
-        'expense_count',
-        'category_tracking',
-        'goal_achieved',
-        'goals_count',
-        'challenge_completed',
-        'challenges_count',
-        'login_streak',
-        'dashboard_visits',
-        'friend_invites',
-        'first_action',
+        'budget_streak',      // Stay under budget for X days/months
+        'savings_amount',     // Save total X amount
+        'expense_tracking',   // Track X expenses
+        'goal_completion',    // Complete X goals
+        'challenge_wins',     // Win X challenges
+        'login_streak',       // Login X days in a row
+        'category_master',    // Track X expenses in one category
+        'analytics_usage',    // View analytics X times
+        'first_action',       // First time doing something
+        'social_engagement',  // Invite/compete with friends
+        'no_spend_days',      // Have X no-spend days
+        'receipt_uploads',    // Upload X receipts
         'custom'
       ]
     },
-    threshold: {
+    value: {
       type: Number,
       required: true
     },
-    unit: {
-      type: String,
-      enum: ['days', 'count', 'amount', 'percentage'],
-      default: 'count'
-    },
-    category: {
-      type: String,
-      default: null
-    },
-    timeframe: {
-      type: String,
-      enum: ['daily', 'weekly', 'monthly', 'yearly', 'all_time'],
-      default: 'all_time'
-    }
-  },
-  isActive: {
-    type: Boolean,
-    default: true
+    category: String,      // For category-specific achievements
+    timeframe: String      // 'daily', 'weekly', 'monthly', 'yearly', 'all_time'
   },
   isSecret: {
     type: Boolean,
     default: false
   },
-  prerequisites: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Achievement'
-  }],
+  isActive: {
+    type: Boolean,
+    default: true
+  },
   rarity: {
     type: String,
     enum: ['common', 'uncommon', 'rare', 'epic', 'legendary'],
     default: 'common'
-  },
-  earnedCount: {
-    type: Number,
-    default: 0
   }
 }, {
   timestamps: true
 });
 
 // Indexes
+achievementSchema.index({ code: 1 });
 achievementSchema.index({ category: 1, isActive: 1 });
 achievementSchema.index({ tier: 1 });
-achievementSchema.index({ 'criteria.type': 1 });
+achievementSchema.index({ 'requirement.type': 1 });
 
 // Get tier color
 achievementSchema.methods.getTierColor = function() {
@@ -122,266 +106,118 @@ achievementSchema.statics.getDefaultAchievements = function() {
   return [
     // Budget achievements
     {
+      code: 'BUDGET_BEGINNER',
       name: 'Budget Beginner',
       description: 'Stay under budget for 7 consecutive days',
       icon: '📊',
-      category: 'budget',
+      category: 'budgeting',
       tier: 'bronze',
       points: 50,
-      criteria: { type: 'budget_under_streak', threshold: 7, unit: 'days' },
+      requirement: { type: 'budget_streak', value: 7, timeframe: 'daily' },
       rarity: 'common'
     },
     {
+      code: 'BUDGET_MASTER',
       name: 'Budget Master',
       description: 'Stay under budget for 3 consecutive months',
       icon: '🏆',
-      category: 'budget',
+      category: 'budgeting',
       tier: 'gold',
       points: 500,
-      criteria: { type: 'budget_under_streak', threshold: 90, unit: 'days' },
+      requirement: { type: 'budget_streak', value: 90, timeframe: 'daily' },
       rarity: 'rare'
     },
-    {
-      name: 'Budget Legend',
-      description: 'Stay under budget for a full year',
-      icon: '👑',
-      category: 'budget',
-      tier: 'diamond',
-      points: 2000,
-      criteria: { type: 'budget_under_streak', threshold: 365, unit: 'days' },
-      rarity: 'legendary'
-    },
-
     // Savings achievements
     {
+      code: 'FIRST_SAVINGS',
       name: 'First Savings',
       description: 'Save your first ₹1,000',
       icon: '💰',
       category: 'savings',
       tier: 'bronze',
       points: 25,
-      criteria: { type: 'savings_amount', threshold: 1000, unit: 'amount' },
+      requirement: { type: 'savings_amount', value: 1000 },
       rarity: 'common'
     },
     {
-      name: 'Savings Streak',
-      description: 'Save consistently for 30 consecutive days',
-      icon: '💎',
-      category: 'savings',
-      tier: 'silver',
-      points: 200,
-      criteria: { type: 'savings_streak', threshold: 30, unit: 'days' },
-      rarity: 'uncommon'
-    },
-    {
+      code: 'SAVINGS_CHAMPION',
       name: 'Savings Champion',
       description: 'Save ₹50,000 total',
       icon: '🏅',
       category: 'savings',
       tier: 'gold',
       points: 400,
-      criteria: { type: 'savings_amount', threshold: 50000, unit: 'amount' },
+      requirement: { type: 'savings_amount', value: 50000 },
       rarity: 'rare'
     },
-    {
-      name: 'Savings Millionaire',
-      description: 'Save ₹10,00,000 total',
-      icon: '💵',
-      category: 'savings',
-      tier: 'diamond',
-      points: 2500,
-      criteria: { type: 'savings_amount', threshold: 1000000, unit: 'amount' },
-      rarity: 'legendary'
-    },
-
-    // Goal achievements
-    {
-      name: 'Goal Setter',
-      description: 'Create your first financial goal',
-      icon: '🎯',
-      category: 'goals',
-      tier: 'bronze',
-      points: 25,
-      criteria: { type: 'first_action', threshold: 1, unit: 'count' },
-      rarity: 'common'
-    },
-    {
-      name: 'Goal Crusher',
-      description: 'Achieve 5 financial goals',
-      icon: '🎯',
-      category: 'goals',
-      tier: 'gold',
-      points: 350,
-      criteria: { type: 'goals_count', threshold: 5, unit: 'count' },
-      rarity: 'rare'
-    },
-    {
-      name: 'Dream Achiever',
-      description: 'Complete 20 financial goals',
-      icon: '🌟',
-      category: 'goals',
-      tier: 'platinum',
-      points: 1000,
-      criteria: { type: 'goals_count', threshold: 20, unit: 'count' },
-      rarity: 'epic'
-    },
-
-    // Analytics achievements
-    {
-      name: 'Data Explorer',
-      description: 'View your analytics dashboard',
-      icon: '📈',
-      category: 'analytics',
-      tier: 'bronze',
-      points: 15,
-      criteria: { type: 'first_action', threshold: 1, unit: 'count' },
-      rarity: 'common'
-    },
-    {
-      name: 'Analytics Pro',
-      description: 'Check your dashboard 7 days in a row',
-      icon: '📊',
-      category: 'analytics',
-      tier: 'silver',
-      points: 150,
-      criteria: { type: 'dashboard_visits', threshold: 7, unit: 'days', timeframe: 'daily' },
-      rarity: 'uncommon'
-    },
-    {
-      name: 'Insights Master',
-      description: 'Check your dashboard 30 days in a row',
-      icon: '🔍',
-      category: 'analytics',
-      tier: 'gold',
-      points: 400,
-      criteria: { type: 'dashboard_visits', threshold: 30, unit: 'days' },
-      rarity: 'rare'
-    },
-
     // Streak achievements
     {
-      name: 'Getting Started',
-      description: 'Log expenses for 3 consecutive days',
-      icon: '🔥',
-      category: 'streak',
-      tier: 'bronze',
-      points: 20,
-      criteria: { type: 'login_streak', threshold: 3, unit: 'days' },
-      rarity: 'common'
-    },
-    {
+      code: 'WEEK_WARRIOR',
       name: 'Week Warrior',
       description: 'Log expenses for 7 consecutive days',
       icon: '⚡',
-      category: 'streak',
+      category: 'streaks',
       tier: 'bronze',
       points: 50,
-      criteria: { type: 'login_streak', threshold: 7, unit: 'days' },
+      requirement: { type: 'login_streak', value: 7 },
       rarity: 'common'
     },
     {
+      code: 'MONTH_MASTER',
       name: 'Month Master',
       description: 'Log expenses for 30 consecutive days',
       icon: '🌟',
-      category: 'streak',
+      category: 'streaks',
       tier: 'silver',
       points: 200,
-      criteria: { type: 'login_streak', threshold: 30, unit: 'days' },
+      requirement: { type: 'login_streak', value: 30 },
       rarity: 'uncommon'
     },
-    {
-      name: 'Dedication King',
-      description: 'Maintain a 100-day logging streak',
-      icon: '👑',
-      category: 'streak',
-      tier: 'gold',
-      points: 500,
-      criteria: { type: 'login_streak', threshold: 100, unit: 'days' },
-      rarity: 'rare'
-    },
-    {
-      name: 'Year Long Champion',
-      description: 'Maintain a 365-day logging streak',
-      icon: '🏆',
-      category: 'streak',
-      tier: 'diamond',
-      points: 2000,
-      criteria: { type: 'login_streak', threshold: 365, unit: 'days' },
-      rarity: 'legendary'
-    },
-
-    // Social achievements
-    {
-      name: 'Social Butterfly',
-      description: 'Invite your first friend',
-      icon: '🦋',
-      category: 'social',
-      tier: 'bronze',
-      points: 30,
-      criteria: { type: 'friend_invites', threshold: 1, unit: 'count' },
-      rarity: 'common'
-    },
-    {
-      name: 'Team Player',
-      description: 'Complete a challenge with friends',
-      icon: '🤝',
-      category: 'social',
-      tier: 'silver',
-      points: 150,
-      criteria: { type: 'challenge_completed', threshold: 1, unit: 'count' },
-      rarity: 'uncommon'
-    },
-    {
-      name: 'Challenge Champion',
-      description: 'Complete 10 challenges',
-      icon: '🏅',
-      category: 'social',
-      tier: 'gold',
-      points: 400,
-      criteria: { type: 'challenges_count', threshold: 10, unit: 'count' },
-      rarity: 'rare'
-    },
-
     // Milestone achievements
     {
+      code: 'FIRST_EXPENSE',
       name: 'First Expense',
       description: 'Log your first expense',
       icon: '✨',
       category: 'milestones',
       tier: 'bronze',
       points: 10,
-      criteria: { type: 'expense_count', threshold: 1, unit: 'count' },
+      requirement: { type: 'expense_tracking', value: 1 },
       rarity: 'common'
     },
     {
-      name: 'Expense Tracker',
-      description: 'Log 100 expenses',
-      icon: '📝',
-      category: 'milestones',
-      tier: 'silver',
-      points: 100,
-      criteria: { type: 'expense_count', threshold: 100, unit: 'count' },
-      rarity: 'uncommon'
-    },
-    {
+      code: 'EXPENSE_EXPERT',
       name: 'Expense Expert',
       description: 'Log 1,000 expenses',
       icon: '📚',
       category: 'milestones',
       tier: 'gold',
       points: 500,
-      criteria: { type: 'expense_count', threshold: 1000, unit: 'count' },
+      requirement: { type: 'expense_tracking', value: 1000 },
       rarity: 'rare'
     },
+    // Social achievements
     {
-      name: 'Category Master',
-      description: 'Track expenses in all categories',
-      icon: '🎨',
-      category: 'milestones',
-      tier: 'silver',
-      points: 150,
-      criteria: { type: 'category_tracking', threshold: 7, unit: 'count' },
-      rarity: 'uncommon'
+      code: 'SOCIAL_BUTTERFLY',
+      name: 'Social Butterfly',
+      description: 'Invite your first friend',
+      icon: '🦋',
+      category: 'social',
+      tier: 'bronze',
+      points: 30,
+      requirement: { type: 'social_engagement', value: 1 },
+      rarity: 'common'
+    },
+    {
+      code: 'CHALLENGE_CHAMPION',
+      name: 'Challenge Champion',
+      description: 'Complete 10 challenges',
+      icon: '🏅',
+      category: 'challenges',
+      tier: 'gold',
+      points: 400,
+      requirement: { type: 'challenge_wins', value: 10 },
+      rarity: 'rare'
     }
   ];
 };

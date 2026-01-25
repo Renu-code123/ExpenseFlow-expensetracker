@@ -1,40 +1,55 @@
 const mongoose = require('mongoose');
 const TaxProfile = require('../models/TaxProfile');
 const TaxCategory = require('../models/TaxCategory');
-const Deduction = require('../models/Deduction');
-const TaxEstimate = require('../models/TaxEstimate');
 const Expense = require('../models/Expense');
-const notificationService = require('./notificationService');
 
 /**
- * Tax Optimization Engine Service
- * Provides tax calculations, deduction tracking, and optimization recommendations
+ * Tax Service - Handles tax calculations, optimization, and deduction tracking
  */
 class TaxService {
+  init() {
+    console.log('Tax service initialized');
+  }
 
   // ==================== TAX PROFILE MANAGEMENT ====================
+
+  /**
+   * Get or create tax profile for user and year
+   */
+  async getOrCreateProfile(userId, taxYear) {
+    let profile = await TaxProfile.findOne({ user: userId, taxYear });
+    
+    if (!profile) {
+      profile = new TaxProfile({
+        user: userId,
+        taxYear,
+        taxBrackets: TaxProfile.getDefaultBrackets('IN', 'new'),
+        availableDeductions: TaxProfile.getDefaultDeductions('IN')
+      });
+      await profile.save();
+    }
+    
+    return profile;
+  }
 
   /**
    * Create or update tax profile
    */
   async createOrUpdateProfile(userId, profileData) {
-    let profile = await TaxProfile.findOne({ user: userId });
+    const taxYear = profileData.taxYear || new Date().getFullYear();
+    
+    let profile = await TaxProfile.findOne({ user: userId, taxYear });
     
     if (profile) {
       Object.assign(profile, profileData);
     } else {
       profile = new TaxProfile({
         user: userId,
-        ...profileData
+        taxYear,
+        ...profileData,
+        taxBrackets: TaxProfile.getDefaultBrackets(profileData.country || 'IN', profileData.regime || 'new'),
+        availableDeductions: TaxProfile.getDefaultDeductions(profileData.country || 'IN')
       });
-      
-      // Initialize default tax categories if needed
-      await this.initializeDefaultCategories();
-    }
-    
-    // Calculate tax bracket based on estimated income
-    if (profile.estimatedAnnualIncome) {
-      profile.estimatedTaxBracket = profile.calculateTaxBracket(profile.estimatedAnnualIncome);
     }
     
     await profile.save();
@@ -42,386 +57,69 @@ class TaxService {
   }
 
   /**
-   * Get user's tax profile
+   * Update tax profile
    */
-  async getProfile(userId) {
-    const profile = await TaxProfile.findOne({ user: userId });
-    if (!profile) {
-      throw new Error('Tax profile not found. Please set up your tax profile first.');
-    }
+  async updateProfile(userId, taxYear, updates) {
+    const profile = await this.getOrCreateProfile(userId, taxYear);
+    Object.assign(profile, updates);
+    await profile.save();
     return profile;
   }
 
-  /**
-   * Initialize default tax categories
-   */
-  async initializeDefaultCategories() {
-    const existingCount = await TaxCategory.countDocuments({ isSystem: true });
-    if (existingCount > 0) return;
-    
-    const defaults = TaxCategory.getDefaultCategories();
-    await TaxCategory.insertMany(defaults.map(cat => ({ ...cat, isSystem: true })));
-  }
-
-  // ==================== DEDUCTION MANAGEMENT ====================
+  // ==================== TAX CALCULATIONS ====================
 
   /**
-   * Create a new deduction
+   * Calculate tax for user
    */
-  async createDeduction(userId, deductionData) {
-    const profile = await this.getProfile(userId);
+  async calculateTax(userId, taxYear, options = {}) {
+    const profile = await this.getOrCreateProfile(userId, taxYear);
     
-    // Validate tax category
-    const category = await TaxCategory.findById(deductionData.taxCategory);
-    if (!category) {
-      throw new Error('Invalid tax category');
-    }
+    // Get income from expenses
+    const income = await this.calculateTotalIncome(userId, taxYear);
     
-    // Check eligibility
-    if (category.eligibility.requiresSelfEmployment && 
-        !['self_employed', 'freelancer', 'business_owner'].includes(profile.employmentType)) {
-      throw new Error('This deduction category requires self-employment status');
-    }
+    // Get deductions
+    const deductions = await this.calculateDeductions(userId, taxYear, profile, options.customDeductions);
     
-    const deduction = new Deduction({
-      user: userId,
-      taxYear: deductionData.taxYear || new Date().getFullYear(),
-      ...deductionData,
-      formMapping: {
-        form: category.formReferences[0]?.form,
-        line: category.formReferences[0]?.line
-      }
-    });
+    // Calculate taxable income
+    const taxableIncome = Math.max(0, income.total - deductions.total);
     
-    // Add audit entry
-    deduction.addAuditEntry('created', null, deductionData, 'user', 'Initial creation');
+    // Calculate tax based on brackets
+    const taxCalculation = this.calculateTaxFromBrackets(taxableIncome, profile);
     
-    await deduction.save();
-    
-    // Check for documentation requirements
-    if (category.documentation.receiptRequired && 
-        deduction.amount >= category.documentation.minimumAmountForReceipt &&
-        !deduction.documentation.hasReceipt) {
-      deduction.flag('missing_receipt', `Receipt required for deductions over $${category.documentation.minimumAmountForReceipt}`);
-      await deduction.save();
-    }
-    
-    return deduction;
-  }
-
-  /**
-   * Create deduction from existing expense
-   */
-  async createDeductionFromExpense(userId, expenseId, taxCategoryId, options = {}) {
-    const expense = await Expense.findOne({ _id: expenseId, user: userId });
-    if (!expense) {
-      throw new Error('Expense not found');
-    }
-    
-    // Check if deduction already exists for this expense
-    const existing = await Deduction.findOne({ expense: expenseId, isDeleted: false });
-    if (existing) {
-      throw new Error('Deduction already exists for this expense');
-    }
-    
-    const category = await TaxCategory.findById(taxCategoryId);
-    if (!category) {
-      throw new Error('Invalid tax category');
-    }
-    
-    const deduction = await this.createDeduction(userId, {
-      taxCategory: taxCategoryId,
-      expense: expenseId,
-      description: expense.description,
-      merchant: expense.merchant,
-      amount: expense.amount,
-      currency: expense.currency || 'USD',
-      date: expense.date,
-      deductiblePercentage: options.deductiblePercentage || 100,
-      businessPurpose: options.businessPurpose,
-      documentation: {
-        hasReceipt: expense.receipt ? true : false,
-        receiptUrls: expense.receipt ? [expense.receipt] : []
-      }
-    });
-    
-    return deduction;
-  }
-
-  /**
-   * AI-powered expense categorization for tax purposes
-   */
-  async categorizeExpenseForTax(userId, expenseId) {
-    const expense = await Expense.findOne({ _id: expenseId, user: userId });
-    if (!expense) {
-      throw new Error('Expense not found');
-    }
-    
-    const profile = await this.getProfile(userId);
-    const match = await TaxCategory.findMatchingCategory(expense, profile.jurisdiction);
-    
-    if (match && match.confidence >= 0.5) {
-      return {
-        expense,
-        suggestedCategory: match.category,
-        confidence: match.confidence,
-        isDeductible: true,
-        recommendation: `This expense may be deductible as "${match.category.name}" (${Math.round(match.confidence * 100)}% confidence)`
-      };
-    }
+    // Apply credits and prepayments
+    const finalTax = taxCalculation.totalTax - profile.estimatedTaxCredits;
+    const taxDue = finalTax - profile.tdsDeducted - profile.advanceTaxPaid;
     
     return {
-      expense,
-      suggestedCategory: null,
-      confidence: 0,
-      isDeductible: false,
-      recommendation: 'This expense does not appear to be tax-deductible'
-    };
-  }
-
-  /**
-   * Bulk categorize expenses for tax
-   */
-  async bulkCategorizeExpenses(userId, options = {}) {
-    const { startDate, endDate, minAmount = 0 } = options;
-    const profile = await this.getProfile(userId);
-    
-    const query = {
-      user: userId,
-      type: 'expense'
-    };
-    
-    if (startDate || endDate) {
-      query.date = {};
-      if (startDate) query.date.$gte = new Date(startDate);
-      if (endDate) query.date.$lte = new Date(endDate);
-    }
-    
-    if (minAmount > 0) {
-      query.amount = { $gte: minAmount };
-    }
-    
-    const expenses = await Expense.find(query).sort({ date: -1 }).limit(500);
-    
-    const results = {
-      deductible: [],
-      nonDeductible: [],
-      alreadyTracked: []
-    };
-    
-    for (const expense of expenses) {
-      // Check if already tracked
-      const existing = await Deduction.findOne({ expense: expense._id, isDeleted: false });
-      if (existing) {
-        results.alreadyTracked.push({ expense, deduction: existing });
-        continue;
-      }
-      
-      const match = await TaxCategory.findMatchingCategory(expense, profile.jurisdiction);
-      
-      if (match && match.confidence >= 0.5) {
-        results.deductible.push({
-          expense,
-          suggestedCategory: match.category,
-          confidence: match.confidence
-        });
-      } else {
-        results.nonDeductible.push({ expense });
-      }
-    }
-    
-    return results;
-  }
-
-  /**
-   * Get deductions summary
-   */
-  async getDeductionsSummary(userId, taxYear) {
-    const year = taxYear || new Date().getFullYear();
-    
-    const [byCategory, byQuarter, missingDocs, totals] = await Promise.all([
-      Deduction.getSummaryByCategory(userId, year),
-      Deduction.getQuarterlyTotals(userId, year),
-      Deduction.findMissingDocumentation(userId, year),
-      Deduction.aggregate([
-        {
-          $match: {
-            user: new mongoose.Types.ObjectId(userId),
-            taxYear: year,
-            isDeleted: false
-          }
-        },
-        {
-          $group: {
-            _id: null,
-            totalAmount: { $sum: '$amount' },
-            totalDeductible: { $sum: '$deductibleAmount' },
-            count: { $sum: 1 }
-          }
-        }
-      ])
-    ]);
-    
-    const profile = await this.getProfile(userId);
-    const standardDeduction = TaxProfile.getStandardDeduction(
-      profile.jurisdiction, 
-      profile.filingStatus, 
-      year
-    );
-    
-    const total = totals[0] || { totalAmount: 0, totalDeductible: 0, count: 0 };
-    
-    return {
-      taxYear: year,
-      byCategory,
-      byQuarter,
-      totals: {
-        ...total,
-        standardDeduction,
-        shouldItemize: total.totalDeductible > standardDeduction,
-        itemizeBenefit: total.totalDeductible - standardDeduction
-      },
-      missingDocumentation: {
-        count: missingDocs.length,
-        totalAmount: missingDocs.reduce((sum, d) => sum + d.amount, 0),
-        items: missingDocs.slice(0, 10)
-      }
-    };
-  }
-
-  // ==================== TAX ESTIMATION ====================
-
-  /**
-   * Calculate comprehensive tax estimate
-   */
-  async calculateTaxEstimate(userId, options = {}) {
-    const { taxYear = new Date().getFullYear(), includeOptimizations = true } = options;
-    
-    const profile = await this.getProfile(userId);
-    const deductionSummary = await this.getDeductionsSummary(userId, taxYear);
-    
-    // Get income data from expenses
-    const incomeData = await this.getIncomeData(userId, taxYear);
-    
-    // Get existing estimate or create new
-    let estimate = await TaxEstimate.findOne({
-      user: userId,
       taxYear,
-      estimateType: 'annual'
-    });
-    
-    if (!estimate) {
-      estimate = new TaxEstimate({
-        user: userId,
-        taxProfile: profile._id,
-        taxYear,
-        estimateType: 'annual'
-      });
-    }
-    
-    // Set income
-    estimate.income.wages = incomeData.wages || profile.estimatedAnnualIncome || 0;
-    estimate.income.selfEmployment = incomeData.selfEmployment || 0;
-    estimate.income.freelance = incomeData.freelance || 0;
-    estimate.income.investment.dividends = incomeData.dividends || 0;
-    estimate.income.investment.interest = incomeData.interest || 0;
-    estimate.income.rental = incomeData.rental || 0;
-    
-    // Set adjustments
-    estimate.adjustments.iraContribution = profile.retirementAccounts
-      .filter(a => a.type === 'traditional_ira')
-      .reduce((sum, a) => sum + (a.contribution || 0), 0);
-    estimate.adjustments.hsaContribution = profile.hsaAccount?.contribution || 0;
-    estimate.adjustments.sepIraContribution = profile.retirementAccounts
-      .filter(a => a.type === 'sep_ira')
-      .reduce((sum, a) => sum + (a.contribution || 0), 0);
-    
-    // Calculate self-employment tax if applicable
-    const seIncome = estimate.income.selfEmployment + estimate.income.freelance;
-    if (seIncome > 0) {
-      estimate.taxCalculation.selfEmploymentTax = estimate.calculateSelfEmploymentTax(seIncome);
-      estimate.adjustments.selfEmploymentTax = estimate.taxCalculation.selfEmploymentTax;
-    }
-    
-    // Set standard deduction
-    estimate.deductions.standardDeduction = TaxProfile.getStandardDeduction(
-      profile.jurisdiction,
-      profile.filingStatus,
-      taxYear
-    );
-    
-    // Set itemized deductions from tracked deductions
-    for (const category of deductionSummary.byCategory) {
-      switch (category.categoryCode) {
-        case 'HEALTH_MEDICAL':
-          estimate.deductions.itemizedDeductions.medicalDental = category.totalDeductible;
-          break;
-        case 'SALT_INCOME':
-        case 'PROP_TAX':
-          estimate.deductions.itemizedDeductions.stateLocalTaxes += category.totalDeductible;
-          break;
-        case 'PROP_MORTGAGE':
-          estimate.deductions.itemizedDeductions.mortgageInterest = category.totalDeductible;
-          break;
-        case 'CHAR_DONATION':
-          estimate.deductions.itemizedDeductions.charitableContributions = category.totalDeductible;
-          break;
-      }
-      
-      // Business deductions
-      if (category.categoryCode?.startsWith('BUS_') || category.categoryCode === 'HOME_OFFICE') {
-        estimate.deductions.businessDeductions.other += category.totalDeductible;
-      }
-    }
-    
-    // Apply SALT cap ($10,000)
-    if (estimate.deductions.itemizedDeductions.stateLocalTaxes > 10000) {
-      estimate.deductions.itemizedDeductions.stateLocalTaxes = 10000;
-    }
-    
-    // Calculate federal income tax
-    estimate.taxCalculation.federalIncomeTax = estimate.calculateFederalTax(
-      estimate.taxableIncome,
-      profile.filingStatus
-    );
-    
-    // Calculate state tax (simplified - 5% average)
-    if (profile.state && profile.state !== 'FL' && profile.state !== 'TX' && 
-        profile.state !== 'WA' && profile.state !== 'NV') {
-      estimate.taxCalculation.stateIncomeTax = estimate.taxableIncome * 0.05;
-    }
-    
-    // Calculate credits
-    estimate.credits.childTaxCredit = profile.dependents
-      .filter(d => d.qualifiesForChildTaxCredit)
-      .length * 2000;
-    
-    // Generate optimizations
-    if (includeOptimizations) {
-      estimate.optimizations = await this.generateOptimizations(userId, estimate, profile);
-    }
-    
-    // Calculate data completeness
-    estimate.dataCompleteness = this.calculateDataCompleteness(estimate, profile);
-    
-    await estimate.save();
-    
-    return estimate;
+      income,
+      deductions,
+      taxableIncome,
+      taxCalculation,
+      credits: profile.estimatedTaxCredits,
+      prepayments: {
+        tds: profile.tdsDeducted,
+        advanceTax: profile.advanceTaxPaid
+      },
+      finalTax,
+      taxDue,
+      effectiveRate: income.total > 0 ? ((finalTax / income.total) * 100).toFixed(2) : 0
+    };
   }
 
   /**
-   * Get income data from tracked transactions
+   * Calculate total income from expenses
    */
-  async getIncomeData(userId, taxYear) {
-    const startOfYear = new Date(taxYear, 0, 1);
-    const endOfYear = new Date(taxYear, 11, 31);
+  async calculateTotalIncome(userId, taxYear) {
+    const startDate = new Date(taxYear, 3, 1); // April 1
+    const endDate = new Date(taxYear + 1, 2, 31); // March 31
     
-    const income = await Expense.aggregate([
+    const incomeData = await Expense.aggregate([
       {
         $match: {
           user: new mongoose.Types.ObjectId(userId),
           type: 'income',
-          date: { $gte: startOfYear, $lte: endOfYear }
+          date: { $gte: startDate, $lte: endDate }
         }
       },
       {
@@ -432,361 +130,369 @@ class TaxService {
       }
     ]);
     
-    const result = {};
-    income.forEach(i => {
-      switch (i._id) {
-        case 'salary':
-        case 'wages':
-          result.wages = (result.wages || 0) + i.total;
-          break;
-        case 'freelance':
-          result.freelance = i.total;
-          break;
-        case 'business':
-          result.selfEmployment = i.total;
-          break;
-        case 'investment':
-        case 'dividends':
-          result.dividends = i.total;
-          break;
-        case 'interest':
-          result.interest = i.total;
-          break;
-        case 'rental':
-          result.rental = i.total;
-          break;
-      }
+    const breakdown = {};
+    let total = 0;
+    
+    incomeData.forEach(item => {
+      breakdown[item._id] = item.total;
+      total += item.total;
     });
     
-    return result;
+    return { total, breakdown };
   }
 
   /**
-   * Calculate quarterly estimated tax payment
+   * Calculate deductions
+   */
+  async calculateDeductions(userId, taxYear, profile, customDeductions = []) {
+    const startDate = new Date(taxYear, 3, 1);
+    const endDate = new Date(taxYear + 1, 2, 31);
+    
+    // Get expense-based deductions
+    const expenseDeductions = await Expense.aggregate([
+      {
+        $match: {
+          user: new mongoose.Types.ObjectId(userId),
+          type: 'expense',
+          date: { $gte: startDate, $lte: endDate },
+          isTaxDeductible: true
+        }
+      },
+      {
+        $group: {
+          _id: '$taxCategory',
+          total: { $sum: { $multiply: ['$amount', { $divide: ['$deductiblePercentage', 100] }] } }
+        }
+      }
+    ]);
+    
+    let total = profile.standardDeduction || 0;
+    const breakdown = { standardDeduction: profile.standardDeduction };
+    
+    // Add expense deductions
+    expenseDeductions.forEach(d => {
+      breakdown[d._id] = d.total;
+      total += d.total;
+    });
+    
+    // Add custom deductions
+    customDeductions.forEach(d => {
+      breakdown[d.name] = d.amount;
+      total += d.amount;
+    });
+    
+    // Add profile custom deductions
+    (profile.customDeductions || []).forEach(d => {
+      breakdown[d.name] = d.amount;
+      total += d.amount;
+    });
+    
+    return { total, breakdown };
+  }
+
+  /**
+   * Calculate tax from brackets
+   */
+  calculateTaxFromBrackets(taxableIncome, profile) {
+    const brackets = profile.getTaxBrackets();
+    let totalTax = 0;
+    let remainingIncome = taxableIncome;
+    const bracketBreakdown = [];
+    
+    for (const bracket of brackets) {
+      const max = bracket.maxIncome || Infinity;
+      const taxableInBracket = Math.min(remainingIncome, max - bracket.minIncome);
+      
+      if (taxableInBracket > 0) {
+        const taxForBracket = (taxableInBracket * bracket.rate) / 100;
+        totalTax += taxForBracket;
+        bracketBreakdown.push({
+          rate: bracket.rate,
+          amount: taxableInBracket,
+          tax: taxForBracket
+        });
+        remainingIncome -= taxableInBracket;
+      }
+      
+      if (remainingIncome <= 0) break;
+    }
+    
+    // Add cess (4% for India)
+    const cess = totalTax * 0.04;
+    
+    return {
+      totalTax: totalTax + cess,
+      baseTax: totalTax,
+      cess,
+      brackets: bracketBreakdown
+    };
+  }
+
+  /**
+   * Calculate tax estimate
+   */
+  async calculateTaxEstimate(userId, options = {}) {
+    const taxYear = options.taxYear || new Date().getFullYear();
+    return await this.calculateTax(userId, taxYear, options);
+  }
+
+  /**
+   * Calculate quarterly estimate
    */
   async calculateQuarterlyEstimate(userId, quarter, taxYear) {
-    const estimate = await this.calculateTaxEstimate(userId, { taxYear });
+    const estimate = await this.calculateTax(userId, taxYear);
+    const quarterlyPayment = estimate.taxDue / 4;
     
-    // Safe harbor: Pay 100% of prior year's tax (or 110% if high income)
-    const priorYearEstimate = await TaxEstimate.getLatestEstimate(userId, taxYear - 1);
-    const safeHarborPrior = priorYearEstimate?.finalTax.totalTax || 0;
-    
-    // Calculate annualized income through current quarter
-    const quarterMultiplier = { 1: 4, 2: 2, 3: 1.33, 4: 1 }[quarter];
-    const annualizedTax = estimate.finalTax.totalTax;
-    
-    // Recommended payment is higher of current year pro-rata or safe harbor
-    const currentYearPayment = annualizedTax / 4;
-    const safeHarborPayment = safeHarborPrior / 4;
-    const recommendedPayment = Math.max(currentYearPayment, safeHarborPayment);
-    
-    // Payment due dates
     const dueDates = {
-      1: new Date(taxYear, 3, 15), // April 15
-      2: new Date(taxYear, 5, 15), // June 15
-      3: new Date(taxYear, 8, 15), // September 15
-      4: new Date(taxYear + 1, 0, 15) // January 15
+      1: new Date(taxYear, 5, 15), // June 15
+      2: new Date(taxYear, 8, 15), // September 15
+      3: new Date(taxYear, 11, 15), // December 15
+      4: new Date(taxYear + 1, 2, 15) // March 15
     };
     
     return {
       quarter,
       taxYear,
-      estimatedAnnualTax: annualizedTax,
-      quarterlyPayment: recommendedPayment,
-      safeHarborAmount: safeHarborPayment,
+      estimatedAnnualTax: estimate.finalTax,
+      quarterlyPayment,
       dueDate: dueDates[quarter],
-      priorYearTax: safeHarborPrior,
-      paidToDate: (estimate.payments.estimatedPayments[`q${quarter - 1}`] || 0) +
-                  (quarter > 1 ? estimate.payments.estimatedPayments.q1 : 0) +
-                  (quarter > 2 ? estimate.payments.estimatedPayments.q2 : 0) +
-                  (quarter > 3 ? estimate.payments.estimatedPayments.q3 : 0),
-      remainingForYear: annualizedTax - estimate.payments.totalPayments
+      totalDue: estimate.taxDue
     };
   }
 
-  // ==================== TAX OPTIMIZATION ====================
+  // ==================== TAX REGIME COMPARISON ====================
 
   /**
-   * Generate tax optimization recommendations
+   * Compare old vs new tax regime
    */
-  async generateOptimizations(userId, estimate, profile) {
-    const optimizations = [];
-    const remainingYear = 12 - new Date().getMonth();
+  async compareRegimes(userId, taxYear) {
+    const profile = await this.getOrCreateProfile(userId, taxYear);
+    const income = await this.calculateTotalIncome(userId, taxYear);
     
-    // 1. Retirement contribution opportunities
-    const iraLimit = 7000; // 2024 limit
-    const currentIRA = estimate.adjustments.iraContribution;
-    if (currentIRA < iraLimit) {
-      const potential = iraLimit - currentIRA;
-      const marginalRate = estimate.finalTax.marginalRate / 100;
-      optimizations.push({
-        type: 'increase_retirement',
-        title: 'Maximize IRA Contributions',
-        description: `You can contribute $${potential.toLocaleString()} more to your Traditional IRA this year.`,
-        potentialSavings: Math.round(potential * marginalRate),
-        difficulty: 'easy',
-        actionItems: [
-          `Contribute additional $${Math.round(potential / remainingYear)} per month`,
-          'Consider setting up automatic contributions',
-          'Review investment options within your IRA'
-        ]
-      });
-    }
+    // Calculate for new regime
+    const newRegimeBrackets = TaxProfile.getDefaultBrackets(profile.country, 'new');
+    const newRegimeTax = this.calculateTaxFromBracketsRaw(income.total - 50000, newRegimeBrackets);
     
-    // 2. HSA optimization
-    if (profile.hsaAccount?.enabled) {
-      const hsaLimit = profile.hsaAccount.coverageType === 'family' ? 8300 : 4150;
-      const currentHSA = estimate.adjustments.hsaContribution;
-      if (currentHSA < hsaLimit) {
-        const potential = hsaLimit - currentHSA;
-        const marginalRate = estimate.finalTax.marginalRate / 100;
-        optimizations.push({
-          type: 'maximize_hsa',
-          title: 'Maximize HSA Contributions',
-          description: `You can contribute $${potential.toLocaleString()} more to your HSA.`,
-          potentialSavings: Math.round(potential * (marginalRate + 0.0765)), // Including FICA
-          difficulty: 'easy',
-          actionItems: [
-            'HSA contributions are triple-tax advantaged',
-            'Can be invested for long-term growth',
-            'No "use it or lose it" - funds carry over'
-          ]
-        });
-      }
-    }
+    // Calculate for old regime (with deductions)
+    const oldRegimeBrackets = TaxProfile.getDefaultBrackets(profile.country, 'old');
+    const deductions = await this.calculateDeductions(userId, taxYear, profile);
+    const oldRegimeTax = this.calculateTaxFromBracketsRaw(income.total - deductions.total, oldRegimeBrackets);
     
-    // 3. Itemization analysis
-    const itemizedTotal = estimate.deductions.itemizedDeductions.total;
-    const standardDed = estimate.deductions.standardDeduction;
-    const difference = standardDed - itemizedTotal;
-    
-    if (difference > 0 && difference < 5000) {
-      optimizations.push({
-        type: 'bunch_deductions',
-        title: 'Consider Bunching Deductions',
-        description: `You're $${difference.toLocaleString()} away from itemizing. Consider bunching deductions.`,
-        potentialSavings: Math.round(difference * (estimate.finalTax.marginalRate / 100)),
-        difficulty: 'medium',
-        actionItems: [
-          'Prepay property taxes if allowed',
-          'Make January mortgage payment in December',
-          'Bunch two years of charitable giving into one'
-        ]
-      });
-    }
-    
-    // 4. Charitable giving optimization
-    if (estimate.deductions.itemizedDeductions.charitableContributions > 0) {
-      optimizations.push({
-        type: 'charitable_giving',
-        title: 'Optimize Charitable Giving',
-        description: 'Consider donating appreciated stock instead of cash.',
-        potentialSavings: null,
-        difficulty: 'medium',
-        actionItems: [
-          'Donate appreciated securities to avoid capital gains',
-          'Consider a Donor Advised Fund for larger gifts',
-          'Keep detailed records of all donations'
-        ]
-      });
-    }
-    
-    // 5. Business expense tracking
-    if (['self_employed', 'freelancer', 'business_owner'].includes(profile.employmentType)) {
-      const businessDeductions = estimate.deductions.businessDeductions.total;
-      const seIncome = estimate.income.selfEmployment + estimate.income.freelance;
-      
-      if (seIncome > 0 && businessDeductions / seIncome < 0.2) {
-        optimizations.push({
-          type: 'business_expense',
-          title: 'Review Business Expenses',
-          description: 'Your business deductions seem low. Ensure you\'re tracking all eligible expenses.',
-          potentialSavings: Math.round(seIncome * 0.1 * (estimate.finalTax.marginalRate / 100 + 0.153)),
-          difficulty: 'easy',
-          actionItems: [
-            'Review all software subscriptions',
-            'Track professional development costs',
-            'Document all business travel expenses'
-          ]
-        });
-      }
-      
-      // Home office suggestion
-      if (!profile.businessInfo?.homeOffice?.enabled) {
-        optimizations.push({
-          type: 'home_office',
-          title: 'Claim Home Office Deduction',
-          description: 'If you work from home, you may qualify for the home office deduction.',
-          potentialSavings: 1500, // Simplified method max
-          difficulty: 'easy',
-          actionItems: [
-            'Measure dedicated workspace square footage',
-            'Simplified method: $5/sq ft up to 300 sq ft',
-            'Keep records of home expenses for regular method'
-          ]
-        });
-      }
-    }
-    
-    // 6. Mileage tracking
-    if (profile.vehicleTracking?.enabled === false && 
-        ['self_employed', 'freelancer'].includes(profile.employmentType)) {
-      optimizations.push({
-        type: 'mileage_tracking',
-        title: 'Track Business Mileage',
-        description: 'Business mileage can be deducted at $0.67/mile for 2024.',
-        potentialSavings: 3000, // Estimate for moderate driving
-        difficulty: 'easy',
-        actionItems: [
-          'Use a mileage tracking app',
-          'Log trips for client meetings, errands',
-          'Keep a mileage log with dates and purposes'
-        ]
-      });
-    }
-    
-    return optimizations.sort((a, b) => (b.potentialSavings || 0) - (a.potentialSavings || 0));
+    return {
+      income: income.total,
+      newRegime: {
+        taxableIncome: income.total - 50000,
+        tax: newRegimeTax,
+        deductions: 50000
+      },
+      oldRegime: {
+        taxableIncome: income.total - deductions.total,
+        tax: oldRegimeTax,
+        deductions: deductions.total
+      },
+      recommendation: newRegimeTax < oldRegimeTax ? 'new' : 'old',
+      savings: Math.abs(newRegimeTax - oldRegimeTax)
+    };
   }
 
-  // ==================== TAX REPORTS ====================
+  calculateTaxFromBracketsRaw(taxableIncome, brackets) {
+    let totalTax = 0;
+    let remainingIncome = Math.max(0, taxableIncome);
+    
+    for (const bracket of brackets) {
+      const max = bracket.maxIncome || Infinity;
+      const taxableInBracket = Math.min(remainingIncome, max - bracket.minIncome);
+      
+      if (taxableInBracket > 0) {
+        totalTax += (taxableInBracket * bracket.rate) / 100;
+        remainingIncome -= taxableInBracket;
+      }
+      
+      if (remainingIncome <= 0) break;
+    }
+    
+    return totalTax * 1.04; // Add 4% cess
+  }
+
+  // ==================== TAX CATEGORIES & DEDUCTIONS ====================
 
   /**
-   * Generate tax report for export
+   * Get deductible categories
    */
-  async generateTaxReport(userId, taxYear, format = 'summary') {
-    const [estimate, deductions, profile] = await Promise.all([
-      this.calculateTaxEstimate(userId, { taxYear }),
-      Deduction.find({ user: userId, taxYear, isDeleted: false }).populate('taxCategory'),
-      this.getProfile(userId)
-    ]);
+  async getDeductibleCategories(country = 'IN') {
+    const categories = await TaxCategory.find({
+      country,
+      type: { $in: ['deductible', 'partially_deductible'] },
+      isActive: true
+    });
     
-    if (format === 'summary') {
-      return {
-        profile: {
-          jurisdiction: profile.jurisdiction,
-          filingStatus: profile.filingStatus,
-          taxYear
-        },
-        income: estimate.income,
-        adjustments: estimate.adjustments,
-        agi: estimate.agi,
-        deductions: {
-          type: estimate.deductions.type,
-          amount: estimate.deductions.totalDeductions
-        },
-        taxableIncome: estimate.taxableIncome,
-        taxCalculation: estimate.taxCalculation,
-        credits: estimate.credits,
-        finalTax: estimate.finalTax,
-        payments: estimate.payments,
-        balance: estimate.balance,
-        generatedAt: new Date()
-      };
+    if (categories.length === 0) {
+      return TaxCategory.getDefaultCategories(country).filter(
+        c => c.type === 'deductible' || c.type === 'partially_deductible'
+      );
     }
     
-    if (format === 'scheduleC') {
-      const businessDeductions = await Deduction.getFormData(userId, taxYear, 'Schedule C');
-      return {
-        taxYear,
-        form: 'Schedule C',
-        grossIncome: estimate.income.selfEmployment + estimate.income.freelance,
-        deductions: businessDeductions,
-        totalDeductions: estimate.deductions.businessDeductions.total,
-        netProfit: (estimate.income.selfEmployment + estimate.income.freelance) - 
-                   estimate.deductions.businessDeductions.total
-      };
-    }
-    
-    if (format === 'detailed') {
-      return {
-        profile,
-        estimate,
-        deductions: deductions.map(d => ({
-          date: d.date,
-          description: d.description,
-          category: d.taxCategory?.name,
-          amount: d.amount,
-          deductibleAmount: d.deductibleAmount,
-          hasReceipt: d.documentation.hasReceipt
-        })),
-        summary: await this.getDeductionsSummary(userId, taxYear)
-      };
-    }
-    
-    return { error: 'Invalid format' };
+    return categories;
   }
 
   /**
-   * Export deductions for tax software (CSV format data)
+   * Initialize default categories
    */
-  async exportForTaxSoftware(userId, taxYear, software = 'generic') {
-    const deductions = await Deduction.find({ 
-      user: userId, 
-      taxYear, 
-      isDeleted: false 
-    }).populate('taxCategory').sort({ date: 1 });
+  async initializeDefaultCategories(country = 'IN') {
+    const existingCount = await TaxCategory.countDocuments({ country });
+    if (existingCount > 0) return;
     
-    const rows = deductions.map(d => ({
-      date: d.date.toISOString().split('T')[0],
-      category: d.taxCategory?.name || 'Uncategorized',
-      description: d.description,
-      merchant: d.merchant || '',
-      amount: d.amount,
-      deductibleAmount: d.deductibleAmount,
-      form: d.formMapping?.form || '',
-      line: d.formMapping?.line || '',
-      hasReceipt: d.documentation.hasReceipt ? 'Yes' : 'No'
-    }));
+    const defaults = TaxCategory.getDefaultCategories(country);
+    await TaxCategory.insertMany(defaults);
+  }
+
+  /**
+   * Auto-tag expense for tax
+   */
+  async autoTagExpense(expense) {
+    const match = await TaxCategory.findMatchingCategory(expense, 'IN');
     
-    // Format for specific software
-    if (software === 'turbotax') {
+    if (match && match.confidence >= 0.5) {
       return {
-        format: 'TurboTax',
-        columns: ['Date', 'Category', 'Description', 'Amount', 'Receipt'],
-        data: rows.map(r => [r.date, r.category, r.description, r.deductibleAmount, r.hasReceipt])
+        isTaxDeductible: match.category.type !== 'non_deductible',
+        taxCategory: match.category.code,
+        section: match.category.section,
+        deductiblePercentage: match.category.categoryMappings?.[0]?.deductiblePercentage || 100,
+        confidence: match.confidence
       };
     }
     
     return {
-      format: 'Generic CSV',
-      columns: Object.keys(rows[0] || {}),
-      data: rows
+      isTaxDeductible: false,
+      taxCategory: null,
+      confidence: 0
     };
   }
 
-  // ==================== UTILITIES ====================
-
   /**
-   * Calculate data completeness percentage
+   * Categorize expense for tax
    */
-  calculateDataCompleteness(estimate, profile) {
-    let score = 0;
-    const checks = [
-      estimate.income.total > 0,
-      profile.filingStatus !== undefined,
-      profile.jurisdiction !== undefined,
-      estimate.deductions.totalDeductions > 0,
-      profile.dependents?.length >= 0,
-      estimate.payments.federalWithholding > 0 || estimate.payments.estimatedPayments.q1 > 0
-    ];
+  async categorizeExpenseForTax(userId, expenseId) {
+    const expense = await Expense.findOne({ _id: expenseId, user: userId });
+    if (!expense) {
+      throw new Error('Expense not found');
+    }
     
-    checks.forEach(check => { if (check) score += (100 / checks.length); });
-    return Math.round(score);
+    return await this.autoTagExpense(expense);
   }
 
   /**
-   * Send quarterly tax reminder
+   * Get deductible expenses
    */
-  async sendQuarterlyReminder(userId, quarter) {
-    const estimate = await this.calculateQuarterlyEstimate(userId, quarter, new Date().getFullYear());
+  async getDeductibleExpenses(userId, startDate, endDate) {
+    const expenses = await Expense.find({
+      user: userId,
+      date: { $gte: startDate, $lte: endDate },
+      isTaxDeductible: true
+    }).sort({ date: -1 });
     
-    await notificationService.sendNotification(userId, {
-      title: `Q${quarter} Estimated Tax Payment Due`,
-      message: `Your estimated payment of $${estimate.quarterlyPayment.toLocaleString()} is due ${estimate.dueDate.toLocaleDateString()}.`,
-      type: 'tax_reminder',
-      priority: 'high',
-      data: { quarter, amount: estimate.quarterlyPayment, dueDate: estimate.dueDate }
+    return expenses.map(e => ({
+      _id: e._id,
+      description: e.description,
+      amount: e.amount,
+      category: e.category,
+      taxCategory: e.taxCategory,
+      deductiblePercentage: e.deductiblePercentage || 100,
+      deductibleAmount: e.amount * ((e.deductiblePercentage || 100) / 100),
+      date: e.date
+    }));
+  }
+
+  // ==================== TAX SUMMARY & REPORTS ====================
+
+  /**
+   * Get tax summary for dashboard
+   */
+  async getTaxSummary(userId, taxYear) {
+    const calculation = await this.calculateTax(userId, taxYear);
+    const comparison = await this.compareRegimes(userId, taxYear);
+    
+    return {
+      taxYear,
+      totalIncome: calculation.income.total,
+      totalDeductions: calculation.deductions.total,
+      taxableIncome: calculation.taxableIncome,
+      estimatedTax: calculation.finalTax,
+      taxDue: calculation.taxDue,
+      effectiveRate: calculation.effectiveRate,
+      recommendedRegime: comparison.recommendation,
+      potentialSavings: comparison.savings
+    };
+  }
+
+  /**
+   * Generate tax report
+   */
+  async generateTaxReport(userId, taxYear, format = 'summary') {
+    const calculation = await this.calculateTax(userId, taxYear);
+    const profile = await this.getOrCreateProfile(userId, taxYear);
+    
+    return {
+      taxYear,
+      format,
+      profile: {
+        country: profile.country,
+        regime: profile.regime,
+        filingStatus: profile.filingStatus
+      },
+      income: calculation.income,
+      deductions: calculation.deductions,
+      taxCalculation: calculation.taxCalculation,
+      finalTax: calculation.finalTax,
+      taxDue: calculation.taxDue,
+      generatedAt: new Date()
+    };
+  }
+
+  /**
+   * Generate tax optimizations
+   */
+  async generateOptimizations(userId) {
+    const taxYear = new Date().getFullYear();
+    const profile = await this.getOrCreateProfile(userId, taxYear);
+    const calculation = await this.calculateTax(userId, taxYear);
+    
+    const optimizations = [];
+    
+    // Check 80C limit
+    const section80C = calculation.deductions.breakdown['80C'] || 0;
+    if (section80C < 150000) {
+      optimizations.push({
+        type: 'increase_80c',
+        title: 'Maximize Section 80C',
+        description: `Invest ₹${(150000 - section80C).toLocaleString()} more in 80C instruments`,
+        potentialSavings: Math.round((150000 - section80C) * 0.3),
+        priority: 'high'
+      });
+    }
+    
+    // Check NPS contribution
+    optimizations.push({
+      type: 'nps_contribution',
+      title: 'Consider NPS Contribution',
+      description: 'Additional ₹50,000 deduction under Section 80CCD(1B)',
+      potentialSavings: Math.round(50000 * 0.3),
+      priority: 'medium'
     });
+    
+    // Regime comparison
+    const comparison = await this.compareRegimes(userId, taxYear);
+    if (comparison.recommendation !== profile.regime) {
+      optimizations.push({
+        type: 'regime_switch',
+        title: `Switch to ${comparison.recommendation} regime`,
+        description: `Save ₹${comparison.savings.toLocaleString()} by switching tax regime`,
+        potentialSavings: comparison.savings,
+        priority: 'high'
+      });
+    }
+    
+    return optimizations;
   }
 
   /**
@@ -794,53 +500,49 @@ class TaxService {
    */
   async getYearEndChecklist(userId) {
     const taxYear = new Date().getFullYear();
-    const profile = await this.getProfile(userId);
-    const summary = await this.getDeductionsSummary(userId, taxYear);
+    const calculation = await this.calculateTax(userId, taxYear);
     
     const checklist = [
       {
-        item: 'Maximize retirement contributions',
+        item: 'Maximize Section 80C investments',
+        completed: (calculation.deductions.breakdown['80C'] || 0) >= 150000,
+        deadline: new Date(taxYear + 1, 2, 31),
+        details: 'PPF, ELSS, Life Insurance up to ₹1,50,000'
+      },
+      {
+        item: 'Health Insurance Premium (80D)',
+        completed: (calculation.deductions.breakdown['80D'] || 0) > 0,
+        deadline: new Date(taxYear + 1, 2, 31)
+      },
+      {
+        item: 'Review advance tax payments',
+        completed: calculation.taxDue <= 10000,
+        deadline: new Date(taxYear + 1, 2, 15)
+      },
+      {
+        item: 'Collect Form 16 from employer',
         completed: false,
-        deadline: new Date(taxYear, 11, 31),
-        details: 'IRA contributions due by April 15, 401k by Dec 31'
-      },
-      {
-        item: 'Review and categorize all expenses',
-        completed: summary.byCategory.length > 0,
-        deadline: new Date(taxYear, 11, 31)
-      },
-      {
-        item: 'Gather missing receipts',
-        completed: summary.missingDocumentation.count === 0,
-        deadline: new Date(taxYear, 11, 31),
-        details: `${summary.missingDocumentation.count} receipts missing`
-      },
-      {
-        item: 'Make final charitable donations',
-        completed: false,
-        deadline: new Date(taxYear, 11, 31)
-      },
-      {
-        item: 'Review medical expenses',
-        completed: false,
-        deadline: new Date(taxYear, 11, 31)
-      },
-      {
-        item: 'Verify W-4 withholdings',
-        completed: false,
-        deadline: new Date(taxYear, 11, 15)
+        deadline: new Date(taxYear + 1, 5, 15)
       }
     ];
     
-    if (profile.employmentType === 'self_employed') {
-      checklist.push({
-        item: 'Calculate Q4 estimated payment',
-        completed: false,
-        deadline: new Date(taxYear + 1, 0, 15)
-      });
-    }
-    
     return checklist;
+  }
+
+  /**
+   * Send quarterly reminder (for cron jobs)
+   */
+  async sendQuarterlyReminder(userId, quarter) {
+    const notificationService = require('./notificationService');
+    const estimate = await this.calculateQuarterlyEstimate(userId, quarter, new Date().getFullYear());
+    
+    await notificationService.sendNotification(userId, {
+      title: `Q${quarter} Estimated Tax Payment Due`,
+      message: `Your estimated payment of ₹${estimate.quarterlyPayment.toLocaleString()} is due ${estimate.dueDate.toLocaleDateString()}.`,
+      type: 'tax_reminder',
+      priority: 'high',
+      data: estimate
+    });
   }
 }
 
