@@ -34,6 +34,10 @@ class NotificationService {
   static setIo(io) {
     ioInstance = io;
   }
+
+  setIo(io) {
+    ioInstance = io;
+  }
   
   // Send notification through multiple channels
   async sendNotification(userId, notificationData) {
