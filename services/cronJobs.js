@@ -4,10 +4,8 @@ const Expense = require('../models/Expense');
 const BankConnection = require('../models/BankConnection');
 const emailService = require('../services/emailService');
 const currencyService = require('../services/currencyService');
-const taxService = require('../services/taxService');
-const subscriptionService = require('../services/subscriptionService');
-const gamificationService = require('../services/gamificationService');
-const recurringService = require('../services/recurringService');
+const investmentService = require('../services/investmentService');
+const Portfolio = require('../models/Portfolio');
 
 class CronJobs {
   static init() {
@@ -71,27 +69,22 @@ class CronJobs {
       await this.updateExchangeRates();
     });
 
-    // Sync bank transactions - Every 4 hours for daily sync, every 15 min for realtime
-    cron.schedule('0 */4 * * *', async () => {
-      console.log('[CronJobs] Syncing bank transactions (daily)...');
-      await this.syncBankTransactions('daily');
+    // Update investment prices - Every hour during market hours (9 AM - 5 PM EST)
+    cron.schedule('0 9-17 * * 1-5', async () => {
+      console.log('[CronJobs] Updating investment asset prices...');
+      await this.updateInvestmentPrices();
     });
 
+    // Update crypto prices - Every 15 minutes (24/7)
     cron.schedule('*/15 * * * *', async () => {
-      console.log('[CronJobs] Syncing bank transactions (realtime)...');
-      await this.syncBankTransactions('realtime');
+      console.log('[CronJobs] Updating crypto prices...');
+      await this.updateCryptoPrices();
     });
 
-    // Check bank connection health - Daily at 7 AM
-    cron.schedule('0 7 * * *', async () => {
-      console.log('[CronJobs] Checking bank connection health...');
-      await this.checkBankConnectionHealth();
-    });
-
-    // Weekly bank sync (for weekly sync preference) - Every Monday at 6 AM
-    cron.schedule('0 6 * * 1', async () => {
-      console.log('[CronJobs] Syncing bank transactions (weekly)...');
-      await this.syncBankTransactions('weekly');
+    // Take daily portfolio snapshots - Daily at 6 PM EST
+    cron.schedule('0 18 * * 1-5', async () => {
+      console.log('[CronJobs] Taking portfolio snapshots...');
+      await this.takePortfolioSnapshots();
     });
 
     console.log('Cron jobs initialized successfully');
@@ -336,99 +329,85 @@ class CronJobs {
     }
   }
 
-  /**
-   * Sync bank transactions based on frequency preference
-   */
-  static async syncBankTransactions(frequency) {
+  // Update stock/ETF prices
+  static async updateInvestmentPrices() {
     try {
-      const transactionImportService = require('./transactionImportService');
-      const openBankingService = require('./openBankingService');
-
-      // Find connections due for sync with this frequency
-      const connections = await BankConnection.find({
-        status: 'active',
-        'syncConfig.syncEnabled': true,
-        'syncConfig.frequency': frequency,
-        $or: [
-          { 'syncConfig.nextSyncAt': { $lte: new Date() } },
-          { 'syncConfig.nextSyncAt': { $exists: false } }
-        ]
+      const Asset = require('../models/Asset');
+      const assets = await Asset.find({ 
+        isActive: true, 
+        type: { $in: ['stock', 'etf', 'mutual_fund'] }
       });
 
-      console.log(`[BankSync] Found ${connections.length} connections to sync (${frequency})`);
+      let updated = 0;
+      let failed = 0;
 
-      for (const connection of connections) {
+      for (const asset of assets) {
         try {
-          // Sync balances first
-          await openBankingService.syncBalances(connection._id);
-          
-          // Sync transactions
-          const result = await transactionImportService.syncTransactions(connection._id);
-          
-          console.log(`[BankSync] Synced ${connection.institution.name}: ${result.imported} new, ${result.duplicates} duplicates`);
+          // Rate limiting for Alpha Vantage (5 calls/min on free tier)
+          await new Promise(resolve => setTimeout(resolve, 12000));
+          await investmentService.updateAssetPrice(asset._id);
+          updated++;
         } catch (error) {
-          console.error(`[BankSync] Error syncing ${connection.institution?.name}:`, error.message);
-          
-          // Update connection health
-          connection.updateHealth(false);
-          await connection.save();
+          console.error(`Failed to update ${asset.symbol}:`, error.message);
+          failed++;
         }
       }
+
+      console.log(`[CronJobs] Investment prices updated: ${updated} success, ${failed} failed`);
     } catch (error) {
-      console.error('[BankSync] Sync job error:', error);
+      console.error('[CronJobs] Investment price update error:', error);
     }
   }
 
-  /**
-   * Check and report on unhealthy bank connections
-   */
-  static async checkBankConnectionHealth() {
+  // Update crypto prices (more frequent, CoinGecko has higher rate limits)
+  static async updateCryptoPrices() {
     try {
-      // Find unhealthy connections
-      const unhealthyConnections = await BankConnection.findUnhealthy();
+      const Asset = require('../models/Asset');
+      const cryptoAssets = await Asset.find({ 
+        isActive: true, 
+        type: 'crypto' 
+      });
 
-      if (unhealthyConnections.length > 0) {
-        console.log(`[BankHealth] Found ${unhealthyConnections.length} unhealthy connections`);
+      let updated = 0;
+      let failed = 0;
 
-        for (const connection of unhealthyConnections) {
-          // Notify user about connection issues
-          if (connection.user?.email) {
-            try {
-              await emailService.sendBankConnectionAlert(connection.user, {
-                institution: connection.institution.name,
-                status: connection.status,
-                error: connection.error?.displayMessage || 'Connection requires attention',
-                lastSync: connection.syncConfig.lastSyncAt
-              });
-            } catch (emailError) {
-              console.error('[BankHealth] Failed to send alert email:', emailError.message);
-            }
-          }
+      for (const asset of cryptoAssets) {
+        try {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          await investmentService.updateAssetPrice(asset._id);
+          updated++;
+        } catch (error) {
+          console.error(`Failed to update crypto ${asset.symbol}:`, error.message);
+          failed++;
         }
       }
 
-      // Find connections requiring re-authentication
-      const reauthConnections = await BankConnection.find({
-        status: 'requires_reauth'
-      }).populate('user', 'email name');
-
-      if (reauthConnections.length > 0) {
-        console.log(`[BankHealth] Found ${reauthConnections.length} connections requiring re-auth`);
-
-        for (const connection of reauthConnections) {
-          if (connection.user?.email) {
-            try {
-              await emailService.sendBankReauthRequired(connection.user, {
-                institution: connection.institution.name
-              });
-            } catch (emailError) {
-              console.error('[BankHealth] Failed to send reauth email:', emailError.message);
-            }
-          }
-        }
-      }
+      console.log(`[CronJobs] Crypto prices updated: ${updated} success, ${failed} failed`);
     } catch (error) {
-      console.error('[BankHealth] Health check error:', error);
+      console.error('[CronJobs] Crypto price update error:', error);
+    }
+  }
+
+  // Take daily portfolio snapshots for historical tracking
+  static async takePortfolioSnapshots() {
+    try {
+      const portfolios = await Portfolio.find({})
+        .populate('holdings.asset');
+
+      let snapshotsTaken = 0;
+
+      for (const portfolio of portfolios) {
+        try {
+          await portfolio.takeSnapshot();
+          snapshotsTaken++;
+        } catch (error) {
+          console.error(`Failed to snapshot portfolio ${portfolio._id}:`, error.message);
+        }
+      }
+
+      console.log(`[CronJobs] Portfolio snapshots taken: ${snapshotsTaken}`);
+    } catch (error) {
+      console.error('[CronJobs] Portfolio snapshot error:', error);
     }
   }
 }
