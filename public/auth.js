@@ -42,6 +42,23 @@ if (registerForm) {
         const email = document.getElementById("email").value.trim();
         const password = document.getElementById("password").value.trim();
 
+        function isStrongPassword(password) {
+        return (
+            password.length >= 8 &&
+            /[A-Z]/.test(password) &&
+            /[a-z]/.test(password) &&
+            /[0-9]/.test(password) &&
+            /[^A-Za-z0-9]/.test(password)
+        );
+        }
+
+        if (!isStrongPassword(password)) {
+        alert(
+            "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character."
+        );
+        return;
+        }
+
         try {
             const res = await fetch("/api/auth/register", {
                 method: "POST",

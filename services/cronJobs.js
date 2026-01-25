@@ -1,11 +1,11 @@
 const cron = require('node-cron');
 const User = require('../models/User');
 const Expense = require('../models/Expense');
+const BankConnection = require('../models/BankConnection');
 const emailService = require('../services/emailService');
 const currencyService = require('../services/currencyService');
-const subscriptionService = require('../services/subscriptionService');
-const gamificationService = require('../services/gamificationService');
-const recurringService = require('../services/recurringService');
+const investmentService = require('../services/investmentService');
+const Portfolio = require('../models/Portfolio');
 
 class CronJobs {
   static init() {
@@ -69,8 +69,23 @@ class CronJobs {
       await this.updateExchangeRates();
     });
 
-    // Seed default achievements and challenges on startup (run once)
-    this.seedGamificationData();
+    // Update investment prices - Every hour during market hours (9 AM - 5 PM EST)
+    cron.schedule('0 9-17 * * 1-5', async () => {
+      console.log('[CronJobs] Updating investment asset prices...');
+      await this.updateInvestmentPrices();
+    });
+
+    // Update crypto prices - Every 15 minutes (24/7)
+    cron.schedule('*/15 * * * *', async () => {
+      console.log('[CronJobs] Updating crypto prices...');
+      await this.updateCryptoPrices();
+    });
+
+    // Take daily portfolio snapshots - Daily at 6 PM EST
+    cron.schedule('0 18 * * 1-5', async () => {
+      console.log('[CronJobs] Taking portfolio snapshots...');
+      await this.takePortfolioSnapshots();
+    });
 
     console.log('Cron jobs initialized successfully');
   }
@@ -311,6 +326,88 @@ class CronJobs {
       }
     } catch (error) {
       console.error('Budget alert error:', error);
+    }
+  }
+
+  // Update stock/ETF prices
+  static async updateInvestmentPrices() {
+    try {
+      const Asset = require('../models/Asset');
+      const assets = await Asset.find({ 
+        isActive: true, 
+        type: { $in: ['stock', 'etf', 'mutual_fund'] }
+      });
+
+      let updated = 0;
+      let failed = 0;
+
+      for (const asset of assets) {
+        try {
+          // Rate limiting for Alpha Vantage (5 calls/min on free tier)
+          await new Promise(resolve => setTimeout(resolve, 12000));
+          await investmentService.updateAssetPrice(asset._id);
+          updated++;
+        } catch (error) {
+          console.error(`Failed to update ${asset.symbol}:`, error.message);
+          failed++;
+        }
+      }
+
+      console.log(`[CronJobs] Investment prices updated: ${updated} success, ${failed} failed`);
+    } catch (error) {
+      console.error('[CronJobs] Investment price update error:', error);
+    }
+  }
+
+  // Update crypto prices (more frequent, CoinGecko has higher rate limits)
+  static async updateCryptoPrices() {
+    try {
+      const Asset = require('../models/Asset');
+      const cryptoAssets = await Asset.find({ 
+        isActive: true, 
+        type: 'crypto' 
+      });
+
+      let updated = 0;
+      let failed = 0;
+
+      for (const asset of cryptoAssets) {
+        try {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          await investmentService.updateAssetPrice(asset._id);
+          updated++;
+        } catch (error) {
+          console.error(`Failed to update crypto ${asset.symbol}:`, error.message);
+          failed++;
+        }
+      }
+
+      console.log(`[CronJobs] Crypto prices updated: ${updated} success, ${failed} failed`);
+    } catch (error) {
+      console.error('[CronJobs] Crypto price update error:', error);
+    }
+  }
+
+  // Take daily portfolio snapshots for historical tracking
+  static async takePortfolioSnapshots() {
+    try {
+      const portfolios = await Portfolio.find({})
+        .populate('holdings.asset');
+
+      let snapshotsTaken = 0;
+
+      for (const portfolio of portfolios) {
+        try {
+          await portfolio.takeSnapshot();
+          snapshotsTaken++;
+        } catch (error) {
+          console.error(`Failed to snapshot portfolio ${portfolio._id}:`, error.message);
+        }
+      }
+
+      console.log(`[CronJobs] Portfolio snapshots taken: ${snapshotsTaken}`);
+    } catch (error) {
+      console.error('[CronJobs] Portfolio snapshot error:', error);
     }
   }
 }

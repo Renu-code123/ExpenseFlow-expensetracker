@@ -232,4 +232,44 @@ taxCategorySchema.statics.getDefaultCategories = function(country = 'IN') {
   return categories.filter(c => c.country === country || country === 'ALL');
 };
 
+// Method to match expense to tax category
+taxCategorySchema.statics.findMatchingCategory = async function(expense, country = 'IN') {
+  const categories = await this.find({
+    country: { $in: [country, 'ALL'] },
+    isActive: true
+  });
+  
+  let bestMatch = null;
+  let highestConfidence = 0;
+  
+  for (const category of categories) {
+    let confidence = 0;
+    
+    // Check expense category mapping
+    const mapping = category.categoryMappings.find(
+      m => m.expenseCategory === expense.category
+    );
+    if (mapping) {
+      confidence += (mapping.deductiblePercentage / 100) * 0.4;
+    }
+    
+    // Check keywords in description
+    const description = (expense.description || '').toLowerCase();
+    const merchant = (expense.merchant || '').toLowerCase();
+    
+    for (const keyword of category.keywords) {
+      if (description.includes(keyword.toLowerCase()) || merchant.includes(keyword.toLowerCase())) {
+        confidence += 0.2;
+      }
+    }
+    
+    if (confidence > highestConfidence) {
+      highestConfidence = confidence;
+      bestMatch = { category, confidence: Math.min(confidence, 1) };
+    }
+  }
+  
+  return bestMatch;
+};
+
 module.exports = mongoose.model('TaxCategory', taxCategorySchema);

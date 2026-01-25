@@ -168,4 +168,134 @@ challengeSchema.methods.getDaysRemaining = function() {
   return Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
 };
 
+// Check if challenge is active
+challengeSchema.methods.isActive = function() {
+  const now = new Date();
+  return this.status === 'active' && now >= this.startDate && now <= this.endDate;
+};
+
+// Add participant
+challengeSchema.methods.addParticipant = async function(userId) {
+  if (this.isParticipant(userId)) {
+    throw new Error('User already participating in this challenge');
+  }
+  
+  if (this.maxParticipants > 0 && this.participants.length >= this.maxParticipants) {
+    throw new Error('Challenge has reached maximum participants');
+  }
+
+  this.participants.push({
+    user: userId,
+    joinedAt: new Date(),
+    progress: 0,
+    status: 'active'
+  });
+  
+  await this.save();
+  return this;
+};
+
+// Update participant progress
+challengeSchema.methods.updateProgress = async function(userId, progress, dailyData = null) {
+  const participant = this.getParticipant(userId);
+  if (!participant) {
+    throw new Error('User is not participating in this challenge');
+  }
+
+  participant.progress = Math.max(participant.progress, progress);
+  
+  if (dailyData) {
+    participant.completedDays.push(dailyData);
+    if (dailyData.value > 0) {
+      participant.currentStreak++;
+      participant.bestStreak = Math.max(participant.bestStreak, participant.currentStreak);
+    } else {
+      participant.currentStreak = 0;
+    }
+  }
+
+  // Check if completed
+  if (participant.progress >= this.targetValue && participant.status === 'active') {
+    participant.status = 'completed';
+    participant.completedAt = new Date();
+  }
+
+  await this.save();
+  return participant;
+};
+
+// Get leaderboard
+challengeSchema.methods.getLeaderboard = function(limit = 10) {
+  return this.participants
+    .sort((a, b) => {
+      if (b.status === 'completed' && a.status !== 'completed') return 1;
+      if (a.status === 'completed' && b.status !== 'completed') return -1;
+      if (b.progress !== a.progress) return b.progress - a.progress;
+      return new Date(a.completedAt) - new Date(b.completedAt);
+    })
+    .slice(0, limit);
+};
+
+// Static method to get active challenges for user
+challengeSchema.statics.getActiveForUser = async function(userId) {
+  const now = new Date();
+  return await this.find({
+    status: 'active',
+    startDate: { $lte: now },
+    endDate: { $gte: now },
+    'participants.user': userId
+  }).populate('creator', 'name email');
+};
+
+// Static method to get public challenges
+challengeSchema.statics.getPublicChallenges = async function(options = {}) {
+  const { page = 1, limit = 20, type, status = 'active' } = options;
+  const query = { isPublic: true, status };
+  
+  if (type) query.type = type;
+
+  return await this.find(query)
+    .populate('creator', 'name')
+    .sort({ createdAt: -1 })
+    .limit(limit)
+    .skip((page - 1) * limit);
+};
+
+// Pre-defined challenge templates
+challengeSchema.statics.getTemplates = function() {
+  return [
+    {
+      title: 'No Spend Days Challenge',
+      description: 'Complete days with zero discretionary spending. Build discipline and awareness.',
+      type: 'no_spend',
+      icon: '🚫',
+      targetValue: 7,
+      targetUnit: 'days',
+      rewardPoints: 150,
+      difficulty: 'medium'
+    },
+    {
+      title: 'Coffee Shop Savings',
+      description: 'Reduce your coffee shop expenses by making coffee at home.',
+      type: 'category_reduction',
+      icon: '☕',
+      category: 'food',
+      targetValue: 50,
+      targetUnit: 'percentage',
+      rewardPoints: 200,
+      difficulty: 'medium'
+    },
+    {
+      title: 'Budget Streak Master',
+      description: 'Stay under your daily budget for consecutive days.',
+      type: 'budget_adherence',
+      icon: '🔥',
+      targetValue: 30,
+      targetUnit: 'days',
+      rewardPoints: 300,
+      difficulty: 'hard'
+    }
+  ];
+};
+
 module.exports = mongoose.model('Challenge', challengeSchema);
