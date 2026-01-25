@@ -1,6 +1,7 @@
 const cron = require('node-cron');
 const User = require('../models/User');
 const Expense = require('../models/Expense');
+const BankConnection = require('../models/BankConnection');
 const emailService = require('../services/emailService');
 const currencyService = require('../services/currencyService');
 
@@ -40,6 +41,29 @@ class CronJobs {
     cron.schedule('0 */6 * * *', async () => {
       console.log('Updating exchange rates...');
       await this.updateExchangeRates();
+    });
+
+    // Sync bank transactions - Every 4 hours for daily sync, every 15 min for realtime
+    cron.schedule('0 */4 * * *', async () => {
+      console.log('[CronJobs] Syncing bank transactions (daily)...');
+      await this.syncBankTransactions('daily');
+    });
+
+    cron.schedule('*/15 * * * *', async () => {
+      console.log('[CronJobs] Syncing bank transactions (realtime)...');
+      await this.syncBankTransactions('realtime');
+    });
+
+    // Check bank connection health - Daily at 7 AM
+    cron.schedule('0 7 * * *', async () => {
+      console.log('[CronJobs] Checking bank connection health...');
+      await this.checkBankConnectionHealth();
+    });
+
+    // Weekly bank sync (for weekly sync preference) - Every Monday at 6 AM
+    cron.schedule('0 6 * * 1', async () => {
+      console.log('[CronJobs] Syncing bank transactions (weekly)...');
+      await this.syncBankTransactions('weekly');
     });
 
     console.log('Cron jobs initialized successfully');
@@ -226,6 +250,102 @@ class CronJobs {
       }
     } catch (error) {
       console.error('Budget alert error:', error);
+    }
+  }
+
+  /**
+   * Sync bank transactions based on frequency preference
+   */
+  static async syncBankTransactions(frequency) {
+    try {
+      const transactionImportService = require('./transactionImportService');
+      const openBankingService = require('./openBankingService');
+
+      // Find connections due for sync with this frequency
+      const connections = await BankConnection.find({
+        status: 'active',
+        'syncConfig.syncEnabled': true,
+        'syncConfig.frequency': frequency,
+        $or: [
+          { 'syncConfig.nextSyncAt': { $lte: new Date() } },
+          { 'syncConfig.nextSyncAt': { $exists: false } }
+        ]
+      });
+
+      console.log(`[BankSync] Found ${connections.length} connections to sync (${frequency})`);
+
+      for (const connection of connections) {
+        try {
+          // Sync balances first
+          await openBankingService.syncBalances(connection._id);
+          
+          // Sync transactions
+          const result = await transactionImportService.syncTransactions(connection._id);
+          
+          console.log(`[BankSync] Synced ${connection.institution.name}: ${result.imported} new, ${result.duplicates} duplicates`);
+        } catch (error) {
+          console.error(`[BankSync] Error syncing ${connection.institution?.name}:`, error.message);
+          
+          // Update connection health
+          connection.updateHealth(false);
+          await connection.save();
+        }
+      }
+    } catch (error) {
+      console.error('[BankSync] Sync job error:', error);
+    }
+  }
+
+  /**
+   * Check and report on unhealthy bank connections
+   */
+  static async checkBankConnectionHealth() {
+    try {
+      // Find unhealthy connections
+      const unhealthyConnections = await BankConnection.findUnhealthy();
+
+      if (unhealthyConnections.length > 0) {
+        console.log(`[BankHealth] Found ${unhealthyConnections.length} unhealthy connections`);
+
+        for (const connection of unhealthyConnections) {
+          // Notify user about connection issues
+          if (connection.user?.email) {
+            try {
+              await emailService.sendBankConnectionAlert(connection.user, {
+                institution: connection.institution.name,
+                status: connection.status,
+                error: connection.error?.displayMessage || 'Connection requires attention',
+                lastSync: connection.syncConfig.lastSyncAt
+              });
+            } catch (emailError) {
+              console.error('[BankHealth] Failed to send alert email:', emailError.message);
+            }
+          }
+        }
+      }
+
+      // Find connections requiring re-authentication
+      const reauthConnections = await BankConnection.find({
+        status: 'requires_reauth'
+      }).populate('user', 'email name');
+
+      if (reauthConnections.length > 0) {
+        console.log(`[BankHealth] Found ${reauthConnections.length} connections requiring re-auth`);
+
+        for (const connection of reauthConnections) {
+          if (connection.user?.email) {
+            try {
+              await emailService.sendBankReauthRequired(connection.user, {
+                institution: connection.institution.name
+              });
+            } catch (emailError) {
+              console.error('[BankHealth] Failed to send reauth email:', emailError.message);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('[BankHealth] Health check error:', error);
     }
   }
 }
