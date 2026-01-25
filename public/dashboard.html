@@ -437,6 +437,41 @@
         </div>
       </div>
 
+      <!-- Monthly Budget Card -->
+      <div class="budget-card" id="monthly-budget-card" style="display: none;">
+        <div class="budget-header">
+          <i class="fas fa-wallet"></i>
+          <h4>Monthly Budget</h4>
+          <button id="set-budget-btn" class="set-budget-btn" title="Set Monthly Budget">
+            <i class="fas fa-cog"></i>
+          </button>
+        </div>
+        <div class="budget-content">
+          <div class="budget-amount">
+            <span id="budget-limit" class="budget-limit">₹0.00</span>
+            <span class="budget-label">Limit</span>
+          </div>
+          <div class="budget-spent">
+            <span id="budget-spent" class="budget-spent">₹0.00</span>
+            <span class="budget-label">Spent</span>
+          </div>
+          <div class="budget-remaining">
+            <span id="budget-remaining" class="budget-remaining">₹0.00</span>
+            <span class="budget-label">Remaining</span>
+          </div>
+        </div>
+        <div class="budget-progress">
+          <div class="progress-bar">
+            <div id="budget-progress-fill" class="progress-fill"></div>
+          </div>
+          <span id="budget-percentage" class="progress-text">0%</span>
+        </div>
+        <div id="budget-alert" class="budget-alert" style="display: none;">
+          <i class="fas fa-exclamation-triangle"></i>
+          <span id="budget-alert-text">Budget limit exceeded!</span>
+        </div>
+      </div>
+
       <!-- Transaction History -->
       <div class="history-section">
         <div class="section-header">

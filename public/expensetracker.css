@@ -999,6 +999,190 @@ body {
   font-size: 0.9rem;
 }
 
+/* Budget Card */
+.budget-card {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 107, 157, 0.1) 0%,
+    rgba(255, 193, 122, 0.1) 100%
+  );
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 107, 157, 0.2);
+  padding: 2rem;
+  text-align: center;
+  box-shadow: 0 8px 32px 0 rgba(255, 107, 157, 0.2);
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+  animation: fadeInUp 1s ease-out 0.8s both;
+  width: 100%;
+  max-width: 32rem;
+  margin: 0 auto 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.budget-card::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 107, 157, 0.1) 0%,
+    transparent 70%
+  );
+  animation: rotate 20s linear infinite;
+  pointer-events: none;
+}
+
+.budget-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-hover);
+}
+
+.budget-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.budget-header i {
+  color: var(--accent-secondary);
+  font-size: 1.5rem;
+}
+
+.budget-header h4 {
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.9rem;
+}
+
+.set-budget-btn {
+  position: absolute;
+  right: 0;
+  background: rgba(255, 107, 157, 0.1);
+  border: 1px solid rgba(255, 107, 157, 0.3);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-secondary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.set-budget-btn:hover {
+  background: rgba(255, 107, 157, 0.2);
+  transform: scale(1.1);
+}
+
+.budget-content {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+}
+
+.budget-amount,
+.budget-spent,
+.budget-remaining {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.budget-limit,
+.budget-spent,
+.budget-remaining {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.budget-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.budget-progress {
+  margin-bottom: 1rem;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-secondary), var(--warning));
+  border-radius: 4px;
+  transition: width 0.3s ease;
+  width: 0%;
+}
+
+.progress-fill.warning {
+  background: linear-gradient(90deg, var(--warning), var(--error));
+}
+
+.progress-fill.exceeded {
+  background: linear-gradient(90deg, var(--error), #ff5722);
+}
+
+.progress-text {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.budget-alert {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: rgba(255, 87, 34, 0.1);
+  border: 1px solid rgba(255, 87, 34, 0.3);
+  border-radius: 8px;
+  color: var(--error);
+  font-weight: 500;
+  animation: pulse 2s infinite;
+}
+
+.budget-alert i {
+  font-size: 1.2rem;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
 /* Dashboard Grid (Mobile First) */
 .inc-exp-container {
   display: grid;

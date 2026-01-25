@@ -28,6 +28,11 @@ const userSchema = new mongoose.Schema({
   locale: {
     type: String,
     default: 'en-US'
+  },
+  monthlyBudgetLimit: {
+    type: Number,
+    default: 0,
+    min: 0
   }
 }, {
   timestamps: true
