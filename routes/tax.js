@@ -1,500 +1,372 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
-const rateLimit = require('../middleware/rateLimit');
-const taxService = require('../services/taxService');
+const { validateTaxProfile, validateTaxDocument, validateEstimatedPayment } = require('../middleware/taxValidator');
+
+const taxOptimizationService = require('../services/taxOptimizationService');
 const TaxProfile = require('../models/TaxProfile');
-const TaxCategory = require('../models/TaxCategory');
-const {
-  validateTaxProfile,
-  validateTaxCalculation,
-  validateDeductionCategory,
-  validateExpenseTaxTag,
-  validateRequest,
-  taxSchemas
-} = require('../middleware/taxValidator');
+const TaxDocument = require('../models/TaxDocument');
+const TaxRule = require('../models/TaxRule');
 
-// ==================== TAX PROFILE ROUTES ====================
+// ==================== TAX PROFILE ====================
 
-/**
- * @route   GET /api/tax/profile
- * @desc    Get user's tax profile for current year
- * @access  Private
- */
-router.get('/profile', auth, async (req, res) => {
-  try {
-    const taxYear = parseInt(req.query.taxYear) || new Date().getFullYear();
-    const profile = await taxService.getOrCreateProfile(req.user.id, taxYear);
-    
-    res.json({
-      success: true,
-      data: profile
-    });
-  } catch (error) {
-    console.error('Get tax profile error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch tax profile'
-    });
-  }
-});
-
-/**
- * @route   POST /api/tax/profile
- * @desc    Create or update tax profile
- * @access  Private
- */
+// Create or update tax profile
 router.post('/profile', auth, validateTaxProfile, async (req, res) => {
-  try {
-    const profile = await taxService.createOrUpdateProfile(req.user.id, req.body);
-    res.status(201).json({
-      success: true,
-      data: profile
-    });
-  } catch (error) {
-    console.error('Create profile error:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
-  }
-});
-
-/**
- * @route   PUT /api/tax/profile
- * @desc    Update tax profile
- * @access  Private
- */
-router.put('/profile', auth, validateTaxProfile, async (req, res) => {
-  try {
-    const taxYear = parseInt(req.query.taxYear) || new Date().getFullYear();
-    const profile = await taxService.updateProfile(req.user.id, taxYear, req.body);
-    
-    res.json({
-      success: true,
-      data: profile,
-      message: 'Tax profile updated successfully'
-    });
-  } catch (error) {
-    console.error('Update tax profile error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to update tax profile'
-    });
-  }
-});
-
-// ==================== TAX CALCULATION ROUTES ====================
-
-/**
- * @route   GET /api/tax/calculate
- * @desc    Calculate tax liability
- * @access  Private
- */
-router.get('/calculate', auth, async (req, res) => {
-  try {
-    const taxYear = parseInt(req.query.taxYear) || new Date().getFullYear();
-    const options = {};
-    
-    if (req.query.customDeductions) {
-      options.customDeductions = JSON.parse(req.query.customDeductions);
+    try {
+        let profile = await TaxProfile.getUserProfile(req.user.id);
+        
+        if (profile) {
+            // Update existing profile
+            Object.assign(profile, req.body);
+            await profile.save();
+        } else {
+            // Create new profile
+            profile = new TaxProfile({
+                user: req.user.id,
+                ...req.body
+            });
+            await profile.save();
+        }
+        
+        res.json({ success: true, data: profile });
+    } catch (error) {
+        console.error('Error creating/updating tax profile:', error);
+        res.status(400).json({ success: false, message: error.message });
     }
-    
-    const calculation = await taxService.calculateTax(req.user.id, taxYear, options);
-    
-    res.json({
-      success: true,
-      data: calculation
-    });
-  } catch (error) {
-    console.error('Tax calculation error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to calculate tax'
-    });
-  }
 });
 
-/**
- * @route   POST /api/tax/calculate
- * @desc    Calculate tax with custom deductions
- * @access  Private
- */
-router.post('/calculate', auth, validateTaxCalculation, async (req, res) => {
-  try {
-    const { taxYear = new Date().getFullYear(), customDeductions = [] } = req.body;
-    
-    const calculation = await taxService.calculateTax(req.user.id, taxYear, {
-      customDeductions
-    });
-    
-    res.json({
-      success: true,
-      data: calculation
-    });
-  } catch (error) {
-    console.error('Tax calculation error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to calculate tax'
-    });
-  }
-});
-
-/**
- * @route   GET /api/tax/estimate
- * @desc    Get current tax estimate
- * @access  Private
- */
-router.get('/estimate', auth, async (req, res) => {
-  try {
-    const { taxYear } = req.query;
-    const estimate = await taxService.calculateTaxEstimate(req.user.id, {
-      taxYear: taxYear ? parseInt(taxYear) : undefined
-    });
-    res.json({
-      success: true,
-      data: estimate
-    });
-  } catch (error) {
-    console.error('Get estimate error:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
-  }
-});
-
-/**
- * @route   GET /api/tax/quarterly
- * @desc    Get quarterly estimated tax payment info
- * @access  Private
- */
-router.get('/quarterly', auth, async (req, res) => {
-  try {
-    const { quarter, taxYear } = req.query;
-    const currentQuarter = quarter || Math.ceil((new Date().getMonth() + 1) / 3);
-    const year = taxYear || new Date().getFullYear();
-    
-    const estimate = await taxService.calculateQuarterlyEstimate(
-      req.user.id,
-      parseInt(currentQuarter),
-      parseInt(year)
-    );
-    res.json({
-      success: true,
-      data: estimate
-    });
-  } catch (error) {
-    console.error('Get quarterly estimate error:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
-  }
-});
-
-// ==================== TAX COMPARISON & OPTIMIZATION ====================
-
-/**
- * @route   GET /api/tax/compare-regimes
- * @desc    Compare old vs new tax regime
- * @access  Private
- */
-router.get('/compare-regimes', auth, async (req, res) => {
-  try {
-    const taxYear = parseInt(req.query.taxYear) || new Date().getFullYear();
-    const comparison = await taxService.compareRegimes(req.user.id, taxYear);
-    
-    res.json({
-      success: true,
-      data: comparison
-    });
-  } catch (error) {
-    console.error('Regime comparison error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to compare tax regimes'
-    });
-  }
-});
-
-/**
- * @route   GET /api/tax/optimization
- * @desc    Get tax optimization recommendations
- * @access  Private
- */
-router.get('/optimization', auth, async (req, res) => {
-  try {
-    const optimizations = await taxService.generateOptimizations(req.user.id);
-    res.json({
-      success: true,
-      data: optimizations
-    });
-  } catch (error) {
-    console.error('Get optimization error:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
-  }
-});
-
-// ==================== TAX SUMMARY & REPORTS ====================
-
-/**
- * @route   GET /api/tax/summary
- * @desc    Get tax summary for dashboard
- * @access  Private
- */
-router.get('/summary', auth, async (req, res) => {
-  try {
-    const taxYear = parseInt(req.query.taxYear) || new Date().getFullYear();
-    const summary = await taxService.getTaxSummary(req.user.id, taxYear);
-    
-    res.json({
-      success: true,
-      data: summary
-    });
-  } catch (error) {
-    console.error('Tax summary error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch tax summary'
-    });
-  }
-});
-
-/**
- * @route   GET /api/tax/report/:year
- * @desc    Generate tax report
- * @access  Private
- */
-router.get('/report/:year', auth, async (req, res) => {
-  try {
-    const { format = 'summary' } = req.query;
-    const report = await taxService.generateTaxReport(
-      req.user.id,
-      parseInt(req.params.year),
-      format
-    );
-    res.json({
-      success: true,
-      data: report
-    });
-  } catch (error) {
-    console.error('Generate report error:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
-  }
-});
-
-/**
- * @route   GET /api/tax/checklist
- * @desc    Get year-end tax checklist
- * @access  Private
- */
-router.get('/checklist', auth, async (req, res) => {
-  try {
-    const checklist = await taxService.getYearEndChecklist(req.user.id);
-    res.json({
-      success: true,
-      data: checklist
-    });
-  } catch (error) {
-    console.error('Get checklist error:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
-  }
-});
-
-// ==================== TAX CATEGORIES ====================
-
-/**
- * @route   GET /api/tax/categories
- * @desc    Get all tax categories
- * @access  Private
- */
-router.get('/categories', auth, async (req, res) => {
-  try {
-    const { country, type } = req.query;
-    const query = { isActive: true };
-    
-    if (country) {
-      query.country = country;
+// Get user's tax profile
+router.get('/profile', auth, async (req, res) => {
+    try {
+        const profile = await TaxProfile.getUserProfile(req.user.id);
+        
+        if (!profile) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Tax profile not found. Please create one first.' 
+            });
+        }
+        
+        res.json({ success: true, data: profile });
+    } catch (error) {
+        console.error('Error fetching tax profile:', error);
+        res.status(500).json({ success: false, message: error.message });
     }
-    if (type) {
-      query.type = type;
+});
+
+// ==================== TAX CALCULATIONS ====================
+
+// Calculate user's tax liability
+router.get('/calculate/:year?', auth, async (req, res) => {
+    try {
+        const year = req.params.year ? parseInt(req.params.year) : new Date().getFullYear();
+        const calculation = await taxOptimizationService.calculateUserTax(req.user.id, year);
+        
+        res.json({ success: true, data: calculation });
+    } catch (error) {
+        console.error('Error calculating tax:', error);
+        res.status(400).json({ success: false, message: error.message });
     }
-    
-    const categories = await TaxCategory.find(query).sort({ name: 1 });
-    res.json({
-      success: true,
-      data: categories
-    });
-  } catch (error) {
-    console.error('Get categories error:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
-  }
 });
 
-/**
- * @route   GET /api/tax/deductible-categories
- * @desc    Get tax-deductible expense categories
- * @access  Private
- */
-router.get('/deductible-categories', auth, async (req, res) => {
-  try {
-    const country = req.query.country || 'IN';
-    const categories = await taxService.getDeductibleCategories(country);
-    
-    res.json({
-      success: true,
-      data: categories
-    });
-  } catch (error) {
-    console.error('Get deductible categories error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch deductible categories'
-    });
-  }
+// Get tax bracket optimization suggestions
+router.get('/optimize/bracket/:year?', auth, async (req, res) => {
+    try {
+        const year = req.params.year ? parseInt(req.params.year) : new Date().getFullYear();
+        const optimization = await taxOptimizationService.optimizeTaxBracket(req.user.id, year);
+        
+        res.json({ success: true, data: optimization });
+    } catch (error) {
+        console.error('Error optimizing tax bracket:', error);
+        res.status(400).json({ success: false, message: error.message });
+    }
 });
 
-/**
- * @route   POST /api/tax/categories
- * @desc    Create custom tax category
- * @access  Private
- */
-router.post('/categories', auth, validateDeductionCategory, async (req, res) => {
-  try {
-    const category = new TaxCategory({
-      ...req.body,
-      isSystem: false
-    });
-    await category.save();
-    res.status(201).json({
-      success: true,
-      data: category
-    });
-  } catch (error) {
-    console.error('Create category error:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
-  }
+// ==================== TAX LOSS HARVESTING ====================
+
+// Get tax loss harvesting opportunities
+router.get('/optimize/harvest/:year?', auth, async (req, res) => {
+    try {
+        const year = req.params.year ? parseInt(req.params.year) : new Date().getFullYear();
+        const opportunities = await taxOptimizationService.identifyTaxLossHarvestingOpportunities(req.user.id, year);
+        
+        res.json({ 
+            success: true, 
+            data: opportunities,
+            count: opportunities.length 
+        });
+    } catch (error) {
+        console.error('Error identifying harvesting opportunities:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
 });
 
-/**
- * @route   POST /api/tax/initialize-categories
- * @desc    Initialize default tax categories
- * @access  Private
- */
-router.post('/initialize-categories', auth, async (req, res) => {
-  try {
-    const country = req.body.country || 'IN';
-    await taxService.initializeDefaultCategories(country);
-    
-    res.json({
-      success: true,
-      message: `Default tax categories initialized for ${country}`
-    });
-  } catch (error) {
-    console.error('Initialize categories error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to initialize tax categories'
-    });
-  }
+// Detect wash sales
+router.get('/wash-sales/:year?', auth, async (req, res) => {
+    try {
+        const year = req.params.year ? parseInt(req.params.year) : new Date().getFullYear();
+        const washSales = await taxOptimizationService.detectWashSales(req.user.id, year);
+        
+        res.json({ 
+            success: true, 
+            data: washSales,
+            count: washSales.length,
+            has_violations: washSales.length > 0
+        });
+    } catch (error) {
+        console.error('Error detecting wash sales:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
 });
 
-// ==================== EXPENSE TAX TAGGING ====================
+// ==================== CAPITAL GAINS ====================
 
-/**
- * @route   POST /api/tax/auto-tag
- * @desc    Auto-tag expense as tax-deductible
- * @access  Private
- */
-router.post('/auto-tag', auth, async (req, res) => {
-  try {
-    const { description, category, amount } = req.body;
-    
-    const expense = { description, category, amount };
-    const taxInfo = await taxService.autoTagExpense(expense);
-    
-    res.json({
-      success: true,
-      data: taxInfo
-    });
-  } catch (error) {
-    console.error('Auto-tag expense error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to auto-tag expense'
-    });
-  }
+// Categorize capital gains (short-term vs long-term)
+router.get('/capital-gains/:year?', auth, async (req, res) => {
+    try {
+        const year = req.params.year ? parseInt(req.params.year) : new Date().getFullYear();
+        const categorized = await taxOptimizationService.categorizeCapitalGains(req.user.id, year);
+        
+        res.json({ success: true, data: categorized });
+    } catch (error) {
+        console.error('Error categorizing capital gains:', error);
+        res.status(400).json({ success: false, message: error.message });
+    }
 });
 
-/**
- * @route   POST /api/tax/categorize/:expenseId
- * @desc    AI categorize an expense for tax purposes
- * @access  Private
- */
-router.post('/categorize/:expenseId', auth, async (req, res) => {
-  try {
-    const result = await taxService.categorizeExpenseForTax(req.user.id, req.params.expenseId);
-    res.json({
-      success: true,
-      data: result
-    });
-  } catch (error) {
-    console.error('Categorize expense error:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
-  }
+// ==================== ESTIMATED TAX ====================
+
+// Calculate estimated quarterly tax payments
+router.get('/estimated/:year?', auth, async (req, res) => {
+    try {
+        const year = req.params.year ? parseInt(req.params.year) : new Date().getFullYear();
+        const estimated = await taxOptimizationService.calculateEstimatedTax(req.user.id, year);
+        
+        res.json({ success: true, data: estimated });
+    } catch (error) {
+        console.error('Error calculating estimated tax:', error);
+        res.status(400).json({ success: false, message: error.message });
+    }
 });
 
-/**
- * @route   GET /api/tax/deductible-expenses
- * @desc    Get all tax-deductible expenses for a period
- * @access  Private
- */
-router.get('/deductible-expenses', auth, async (req, res) => {
-  try {
-    const taxYear = parseInt(req.query.taxYear) || new Date().getFullYear();
-    
-    // Get date range for tax year (Indian FY: April to March)
-    const startDate = new Date(taxYear, 3, 1); // April 1
-    const endDate = new Date(taxYear + 1, 2, 31); // March 31
-    
-    const expenses = await taxService.getDeductibleExpenses(req.user.id, startDate, endDate);
-    
-    res.json({
-      success: true,
-      data: {
-        taxYear,
-        period: { startDate, endDate },
-        expenses,
-        totalDeductible: expenses.reduce((sum, e) => sum + (e.deductibleAmount || 0), 0)
-      }
-    });
-  } catch (error) {
-    console.error('Get deductible expenses error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch deductible expenses'
-    });
-  }
+// Record estimated tax payment
+router.post('/estimated/payment', auth, validateEstimatedPayment, async (req, res) => {
+    try {
+        const { quarter, confirmation_number } = req.body;
+        const profile = await TaxProfile.getUserProfile(req.user.id);
+        
+        if (!profile) {
+            return res.status(404).json({ success: false, message: 'Tax profile not found' });
+        }
+        
+        await profile.markPaymentPaid(quarter, confirmation_number);
+        
+        res.json({ 
+            success: true, 
+            message: `Q${quarter} estimated tax payment recorded`,
+            data: profile.estimated_tax_payments 
+        });
+    } catch (error) {
+        console.error('Error recording payment:', error);
+        res.status(400).json({ success: false, message: error.message });
+    }
+});
+
+// ==================== TAX DOCUMENTS ====================
+
+// Generate tax document
+router.post('/documents/generate', auth, validateTaxDocument, async (req, res) => {
+    try {
+        const { document_type, tax_year } = req.body;
+        const document = await taxOptimizationService.generateTaxDocument(
+            req.user.id,
+            document_type,
+            tax_year
+        );
+        
+        res.status(201).json({ success: true, data: document });
+    } catch (error) {
+        console.error('Error generating tax document:', error);
+        res.status(400).json({ success: false, message: error.message });
+    }
+});
+
+// Get user's tax documents
+router.get('/documents/:year?', auth, async (req, res) => {
+    try {
+        const year = req.params.year ? parseInt(req.params.year) : null;
+        const documents = await TaxDocument.getUserDocuments(req.user.id, year);
+        
+        res.json({ success: true, data: documents, count: documents.length });
+    } catch (error) {
+        console.error('Error fetching tax documents:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Get single tax document
+router.get('/documents/:documentId/view', auth, async (req, res) => {
+    try {
+        const document = await TaxDocument.findOne({
+            _id: req.params.documentId,
+            user: req.user.id
+        });
+        
+        if (!document) {
+            return res.status(404).json({ success: false, message: 'Document not found' });
+        }
+        
+        res.json({ success: true, data: document });
+    } catch (error) {
+        console.error('Error fetching document:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Mark document as filed
+router.put('/documents/:documentId/file', auth, async (req, res) => {
+    try {
+        const { confirmation_number, payment_amount, payment_method } = req.body;
+        
+        const document = await TaxDocument.findOne({
+            _id: req.params.documentId,
+            user: req.user.id
+        });
+        
+        if (!document) {
+            return res.status(404).json({ success: false, message: 'Document not found' });
+        }
+        
+        await document.markFiled(confirmation_number, payment_amount, payment_method);
+        
+        res.json({ 
+            success: true, 
+            message: 'Document marked as filed',
+            data: document 
+        });
+    } catch (error) {
+        console.error('Error marking document as filed:', error);
+        res.status(400).json({ success: false, message: error.message });
+    }
+});
+
+// Implement optimization suggestion
+router.put('/documents/:documentId/suggestions/:suggestionId/implement', auth, async (req, res) => {
+    try {
+        const document = await TaxDocument.findOne({
+            _id: req.params.documentId,
+            user: req.user.id
+        });
+        
+        if (!document) {
+            return res.status(404).json({ success: false, message: 'Document not found' });
+        }
+        
+        await document.markSuggestionImplemented(req.params.suggestionId);
+        
+        res.json({ 
+            success: true, 
+            message: 'Suggestion marked as implemented',
+            data: document 
+        });
+    } catch (error) {
+        console.error('Error implementing suggestion:', error);
+        res.status(400).json({ success: false, message: error.message });
+    }
+});
+
+// ==================== TAX RULES ====================
+
+// Get tax rules for jurisdiction
+router.get('/rules/:country/:year?', auth, async (req, res) => {
+    try {
+        const { country } = req.params;
+        const year = req.params.year ? parseInt(req.params.year) : new Date().getFullYear();
+        
+        const rules = await TaxRule.getCurrentRules(country.toUpperCase(), null);
+        
+        res.json({ success: true, data: rules, count: rules.length });
+    } catch (error) {
+        console.error('Error fetching tax rules:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Get contribution limits
+router.get('/rules/:country/contribution-limits', auth, async (req, res) => {
+    try {
+        const { country } = req.params;
+        const year = new Date().getFullYear();
+        
+        const rule = await TaxRule.getRulesByType(country.toUpperCase(), 'contribution_limit', year);
+        
+        if (!rule) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Contribution limits not found for this jurisdiction' 
+            });
+        }
+        
+        res.json({ success: true, data: rule.contribution_limits });
+    } catch (error) {
+        console.error('Error fetching contribution limits:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ==================== YEAR-END PLANNING ====================
+
+// Get year-end tax checklist
+router.get('/year-end/:year?', auth, async (req, res) => {
+    try {
+        const year = req.params.year ? parseInt(req.params.year) : new Date().getFullYear();
+        const profile = await TaxProfile.getUserProfile(req.user.id);
+        
+        if (!profile) {
+            return res.status(404).json({ success: false, message: 'Tax profile not found' });
+        }
+        
+        // Get all optimization opportunities
+        const [bracket, harvest, capitalGains] = await Promise.all([
+            taxOptimizationService.optimizeTaxBracket(req.user.id, year),
+            taxOptimizationService.identifyTaxLossHarvestingOpportunities(req.user.id, year),
+            taxOptimizationService.categorizeCapitalGains(req.user.id, year)
+        ]);
+        
+        const checklist = {
+            retirement_contributions: {
+                total_contributed: profile.total_tax_advantaged_contributions,
+                contribution_room: taxOptimizationService.calculateContributionRoom(profile),
+                deadline: new Date(year, 11, 31)
+            },
+            tax_loss_harvesting: {
+                opportunities: harvest,
+                deadline: new Date(year, 11, 31)
+            },
+            bracket_optimization: {
+                suggestions: bracket.optimization_suggestions,
+                current_bracket: bracket.current_situation.tax_bracket
+            },
+            capital_gains_review: {
+                short_term_total: capitalGains.short_term.total,
+                long_term_total: capitalGains.long_term.total,
+                total_tax: capitalGains.total_tax
+            },
+            business_expenses: {
+                total: Object.values(profile.deductions.business_expenses).reduce((sum, val) => sum + val, 0),
+                deadline: new Date(year, 11, 31)
+            },
+            charitable_giving: {
+                contributed: profile.deductions.itemized_deductions.charitable,
+                deadline: new Date(year, 11, 31)
+            }
+        };
+        
+        res.json({ success: true, data: checklist });
+    } catch (error) {
+        console.error('Error generating year-end checklist:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
 });
 
 module.exports = router;
