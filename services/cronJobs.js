@@ -3,6 +3,8 @@ const User = require('../models/User');
 const Expense = require('../models/Expense');
 const emailService = require('../services/emailService');
 const currencyService = require('../services/currencyService');
+const InvoiceService = require('../services/invoiceService');
+const ReminderService = require('../services/reminderService');
 
 class CronJobs {
   static init() {
@@ -16,6 +18,24 @@ class CronJobs {
     cron.schedule('0 9 * * *', async () => {
       console.log('[CronJobs] Sending recurring expense reminders...');
       await this.sendRecurringReminders();
+    });
+    
+    // Generate recurring invoices - Daily at 6 AM
+    cron.schedule('0 6 * * *', async () => {
+      console.log('[CronJobs] Generating recurring invoices...');
+      await this.generateRecurringInvoices();
+    });
+    
+    // Send payment reminders - Daily at 10 AM
+    cron.schedule('0 10 * * *', async () => {
+      console.log('[CronJobs] Sending payment reminders...');
+      await this.sendPaymentReminders();
+    });
+    
+    // Apply late fees - Daily at 12 AM (midnight)
+    cron.schedule('0 0 * * *', async () => {
+      console.log('[CronJobs] Applying late fees to overdue invoices...');
+      await this.applyLateFees();
     });
 
     // Weekly report - Every Sunday at 9 AM
@@ -53,6 +73,48 @@ class CronJobs {
   static async sendRecurringReminders() {
     console.log('Sending recurring reminders (Placeholder)');
     // Implementation would go here
+  }
+  
+  static async generateRecurringInvoices() {
+    try {
+      console.log('[CronJobs] Generating recurring invoices...');
+      const result = await InvoiceService.generateRecurringInvoices();
+      console.log(`[CronJobs] Generated ${result.count} recurring invoices`);
+    } catch (error) {
+      console.error('[CronJobs] Error generating recurring invoices:', error);
+    }
+  }
+  
+  static async sendPaymentReminders() {
+    try {
+      console.log('[CronJobs] Sending payment reminders...');
+      const result = await ReminderService.processAllReminders();
+      console.log(`[CronJobs] Sent ${result.success.length} reminders, ${result.failed.length} failed`);
+    } catch (error) {
+      console.error('[CronJobs] Error sending payment reminders:', error);
+    }
+  }
+  
+  static async applyLateFees() {
+    try {
+      console.log('[CronJobs] Applying late fees...');
+      const User = require('../models/User');
+      const users = await User.find({});
+      
+      let totalApplied = 0;
+      for (const user of users) {
+        try {
+          const result = await InvoiceService.applyLateFees(user._id);
+          totalApplied += result.count;
+        } catch (error) {
+          console.error(`[CronJobs] Error applying late fees for user ${user._id}:`, error);
+        }
+      }
+      
+      console.log(`[CronJobs] Applied late fees to ${totalApplied} invoices`);
+    } catch (error) {
+      console.error('[CronJobs] Error applying late fees:', error);
+    }
   }
 
   static async updateExchangeRates() {
