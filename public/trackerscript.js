@@ -59,7 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const transaction = {
         id: expense._id,
         text: expense.description,
-        amount: expense.type === 'expense' ? -expense.amount : expense.amount,
+        amount: expense.type === 'expense' ? -Number(expense.amount) : Number(expense.amount),
         category: expense.category,
         type: expense.type,
         date: expense.date
@@ -112,7 +112,8 @@ document.addEventListener("DOMContentLoaded", () => {
       return expenses.map(expense => ({
         id: expense._id,
         text: expense.description,
-        amount: expense.type === 'expense' ? -expense.amount : expense.amount,
+       amount: expense.type === 'expense'? -Number(expense.amount): Number(expense.amount),
+
         category: expense.category,
         type: expense.type,
         date: expense.date,
@@ -388,7 +389,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const transaction = {
         id: savedExpense._id,
         text: savedExpense.description,
-        amount: savedExpense.type === 'expense' ? -savedExpense.amount : savedExpense.amount,
+      amount: expense.type === 'expense'? -Number(expense.amount): Number(expense.amount),
+
         category: savedExpense.category,
         type: savedExpense.type,
         date: savedExpense.date
@@ -586,7 +588,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function updateValues() {
-    const amounts = transactions.map(transaction => transaction.amount);
+    const amounts = transactions.map(transaction => Number(transaction.amount)||0);
 
     const total = amounts.reduce((acc, item) => acc + item, 0);
     const income = amounts.filter(item => item > 0).reduce((acc, item) => acc + item, 0);
