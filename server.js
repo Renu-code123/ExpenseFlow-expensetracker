@@ -160,8 +160,8 @@ app.use('/api/currency', require('./routes/currency'));
 app.use('/api/groups', require('./routes/groups'));
 app.use('/api/splits', require('./routes/splits'));
 app.use('/api/workspaces', require('./routes/workspaces'));
-app.use('/api/investments', require('./routes/investments'));
 app.use('/api/insights', require('./routes/insights'));
+app.use('/api/shared-spaces', require('./routes/sharedSpaces'));
 
 // Root route to serve the UI
 app.get('/', (req, res) => {

@@ -4,12 +4,7 @@ const Expense = require('../models/Expense');
 const BankConnection = require('../models/BankConnection');
 const emailService = require('../services/emailService');
 const currencyService = require('../services/currencyService');
-const investmentService = require('../services/investmentService');
-const insightService = require('../services/insightService');
-const subscriptionDetector = require('../services/subscriptionDetector');
-const Portfolio = require('../models/Portfolio');
-const FinancialInsight = require('../models/FinancialInsight');
-const Subscription = require('../models/Subscription');
+const approvalService = require('../services/approvalService');
 
 class CronJobs {
   static init() {
@@ -73,46 +68,10 @@ class CronJobs {
       await this.updateExchangeRates();
     });
 
-    // Update investment prices - Every hour during market hours (9 AM - 5 PM EST)
-    cron.schedule('0 9-17 * * 1-5', async () => {
-      console.log('[CronJobs] Updating investment asset prices...');
-      await this.updateInvestmentPrices();
-    });
-
-    // Update crypto prices - Every 15 minutes (24/7)
-    cron.schedule('*/15 * * * *', async () => {
-      console.log('[CronJobs] Updating crypto prices...');
-      await this.updateCryptoPrices();
-    });
-
-    // Take daily portfolio snapshots - Daily at 6 PM EST
-    cron.schedule('0 18 * * 1-5', async () => {
-      console.log('[CronJobs] Taking portfolio snapshots...');
-      await this.takePortfolioSnapshots();
-    });
-
-    // Generate financial insights - Daily at 7 AM
-    cron.schedule('0 7 * * *', async () => {
-      console.log('[CronJobs] Generating financial insights...');
-      await this.generateDailyInsights();
-    });
-
-    // Detect subscriptions - Weekly on Monday at 8 AM
-    cron.schedule('0 8 * * 1', async () => {
-      console.log('[CronJobs] Detecting subscriptions...');
-      await this.detectSubscriptions();
-    });
-
-    // Check subscription renewals - Daily at 10 AM
-    cron.schedule('0 10 * * *', async () => {
-      console.log('[CronJobs] Checking subscription renewals...');
-      await this.checkSubscriptionRenewals();
-    });
-
-    // Cleanup old insights - Weekly on Sunday at 2 AM
-    cron.schedule('0 2 * * 0', async () => {
-      console.log('[CronJobs] Cleaning up old insights...');
-      await this.cleanupOldInsights();
+    // Cleanup expired approval requests - Daily at 2 AM
+    cron.schedule('0 2 * * *', async () => {
+      console.log('[CronJobs] Cleaning up expired approval requests...');
+      await this.cleanupExpiredApprovals();
     });
 
     console.log('Cron jobs initialized successfully');
@@ -357,175 +316,12 @@ class CronJobs {
     }
   }
 
-  // Update stock/ETF prices
-  static async updateInvestmentPrices() {
+  static async cleanupExpiredApprovals() {
     try {
-      const Asset = require('../models/Asset');
-      const assets = await Asset.find({ 
-        isActive: true, 
-        type: { $in: ['stock', 'etf', 'mutual_fund'] }
-      });
-
-      let updated = 0;
-      let failed = 0;
-
-      for (const asset of assets) {
-        try {
-          // Rate limiting for Alpha Vantage (5 calls/min on free tier)
-          await new Promise(resolve => setTimeout(resolve, 12000));
-          await investmentService.updateAssetPrice(asset._id);
-          updated++;
-        } catch (error) {
-          console.error(`Failed to update ${asset.symbol}:`, error.message);
-          failed++;
-        }
-      }
-
-      console.log(`[CronJobs] Investment prices updated: ${updated} success, ${failed} failed`);
+      const cleanedCount = await approvalService.cleanupExpiredRequests();
+      console.log(`Cleaned up ${cleanedCount} expired approval requests`);
     } catch (error) {
-      console.error('[CronJobs] Investment price update error:', error);
-    }
-  }
-
-  // Update crypto prices (more frequent, CoinGecko has higher rate limits)
-  static async updateCryptoPrices() {
-    try {
-      const Asset = require('../models/Asset');
-      const cryptoAssets = await Asset.find({ 
-        isActive: true, 
-        type: 'crypto' 
-      });
-
-      let updated = 0;
-      let failed = 0;
-
-      for (const asset of cryptoAssets) {
-        try {
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          await investmentService.updateAssetPrice(asset._id);
-          updated++;
-        } catch (error) {
-          console.error(`Failed to update crypto ${asset.symbol}:`, error.message);
-          failed++;
-        }
-      }
-
-      console.log(`[CronJobs] Crypto prices updated: ${updated} success, ${failed} failed`);
-    } catch (error) {
-      console.error('[CronJobs] Crypto price update error:', error);
-    }
-  }
-
-  // Take daily portfolio snapshots for historical tracking
-  static async takePortfolioSnapshots() {
-    try {
-      const portfolios = await Portfolio.find({})
-        .populate('holdings.asset');
-
-      let snapshotsTaken = 0;
-
-      for (const portfolio of portfolios) {
-        try {
-          await portfolio.takeSnapshot();
-          snapshotsTaken++;
-        } catch (error) {
-          console.error(`Failed to snapshot portfolio ${portfolio._id}:`, error.message);
-        }
-      }
-
-      console.log(`[CronJobs] Portfolio snapshots taken: ${snapshotsTaken}`);
-    } catch (error) {
-      console.error('[CronJobs] Portfolio snapshot error:', error);
-    }
-  }
-  // Generate daily financial insights for all users
-  static async generateDailyInsights() {
-    try {
-      const users = await User.find({ isActive: true });
-      let insightsGenerated = 0;
-
-      for (const user of users) {
-        try {
-          await insightService.generateInsights(user._id);
-          insightsGenerated++;
-        } catch (error) {
-          console.error(`Failed to generate insights for user ${user._id}:`, error.message);
-        }
-      }
-
-      console.log(`[CronJobs] Insights generated for ${insightsGenerated} users`);
-    } catch (error) {
-      console.error('[CronJobs] Generate insights error:', error);
-    }
-  }
-
-  // Detect subscriptions for all users
-  static async detectSubscriptions() {
-    try {
-      const users = await User.find({ isActive: true });
-      let totalDetected = 0;
-
-      for (const user of users) {
-        try {
-          const detected = await subscriptionDetector.detectSubscriptions(user._id);
-          totalDetected += detected.length;
-        } catch (error) {
-          console.error(`Failed to detect subscriptions for user ${user._id}:`, error.message);
-        }
-      }
-
-      console.log(`[CronJobs] Detected ${totalDetected} subscriptions`);
-    } catch (error) {
-      console.error('[CronJobs] Detect subscriptions error:', error);
-    }
-  }
-
-  // Check and send subscription renewal reminders
-  static async checkSubscriptionRenewals() {
-    try {
-      const users = await User.find({ isActive: true });
-      let remindersSent = 0;
-
-      for (const user of users) {
-        try {
-          const upcoming = await subscriptionDetector.checkUpcomingRenewals(user._id, 3);
-
-          for (const subscription of upcoming) {
-            const daysUntil = subscription.days_until_billing;
-            
-            await emailService.sendEmail({
-              to: user.email,
-              subject: `Subscription Renewal: ${subscription.name}`,
-              html: `<h2>Upcoming Subscription Renewal</h2><p>Your ${subscription.name} subscription will renew in ${daysUntil} day(s).</p>`
-            });
-
-            await subscriptionDetector.markReminderSent(subscription._id);
-            remindersSent++;
-          }
-        } catch (error) {
-          console.error(`Failed to check renewals for user ${user._id}:`, error.message);
-        }
-      }
-
-      console.log(`[CronJobs] Subscription reminders sent: ${remindersSent}`);
-    } catch (error) {
-      console.error('[CronJobs] Subscription renewals error:', error);
-    }
-  }
-
-  // Cleanup insights older than 90 days
-  static async cleanupOldInsights() {
-    try {
-      const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
-      
-      const result = await FinancialInsight.deleteMany({
-        createdAt: { $lt: ninetyDaysAgo },
-        isActioned: false
-      });
-
-      console.log(`[CronJobs] Cleaned up ${result.deletedCount} old insights`);
-    } catch (error) {
-      console.error('[CronJobs] Cleanup insights error:', error);
+      console.error('Approval cleanup error:', error);
     }
   }
 }
