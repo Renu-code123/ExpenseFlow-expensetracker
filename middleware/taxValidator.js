@@ -126,6 +126,9 @@ module.exports = {
   validateDeductionCategory: validate(deductionCategorySchema),
   validateExpenseTaxTag: validate(expenseTaxTagSchema),
   
+  // Alternative validation function
+  validateRequest: validate,
+  
   // Schema exports for reuse
   schemas: {
     taxProfileSchema,
@@ -134,5 +137,12 @@ module.exports = {
     reportListSchema,
     deductionCategorySchema,
     expenseTaxTagSchema
+  },
+  
+  // Alias for compatibility
+  taxSchemas: {
+    createProfile: taxProfileSchema,
+    updateProfile: taxProfileSchema,
+    createCategory: deductionCategorySchema
   }
 };

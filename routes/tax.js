@@ -3,12 +3,18 @@ const router = express.Router();
 const auth = require('../middleware/auth');
 const rateLimit = require('../middleware/rateLimit');
 const taxService = require('../services/taxService');
+const TaxProfile = require('../models/TaxProfile');
+const TaxCategory = require('../models/TaxCategory');
 const {
   validateTaxProfile,
   validateTaxCalculation,
   validateDeductionCategory,
-  validateExpenseTaxTag
+  validateExpenseTaxTag,
+  validateRequest,
+  taxSchemas
 } = require('../middleware/taxValidator');
+
+// ==================== TAX PROFILE ROUTES ====================
 
 /**
  * @route   GET /api/tax/profile
@@ -29,6 +35,27 @@ router.get('/profile', auth, async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to fetch tax profile'
+    });
+  }
+});
+
+/**
+ * @route   POST /api/tax/profile
+ * @desc    Create or update tax profile
+ * @access  Private
+ */
+router.post('/profile', auth, validateTaxProfile, async (req, res) => {
+  try {
+    const profile = await taxService.createOrUpdateProfile(req.user.id, req.body);
+    res.status(201).json({
+      success: true,
+      data: profile
+    });
+  } catch (error) {
+    console.error('Create profile error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
     });
   }
 });
@@ -56,6 +83,8 @@ router.put('/profile', auth, validateTaxProfile, async (req, res) => {
     });
   }
 });
+
+// ==================== TAX CALCULATION ROUTES ====================
 
 /**
  * @route   GET /api/tax/calculate
@@ -113,6 +142,61 @@ router.post('/calculate', auth, validateTaxCalculation, async (req, res) => {
 });
 
 /**
+ * @route   GET /api/tax/estimate
+ * @desc    Get current tax estimate
+ * @access  Private
+ */
+router.get('/estimate', auth, async (req, res) => {
+  try {
+    const { taxYear } = req.query;
+    const estimate = await taxService.calculateTaxEstimate(req.user.id, {
+      taxYear: taxYear ? parseInt(taxYear) : undefined
+    });
+    res.json({
+      success: true,
+      data: estimate
+    });
+  } catch (error) {
+    console.error('Get estimate error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
+ * @route   GET /api/tax/quarterly
+ * @desc    Get quarterly estimated tax payment info
+ * @access  Private
+ */
+router.get('/quarterly', auth, async (req, res) => {
+  try {
+    const { quarter, taxYear } = req.query;
+    const currentQuarter = quarter || Math.ceil((new Date().getMonth() + 1) / 3);
+    const year = taxYear || new Date().getFullYear();
+    
+    const estimate = await taxService.calculateQuarterlyEstimate(
+      req.user.id,
+      parseInt(currentQuarter),
+      parseInt(year)
+    );
+    res.json({
+      success: true,
+      data: estimate
+    });
+  } catch (error) {
+    console.error('Get quarterly estimate error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// ==================== TAX COMPARISON & OPTIMIZATION ====================
+
+/**
  * @route   GET /api/tax/compare-regimes
  * @desc    Compare old vs new tax regime
  * @access  Private
@@ -136,6 +220,29 @@ router.get('/compare-regimes', auth, async (req, res) => {
 });
 
 /**
+ * @route   GET /api/tax/optimization
+ * @desc    Get tax optimization recommendations
+ * @access  Private
+ */
+router.get('/optimization', auth, async (req, res) => {
+  try {
+    const optimizations = await taxService.generateOptimizations(req.user.id);
+    res.json({
+      success: true,
+      data: optimizations
+    });
+  } catch (error) {
+    console.error('Get optimization error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// ==================== TAX SUMMARY & REPORTS ====================
+
+/**
  * @route   GET /api/tax/summary
  * @desc    Get tax summary for dashboard
  * @access  Private
@@ -154,6 +261,86 @@ router.get('/summary', auth, async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to fetch tax summary'
+    });
+  }
+});
+
+/**
+ * @route   GET /api/tax/report/:year
+ * @desc    Generate tax report
+ * @access  Private
+ */
+router.get('/report/:year', auth, async (req, res) => {
+  try {
+    const { format = 'summary' } = req.query;
+    const report = await taxService.generateTaxReport(
+      req.user.id,
+      parseInt(req.params.year),
+      format
+    );
+    res.json({
+      success: true,
+      data: report
+    });
+  } catch (error) {
+    console.error('Generate report error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
+ * @route   GET /api/tax/checklist
+ * @desc    Get year-end tax checklist
+ * @access  Private
+ */
+router.get('/checklist', auth, async (req, res) => {
+  try {
+    const checklist = await taxService.getYearEndChecklist(req.user.id);
+    res.json({
+      success: true,
+      data: checklist
+    });
+  } catch (error) {
+    console.error('Get checklist error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// ==================== TAX CATEGORIES ====================
+
+/**
+ * @route   GET /api/tax/categories
+ * @desc    Get all tax categories
+ * @access  Private
+ */
+router.get('/categories', auth, async (req, res) => {
+  try {
+    const { country, type } = req.query;
+    const query = { isActive: true };
+    
+    if (country) {
+      query.country = country;
+    }
+    if (type) {
+      query.type = type;
+    }
+    
+    const categories = await TaxCategory.find(query).sort({ name: 1 });
+    res.json({
+      success: true,
+      data: categories
+    });
+  } catch (error) {
+    console.error('Get categories error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
     });
   }
 });
@@ -182,6 +369,56 @@ router.get('/deductible-categories', auth, async (req, res) => {
 });
 
 /**
+ * @route   POST /api/tax/categories
+ * @desc    Create custom tax category
+ * @access  Private
+ */
+router.post('/categories', auth, validateDeductionCategory, async (req, res) => {
+  try {
+    const category = new TaxCategory({
+      ...req.body,
+      isSystem: false
+    });
+    await category.save();
+    res.status(201).json({
+      success: true,
+      data: category
+    });
+  } catch (error) {
+    console.error('Create category error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
+ * @route   POST /api/tax/initialize-categories
+ * @desc    Initialize default tax categories
+ * @access  Private
+ */
+router.post('/initialize-categories', auth, async (req, res) => {
+  try {
+    const country = req.body.country || 'IN';
+    await taxService.initializeDefaultCategories(country);
+    
+    res.json({
+      success: true,
+      message: `Default tax categories initialized for ${country}`
+    });
+  } catch (error) {
+    console.error('Initialize categories error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to initialize tax categories'
+    });
+  }
+});
+
+// ==================== EXPENSE TAX TAGGING ====================
+
+/**
  * @route   POST /api/tax/auto-tag
  * @desc    Auto-tag expense as tax-deductible
  * @access  Private
@@ -207,6 +444,27 @@ router.post('/auto-tag', auth, async (req, res) => {
 });
 
 /**
+ * @route   POST /api/tax/categorize/:expenseId
+ * @desc    AI categorize an expense for tax purposes
+ * @access  Private
+ */
+router.post('/categorize/:expenseId', auth, async (req, res) => {
+  try {
+    const result = await taxService.categorizeExpenseForTax(req.user.id, req.params.expenseId);
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    console.error('Categorize expense error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
  * @route   GET /api/tax/deductible-expenses
  * @desc    Get all tax-deductible expenses for a period
  * @access  Private
@@ -227,7 +485,7 @@ router.get('/deductible-expenses', auth, async (req, res) => {
         taxYear,
         period: { startDate, endDate },
         expenses,
-        totalDeductible: expenses.reduce((sum, e) => sum + e.deductibleAmount, 0)
+        totalDeductible: expenses.reduce((sum, e) => sum + (e.deductibleAmount || 0), 0)
       }
     });
   } catch (error) {
@@ -235,29 +493,6 @@ router.get('/deductible-expenses', auth, async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to fetch deductible expenses'
-    });
-  }
-});
-
-/**
- * @route   POST /api/tax/initialize-categories
- * @desc    Initialize default tax categories (admin only)
- * @access  Private
- */
-router.post('/initialize-categories', auth, async (req, res) => {
-  try {
-    const country = req.body.country || 'IN';
-    await taxService.initializeDefaultCategories(country);
-    
-    res.json({
-      success: true,
-      message: `Default tax categories initialized for ${country}`
-    });
-  } catch (error) {
-    console.error('Initialize categories error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to initialize tax categories'
     });
   }
 });

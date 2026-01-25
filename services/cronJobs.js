@@ -4,6 +4,7 @@ const Expense = require('../models/Expense');
 const BankConnection = require('../models/BankConnection');
 const emailService = require('../services/emailService');
 const currencyService = require('../services/currencyService');
+const taxService = require('../services/taxService');
 const subscriptionService = require('../services/subscriptionService');
 const gamificationService = require('../services/gamificationService');
 const recurringService = require('../services/recurringService');
