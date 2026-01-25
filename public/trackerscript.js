@@ -361,8 +361,8 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    if (isNaN(amount.value) || amount.value === '0') {
-      showNotification('Please enter a valid amount', 'error');
+    if (isNaN(amount.value) || amount.value <= 0) {
+      showNotification('Please enter a valid positive amount', 'error');
       return;
     }
 
