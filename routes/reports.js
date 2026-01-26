@@ -1,17 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
-const rateLimit = require('../middleware/rateLimit');
+const { createRateLimiter, exportRateLimiter } = require('../middleware/rateLimit');
 const reportService = require('../services/reportService');
 const pdfService = require('../services/pdfService');
-const { validateReportGeneration, validateReportList } = require('../middleware/taxValidator');
 
 /**
  * @route   POST /api/reports/generate
  * @desc    Generate a financial report
  * @access  Private
  */
-router.post('/generate', auth, validateReportGeneration, async (req, res) => {
+router.post('/generate', auth, async (req, res) => {
   try {
     const {
       reportType,
@@ -49,7 +48,7 @@ router.post('/generate', auth, validateReportGeneration, async (req, res) => {
  * @desc    Get user's reports
  * @access  Private
  */
-router.get('/', auth, validateReportList, async (req, res) => {
+router.get('/', auth, async (req, res) => {
   try {
     const { page, limit, reportType, status } = req.query;
     
@@ -322,7 +321,7 @@ router.get('/preview', auth, async (req, res) => {
  * @desc    Download comprehensive PDF report
  * @access  Private
  */
-router.get('/pdf/download', auth, rateLimit({ windowMs: 60000, max: 10 }), async (req, res) => {
+router.get('/pdf/download', auth, createRateLimiter({ windowMs: 60000, max: 10 }), async (req, res) => {
   try {
     const {
       startDate,
@@ -368,7 +367,7 @@ router.get('/pdf/download', auth, rateLimit({ windowMs: 60000, max: 10 }), async
  * @desc    Download comprehensive Excel report
  * @access  Private
  */
-router.get('/excel/download', auth, rateLimit({ windowMs: 60000, max: 10 }), async (req, res) => {
+router.get('/excel/download', auth, createRateLimiter({ windowMs: 60000, max: 10 }), async (req, res) => {
   try {
     const {
       startDate,

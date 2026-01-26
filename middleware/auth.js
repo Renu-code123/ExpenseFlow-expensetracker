@@ -23,4 +23,6 @@ const auth = async (req, res, next) => {
   }
 };
 
+// Export as both 'auth' and 'authenticateToken' for compatibility
 module.exports = auth;
+module.exports.authenticateToken = auth;

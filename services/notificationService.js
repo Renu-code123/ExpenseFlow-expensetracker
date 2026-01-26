@@ -146,7 +146,7 @@ class NotificationService {
   initEmailTransporter() {
     if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
       try {
-        this.emailTransporter = nodemailer.createTransporter({
+        this.emailTransporter = nodemailer.createTransport({
           service: process.env.EMAIL_SERVICE || 'gmail',
           auth: {
             user: process.env.EMAIL_USER,
