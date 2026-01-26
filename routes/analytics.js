@@ -3,9 +3,13 @@ const router = express.Router();
 const auth = require('../middleware/auth');
 const { body, query, validationResult } = require('express-validator');
 const advancedAnalyticsService = require('../services/advancedAnalyticsService');
+const analyticsService = require('../services/analyticsService');
+const budgetIntelligenceService = require('../services/budgetIntelligenceService');
+const budgetService = require('../services/budgetService');
 const DataWarehouse = require('../models/DataWarehouse');
 const CustomDashboard = require('../models/CustomDashboard');
 const FinancialHealthScore = require('../models/FinancialHealthScore');
+const Budget = require('../models/Budget');
 
 // Get data warehouse analytics
 router.get('/warehouse', auth, [
@@ -511,6 +515,374 @@ router.post('/export', auth, [
     res.status(500).json({
       success: false,
       message: 'Failed to export analytics data'
+    });
+  }
+});
+
+// ============================================
+// AI-DRIVEN BUDGET INTELLIGENCE ROUTES
+// Z-Score Anomaly Detection & Self-Healing
+// ============================================
+
+// Get Z-Score based anomaly analysis
+router.get('/intelligence/anomalies', auth, [
+  query('months').optional().isInt({ min: 1, max: 12 }),
+  query('threshold').optional().isFloat({ min: 1, max: 4 })
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { months = 6, threshold = 2.0 } = req.query;
+
+    const anomalies = await analyticsService.getZScoreAnomalies(req.user.id, {
+      months: parseInt(months),
+      threshold: parseFloat(threshold)
+    });
+
+    res.json({
+      success: true,
+      data: anomalies
+    });
+  } catch (error) {
+    console.error('Get anomalies error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get anomaly analysis'
+    });
+  }
+});
+
+// Get spending volatility analysis
+router.get('/intelligence/volatility', auth, [
+  query('months').optional().isInt({ min: 1, max: 12 })
+], async (req, res) => {
+  try {
+    const { months = 6 } = req.query;
+
+    const volatility = await analyticsService.getVolatilityAnalysis(req.user.id, {
+      months: parseInt(months)
+    });
+
+    res.json({
+      success: true,
+      data: volatility
+    });
+  } catch (error) {
+    console.error('Get volatility error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get volatility analysis'
+    });
+  }
+});
+
+// Get comprehensive intelligence dashboard
+router.get('/intelligence/dashboard', auth, async (req, res) => {
+  try {
+    const dashboard = await budgetIntelligenceService.getIntelligenceDashboard(req.user.id);
+
+    res.json({
+      success: true,
+      data: dashboard
+    });
+  } catch (error) {
+    console.error('Get intelligence dashboard error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get intelligence dashboard'
+    });
+  }
+});
+
+// Update budget intelligence statistics
+router.post('/intelligence/update', auth, async (req, res) => {
+  try {
+    // Sync spending history first
+    await budgetIntelligenceService.syncSpendingHistory(req.user.id);
+    
+    // Update intelligence
+    const result = await budgetIntelligenceService.updateBudgetIntelligence(req.user.id);
+
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    console.error('Update intelligence error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update budget intelligence'
+    });
+  }
+});
+
+// Analyze a specific transaction for anomaly
+router.post('/intelligence/analyze-transaction', auth, [
+  body('amount').isFloat({ min: 0.01 }),
+  body('category').notEmpty().isString(),
+  body('description').optional().isString()
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { amount, category, description } = req.body;
+
+    const analysis = await budgetIntelligenceService.analyzeTransaction(req.user.id, {
+      amount: parseFloat(amount),
+      category,
+      description: description || 'Manual analysis'
+    });
+
+    res.json({
+      success: true,
+      data: analysis
+    });
+  } catch (error) {
+    console.error('Analyze transaction error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to analyze transaction'
+    });
+  }
+});
+
+// Get reallocation suggestions
+router.get('/intelligence/reallocations', auth, async (req, res) => {
+  try {
+    const budgets = await Budget.find({ 
+      user: req.user.id, 
+      isActive: true 
+    });
+
+    const suggestions = [];
+    
+    for (const budget of budgets) {
+      const pending = budget.intelligence.reallocations.filter(r => r.status === 'pending');
+      pending.forEach(suggestion => {
+        suggestions.push({
+          ...suggestion,
+          fromBudgetId: budget._id,
+          fromCategory: budget.category,
+          fromBudgetName: budget.name,
+          fromBudgetSurplus: budget.surplus
+        });
+      });
+    }
+
+    // Sort by suggested amount (highest first)
+    suggestions.sort((a, b) => b.suggestedAmount - a.suggestedAmount);
+
+    res.json({
+      success: true,
+      data: {
+        suggestions,
+        totalPending: suggestions.length
+      }
+    });
+  } catch (error) {
+    console.error('Get reallocations error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get reallocation suggestions'
+    });
+  }
+});
+
+// Generate reallocation suggestions for a specific deficit
+router.post('/intelligence/reallocations/generate', auth, [
+  body('category').notEmpty().isString(),
+  body('deficitAmount').isFloat({ min: 0.01 })
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { category, deficitAmount } = req.body;
+
+    const suggestions = await budgetIntelligenceService.generateReallocationSuggestions(
+      req.user.id,
+      category,
+      parseFloat(deficitAmount)
+    );
+
+    res.json({
+      success: true,
+      data: suggestions
+    });
+  } catch (error) {
+    console.error('Generate reallocations error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to generate reallocation suggestions'
+    });
+  }
+});
+
+// Apply a reallocation (move funds between budgets)
+router.post('/intelligence/reallocations/apply', auth, [
+  body('fromBudgetId').isMongoId(),
+  body('toBudgetId').isMongoId(),
+  body('amount').isFloat({ min: 0.01 })
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { fromBudgetId, toBudgetId, amount } = req.body;
+
+    const result = await budgetIntelligenceService.applyReallocation(
+      req.user.id,
+      fromBudgetId,
+      toBudgetId,
+      parseFloat(amount)
+    );
+
+    res.json({
+      success: true,
+      data: result,
+      message: 'Funds reallocated successfully'
+    });
+  } catch (error) {
+    console.error('Apply reallocation error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to apply reallocation'
+    });
+  }
+});
+
+// Reject a reallocation suggestion
+router.post('/intelligence/reallocations/reject', auth, [
+  body('budgetId').isMongoId(),
+  body('toCategory').notEmpty().isString()
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { budgetId, toCategory } = req.body;
+
+    const budget = await Budget.findOne({
+      _id: budgetId,
+      user: req.user.id
+    });
+
+    if (!budget) {
+      return res.status(404).json({
+        success: false,
+        message: 'Budget not found'
+      });
+    }
+
+    const suggestion = budget.intelligence.reallocations.find(
+      r => r.toCategory === toCategory && r.status === 'pending'
+    );
+
+    if (suggestion) {
+      suggestion.status = 'rejected';
+      await budget.save();
+    }
+
+    res.json({
+      success: true,
+      message: 'Reallocation suggestion rejected'
+    });
+  } catch (error) {
+    console.error('Reject reallocation error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to reject reallocation'
+    });
+  }
+});
+
+// Batch analyze recent transactions for anomalies
+router.post('/intelligence/batch-analyze', auth, [
+  body('since').optional().isISO8601()
+], async (req, res) => {
+  try {
+    const { since } = req.body;
+
+    const results = await budgetIntelligenceService.batchAnalyzeTransactions(
+      req.user.id,
+      since ? new Date(since) : null
+    );
+
+    res.json({
+      success: true,
+      data: results
+    });
+  } catch (error) {
+    console.error('Batch analyze error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to batch analyze transactions'
+    });
+  }
+});
+
+// Get budgets with intelligence data
+router.get('/intelligence/budgets', auth, async (req, res) => {
+  try {
+    const budgets = await budgetService.getBudgetsWithIntelligence(req.user.id);
+
+    res.json({
+      success: true,
+      data: budgets
+    });
+  } catch (error) {
+    console.error('Get budgets with intelligence error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get budgets with intelligence'
+    });
+  }
+});
+
+// Get budget alerts including AI-driven alerts
+router.get('/intelligence/alerts', auth, async (req, res) => {
+  try {
+    const alerts = await budgetService.checkBudgetAlerts(req.user.id);
+
+    res.json({
+      success: true,
+      data: alerts
+    });
+  } catch (error) {
+    console.error('Get alerts error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get budget alerts'
+    });
+  }
+});
+
+// Recalculate all budgets and update intelligence
+router.post('/intelligence/recalculate', auth, async (req, res) => {
+  try {
+    const result = await budgetService.recalculateBudgets(req.user.id);
+
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    console.error('Recalculate error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to recalculate budgets'
     });
   }
 });

@@ -2199,6 +2199,104 @@
         </form>
       </div>
 
+      <!-- AI-Driven Budget Intelligence Dashboard -->
+      <div class="intelligence-section" id="intelligence-dashboard">
+        <div class="section-header">
+          <h3><i class="fas fa-brain"></i> AI Budget Intelligence</h3>
+          <div class="intelligence-controls">
+            <button class="refresh-btn" id="refresh-intelligence" title="Refresh Intelligence Data">
+              <i class="fas fa-sync-alt"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Intelligence Loading Indicator -->
+        <div class="intelligence-loader" id="intelligence-loader">
+          <div class="loader-spinner"></div>
+          <span>Analyzing spending patterns...</span>
+        </div>
+
+        <!-- Summary Cards -->
+        <div id="intelligence-summary"></div>
+
+        <!-- Intelligence Tabs -->
+        <div class="intelligence-tabs">
+          <button class="intelligence-tab active" data-tab="anomalies">
+            <i class="fas fa-exclamation-triangle"></i> Anomalies
+          </button>
+          <button class="intelligence-tab" data-tab="volatility">
+            <i class="fas fa-chart-line"></i> Volatility
+          </button>
+          <button class="intelligence-tab" data-tab="reallocations">
+            <i class="fas fa-exchange-alt"></i> Reallocations
+          </button>
+          <button class="intelligence-tab" data-tab="alerts">
+            <i class="fas fa-bell"></i> Alerts
+          </button>
+          <button class="intelligence-tab" data-tab="budgets">
+            <i class="fas fa-wallet"></i> Budgets
+          </button>
+        </div>
+
+        <!-- Tab Panels -->
+        <div class="intelligence-panels">
+          <div class="intelligence-panel active" id="anomalies-panel">
+            <h4>Z-Score Anomaly Detection</h4>
+            <p class="panel-description">Transactions flagged with Z-Score ≥ 2.0 (statistically unusual spending)</p>
+            <div id="anomaly-timeline"></div>
+          </div>
+
+          <div class="intelligence-panel" id="volatility-panel">
+            <h4>Spending Volatility Analysis</h4>
+            <p class="panel-description">Category volatility index based on coefficient of variation</p>
+            <div id="volatility-chart"></div>
+          </div>
+
+          <div class="intelligence-panel" id="reallocations-panel">
+            <h4>Self-Healing Budget Suggestions</h4>
+            <p class="panel-description">AI-suggested fund transfers from surplus to deficit categories</p>
+            <div id="reallocation-suggestions"></div>
+          </div>
+
+          <div class="intelligence-panel" id="alerts-panel">
+            <h4>Budget Alerts</h4>
+            <p class="panel-description">AI-driven alerts including predictions and anomaly warnings</p>
+            <div id="intelligence-alerts"></div>
+          </div>
+
+          <div class="intelligence-panel" id="budgets-panel">
+            <h4>Budget Intelligence Overview</h4>
+            <p class="panel-description">Budgets with AI-enhanced statistics and predictions</p>
+            <div id="budget-intelligence-list"></div>
+          </div>
+        </div>
+
+        <!-- Transaction Analyzer -->
+        <div class="transaction-analyzer">
+          <h4><i class="fas fa-search-dollar"></i> Analyze Transaction</h4>
+          <form id="analyze-transaction-form" class="analyze-form">
+            <div class="analyze-row">
+              <input type="number" name="amount" placeholder="Amount" step="0.01" min="0.01" required>
+              <select name="category" required>
+                <option value="">Select Category</option>
+                <option value="food">Food & Dining</option>
+                <option value="transport">Transportation</option>
+                <option value="shopping">Shopping</option>
+                <option value="entertainment">Entertainment</option>
+                <option value="bills">Bills & Utilities</option>
+                <option value="healthcare">Healthcare</option>
+                <option value="other">Other</option>
+              </select>
+              <input type="text" name="description" placeholder="Description (optional)">
+              <button type="submit" class="analyze-btn">
+                <i class="fas fa-microscope"></i> Analyze
+              </button>
+            </div>
+          </form>
+          <div id="analysis-result"></div>
+        </div>
+      </div>
+
       <!-- Recurring Expenses Section -->
       <div class="recurring-section" id="recurring-section">
         <div class="section-header">
@@ -2445,6 +2543,7 @@
 
   <script src="trackerscript.js"></script>
   <script src="export-feature.js"></script>
+  <script src="analytics-dashboard.js"></script>
 
   <!-- PWA Installation Prompt -->
   <div id="install-prompt" class="install-prompt" style="display: none;">
