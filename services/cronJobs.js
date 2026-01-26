@@ -1,7 +1,6 @@
 const cron = require('node-cron');
 const User = require('../models/User');
 const Expense = require('../models/Expense');
-const BankConnection = require('../models/BankConnection');
 const emailService = require('../services/emailService');
 const currencyService = require('../services/currencyService');
 const InvoiceService = require('../services/invoiceService');
@@ -39,24 +38,6 @@ class CronJobs {
       await this.applyLateFees();
     });
 
-    // Send subscription renewal reminders - Daily at 9:30 AM
-    cron.schedule('30 9 * * *', async () => {
-      console.log('[CronJobs] Sending subscription renewal reminders...');
-      await this.sendSubscriptionReminders();
-    });
-
-    // Send trial ending reminders - Daily at 10 AM
-    cron.schedule('0 10 * * *', async () => {
-      console.log('[CronJobs] Sending trial ending reminders...');
-      await this.sendTrialReminders();
-    });
-
-    // Process daily gamification updates - Daily at midnight
-    cron.schedule('0 0 * * *', async () => {
-      console.log('[CronJobs] Processing daily gamification updates...');
-      await this.processDailyGamification();
-    });
-
     // Weekly report - Every Sunday at 9 AM
     cron.schedule('0 9 * * 0', async () => {
       console.log('[CronJobs] Sending weekly reports...');
@@ -67,12 +48,6 @@ class CronJobs {
     cron.schedule('0 10 1 * *', async () => {
       console.log('[CronJobs] Sending monthly reports...');
       await this.sendMonthlyReports();
-    });
-
-    // Reset monthly gamification points - 1st day of month at midnight
-    cron.schedule('0 0 1 * *', async () => {
-      console.log('[CronJobs] Resetting monthly gamification points...');
-      await this.resetMonthlyGamification();
     });
 
     // Budget alerts - Daily at 8 PM
@@ -87,83 +62,58 @@ class CronJobs {
       await this.updateExchangeRates();
     });
 
-    // Update portfolio prices - Every 15 minutes during market hours
-    cron.schedule('*/15 9-16 * * 1-5', async () => {
-      console.log('[CronJobs] Updating portfolio prices...');
-      await this.updatePortfolioPrices();
-    });
-
-    // Daily portfolio metrics update - Daily at 5 PM
-    cron.schedule('0 17 * * *', async () => {
-      console.log('[CronJobs] Updating portfolio metrics...');
-      await this.updateDailyPortfolioMetrics();
-    });
-
     console.log('Cron jobs initialized successfully');
   }
 
   static async processRecurringExpenses() {
-    try {
-      await recurringService.processRecurringExpenses();
-    } catch (error) {
-      console.error('[CronJobs] Recurring expenses error:', error);
-    }
+    console.log('Processing recurring expenses (Placeholder)');
+    // Implementation would go here
   }
 
   static async sendRecurringReminders() {
+    console.log('Sending recurring reminders (Placeholder)');
+    // Implementation would go here
+  }
+  
+  static async generateRecurringInvoices() {
     try {
-      await recurringService.sendUpcomingReminders();
+      console.log('[CronJobs] Generating recurring invoices...');
+      const result = await InvoiceService.generateRecurringInvoices();
+      console.log(`[CronJobs] Generated ${result.count} recurring invoices`);
     } catch (error) {
-      console.error('[CronJobs] Recurring reminders error:', error);
+      console.error('[CronJobs] Error generating recurring invoices:', error);
     }
   }
-
-  static async sendSubscriptionReminders() {
+  
+  static async sendPaymentReminders() {
     try {
-      await subscriptionService.sendRenewalReminders();
+      console.log('[CronJobs] Sending payment reminders...');
+      const result = await ReminderService.processAllReminders();
+      console.log(`[CronJobs] Sent ${result.success.length} reminders, ${result.failed.length} failed`);
     } catch (error) {
-      console.error('[CronJobs] Subscription reminders error:', error);
+      console.error('[CronJobs] Error sending payment reminders:', error);
     }
   }
-
-  static async sendTrialReminders() {
+  
+  static async applyLateFees() {
     try {
-      await subscriptionService.sendTrialReminders();
-    } catch (error) {
-      console.error('[CronJobs] Trial reminders error:', error);
-    }
-  }
-
-  static async processDailyGamification() {
-    try {
-      await gamificationService.processDailyChallenges();
-    } catch (error) {
-      console.error('[CronJobs] Gamification processing error:', error);
-    }
-  }
-
-  static async resetMonthlyGamification() {
-    try {
-      const UserGamification = require('../models/UserGamification');
-      await UserGamification.updateMany(
-        {},
-        { 
-          'points.currentMonth': 0,
-          'points.lastMonthReset': new Date()
+      console.log('[CronJobs] Applying late fees...');
+      const User = require('../models/User');
+      const users = await User.find({});
+      
+      let totalApplied = 0;
+      for (const user of users) {
+        try {
+          const result = await InvoiceService.applyLateFees(user._id);
+          totalApplied += result.count;
+        } catch (error) {
+          console.error(`[CronJobs] Error applying late fees for user ${user._id}:`, error);
         }
-      );
-      console.log('[CronJobs] Monthly gamification points reset');
+      }
+      
+      console.log(`[CronJobs] Applied late fees to ${totalApplied} invoices`);
     } catch (error) {
-      console.error('[CronJobs] Monthly reset error:', error);
-    }
-  }
-
-  static async seedGamificationData() {
-    try {
-      await gamificationService.seedAchievements();
-      await gamificationService.createSystemChallenges();
-    } catch (error) {
-      console.error('[CronJobs] Gamification seed error:', error);
+      console.error('[CronJobs] Error applying late fees:', error);
     }
   }
   
@@ -382,6 +332,6 @@ class CronJobs {
       console.error('Budget alert error:', error);
     }
   }
-$newMethods}
 }
+
 module.exports = CronJobs;
