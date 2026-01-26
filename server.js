@@ -159,8 +159,18 @@ app.use('/api/budgets', require('./routes/budgets'));
 app.use('/api/goals', require('./routes/goals'));
 app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/currency', require('./routes/currency'));
-app.use('/api/splits', require('./middleware/rateLimiter').expenseLimiter, splitsRoutes);
-app.use('/api/groups', require('./middleware/rateLimiter').expenseLimiter, groupsRoutes);
+app.use('/api/groups', require('./routes/groups'));
+app.use('/api/splits', require('./routes/splits'));
+app.use('/api/workspaces', require('./routes/workspaces'));
+app.use('/api/clients', require('./routes/clients'));
+app.use('/api/invoices', require('./routes/invoices'));
+app.use('/api/payments', require('./routes/payments'));
+app.use('/api/reports', require('./routes/reports'));
+
+// Root route to serve the UI
+app.get('/', (req, res) => {
+  res.sendFile(require('path').join(__dirname, 'public', 'index.html'));
+});
 
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
