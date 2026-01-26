@@ -305,7 +305,7 @@ If you’d like to improve **ExpenseFlow**, follow these steps 👇
   <img src="https://contrib.rocks/image?repo=Renu-code123/ExpenseFlow" />
 </a>
 
-💖 Thanks to all the amazing contributors who have helped build and improve **ExpenseFlow**!
+💖 Thanks to all the amazing contributors who are helping build and improve **ExpenseFlow**!
 
 ---
 
