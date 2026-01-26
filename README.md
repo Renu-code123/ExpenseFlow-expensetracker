@@ -299,6 +299,18 @@ If you’d like to improve **ExpenseFlow**, follow these steps 👇
 
 ---
 
+---
+
+## 👥 All Contributors
+
+<a href="https://github.com/Renu-code123/ExpenseFlow/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Renu-code123/ExpenseFlow" />
+</a>
+
+💖 Thanks to all the amazing contributors who have helped build and improve **ExpenseFlow**!
+
+---
+
 ## 🧾 License
 
 This project is licensed under the **MIT License** – see the [LICENSE](./LICENSE) file for details.
