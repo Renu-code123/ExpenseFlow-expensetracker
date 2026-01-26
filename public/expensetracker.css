@@ -6542,3 +6542,24 @@ button {
 .password-hint li.valid {
   display: none;
 }
+
+.form-group > div {
+    position: relative;
+}
+
+#togglePassword {
+    position: absolute;
+    right: 15px;         
+    top: 50%;            
+    transform: translateY(-50%); 
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.6);
+    z-index: 10;     
+    margin: 0;           
+    display: inline-block; 
+    line-height: 1;     
+}
+
+#togglePassword:hover {
+    color: #fff;
+}
