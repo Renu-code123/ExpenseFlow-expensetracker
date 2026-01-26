@@ -56,13 +56,17 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     socket.on('expense_created', (expense) => {
+      // Use display amount if available, otherwise convert
+      const displayAmount = expense.displayAmount || expense.amount;
       const transaction = {
         id: expense._id,
         text: expense.description,
         amount: expense.type === 'expense' ? -Number(expense.amount) : Number(expense.amount),
+        amount: expense.type === 'expense' ? -displayAmount : displayAmount,
         category: expense.category,
         type: expense.type,
-        date: expense.date
+        date: expense.date,
+        displayCurrency: expense.displayCurrency || 'INR'
       };
       transactions.push(transaction);
       displayTransactions();
@@ -71,15 +75,17 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     socket.on('expense_updated', (expense) => {
+      const displayAmount = expense.displayAmount || expense.amount;
       const index = transactions.findIndex(t => t.id === expense._id);
       if (index !== -1) {
         transactions[index] = {
           id: expense._id,
           text: expense.description,
-          amount: expense.type === 'expense' ? -expense.amount : expense.amount,
+          amount: expense.type === 'expense' ? -displayAmount : displayAmount,
           category: expense.category,
           type: expense.type,
-          date: expense.date
+          date: expense.date,
+          displayCurrency: expense.displayCurrency || 'INR'
         };
         displayTransactions();
         updateValues();
@@ -108,15 +114,17 @@ document.addEventListener("DOMContentLoaded", () => {
         headers: getAuthHeaders()
       });
       if (!response.ok) throw new Error('Failed to fetch expenses');
-      const expenses = await response.json();
-      return expenses.map(expense => ({
+      const data = await response.json();
+      return data.data.map(expense => ({
         id: expense._id,
         text: expense.description,
        amount: expense.type === 'expense'? -Number(expense.amount): Number(expense.amount),
 
+        amount: expense.type === 'expense' ? -(expense.displayAmount || expense.amount) : (expense.displayAmount || expense.amount),
         category: expense.category,
         type: expense.type,
         date: expense.date,
+        displayCurrency: expense.displayCurrency || 'INR',
         approvalStatus: expense.approvalStatus || 'approved' // Default to approved for backward compatibility
       }));
     } catch (error) {
@@ -385,15 +393,18 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const savedExpense = await saveExpense(expense);
 
-      // Convert to local format
+      // Convert to local format using display amounts
+      const displayAmount = savedExpense.displayAmount || savedExpense.amount;
       const transaction = {
         id: savedExpense._id,
         text: savedExpense.description,
       amount: expense.type === 'expense'? -Number(expense.amount): Number(expense.amount),
 
+        amount: savedExpense.type === 'expense' ? -displayAmount : displayAmount,
         category: savedExpense.category,
         type: savedExpense.type,
-        date: savedExpense.date
+        date: savedExpense.date,
+        displayCurrency: savedExpense.displayCurrency || 'INR'
       };
 
       transactions.push(transaction);
@@ -554,6 +565,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const date = new Date(transaction.date);
     const formattedDate = date.toLocaleDateString('en-IN');
     const categoryInfo = categories[transaction.category] || categories.other;
+    const currencySymbol = transaction.displayCurrency === 'INR' ? '₹' : 
+                          transaction.displayCurrency === 'USD' ? '$' : 
+                          transaction.displayCurrency === 'EUR' ? '€' : transaction.displayCurrency;
 
     // Determine approval status
     let statusBadge = '';
@@ -567,7 +581,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <div class="transaction-content">
         <div class="transaction-main">
           <span class="transaction-text">${transaction.text}</span>
-          <span class="transaction-amount">₹${Math.abs(transaction.amount).toFixed(2)}</span>
+          <span class="transaction-amount">${currencySymbol}${Math.abs(transaction.amount).toFixed(2)}</span>
         </div>
         <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
           <span class="transaction-category" style="background-color: ${categoryInfo.color}20; color: ${categoryInfo.color};">
@@ -594,9 +608,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const income = amounts.filter(item => item > 0).reduce((acc, item) => acc + item, 0);
     const expense = amounts.filter(item => item < 0).reduce((acc, item) => acc + item, 0) * -1;
 
-    balance.innerHTML = `₹${total.toFixed(2)}`;
-    moneyPlus.innerHTML = `+₹${income.toFixed(2)}`;
-    moneyMinus.innerHTML = `-₹${expense.toFixed(2)}`;
+    // Use the currency from the first transaction or default to INR
+    const currencySymbol = transactions.length > 0 ? 
+      (transactions[0].displayCurrency === 'INR' ? '₹' : 
+       transactions[0].displayCurrency === 'USD' ? '$' : 
+       transactions[0].displayCurrency === 'EUR' ? '€' : transactions[0].displayCurrency) : '₹';
+
+    balance.innerHTML = `${currencySymbol}${total.toFixed(2)}`;
+    moneyPlus.innerHTML = `+${currencySymbol}${income.toFixed(2)}`;
+    moneyMinus.innerHTML = `-${currencySymbol}${expense.toFixed(2)}`;
   }
 
   function updateLocalStorage() {
@@ -635,6 +655,9 @@ document.addEventListener("DOMContentLoaded", () => {
     entertainment: { name: '🎬 Entertainment', color: '#96CEB4' },
     utilities: { name: '💡 Bills & Utilities', color: '#FECA57' },
     healthcare: { name: '🏥 Healthcare', color: '#FF9FF3' },
+    salary: { name: '💼 Salary', color: '#54A0FF' },
+    freelance: { name: '💻 Freelance', color: '#5F27CD' },
+    investment: { name: '📈 Investment', color: '#00D2D3' },
     other: { name: '📋 Other', color: '#A55EEA' }
   };
 

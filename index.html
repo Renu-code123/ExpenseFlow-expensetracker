@@ -1379,6 +1379,24 @@
         gap: 0.5rem;
         justify-content: center;
       }
+.glass {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  animation: fadeIn 0.8s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
       .dismiss-btn:hover {
         background: rgba(255, 255, 255, 0.1);
@@ -1605,6 +1623,37 @@
           justify-content: stretch;
         }
       }
+.balance-card,
+.income-card,
+.expense-card,
+.history-section,
+.form-section,
+.data-management-section,
+.recurring-section {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.balance-card:hover,
+.income-card:hover,
+.expense-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
+}
+.btn-submit {
+  background: linear-gradient(135deg, #64ffda, #48e0c1);
+  border: none;
+  color: #041212;
+  font-weight: 600;
+  border-radius: 14px;
+  padding: 0.85rem 1.5rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(100, 255, 218, 0.35);
+}
 
       @media (max-width: 480px) {
         .hero-title {
@@ -1661,39 +1710,45 @@
         }
       }
 
-      /* Touch and gesture improvements */
-      @media (hover: none) and (pointer: coarse) {
-        .filter-btn,
-        .export-btn,
-        .import-btn,
-        .btn-submit {
-          min-height: 44px;
-          padding: 0.75rem 1.5rem;
-        }
-        
-        .delete-btn {
-          min-width: 44px;
-          min-height: 44px;
-        }
-        
-        .nav-link {
-          padding: 1rem 1.5rem;
-        }
-        
-        .category-select,
-        .date-input,
-        .amount-input,
-        .search-input {
-          min-height: 48px;
-          font-size: 16px;
-        }
-        
-        .form-control input,
-        .form-control select {
-          min-height: 48px;
-          font-size: 16px;
-        }
-      }
+<body>
+  <!-- Header -->
+  <header class="header">
+    <nav class="navbar">
+      <div class="nav-container">
+        <div class="nav-logo">
+          <i class="fas fa-wallet"></i>
+          <span>ExpenseFlow</span>
+        </div>
+        <div class="nav-menu" id="nav-menu">
+          <a href="#dashboard" class="nav-link active">Dashboard</a>
+          <a href="#analytics" class="nav-link">Analytics</a>
+          <a href="#goals" class="nav-link">Goals</a>
+          <a href="#settings" class="nav-link">Settings</a>
+        </div>
+        <div class="nav-toggle" id="nav-toggle">
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+        </div>
+        <div class="user-profile">
+          <button class="currency-btn" onclick="openCurrencyModal()" title="Currency Settings">
+            <i class="fas fa-coins"></i>
+            <span id="current-currency">INR</span>
+          </button>
+          <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face"
+            alt="User" class="profile-img">
+          <span class="username">John Doe</span>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="hero-section glass">
+      <h1 class="hero-title">Smart Money Management</h1>
+      <p class="hero-subtitle">Take control of your finances with our intuitive expense tracker</p>
+    </div>
 
       /* Safe area insets for devices with notches */
       @supports (padding: max(0px)) {
@@ -1770,6 +1825,257 @@
       button {
         max-width: 100%;
         min-width: 0;
+      }
+
+      /* Chatbot Styles */
+      .chatbot-container {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        z-index: 999;
+        font-family: 'Inter', sans-serif;
+      }
+
+      .chatbot-widget {
+        width: 380px;
+        height: 500px;
+        background: var(--bg-secondary);
+        border: 1px solid rgba(100, 255, 218, 0.2);
+        border-radius: 15px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        animation: slideInUp 0.4s ease-out;
+        display: none;
+      }
+
+      .chatbot-widget.active {
+        display: flex;
+      }
+
+      @keyframes slideInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .chatbot-header {
+        background: var(--primary-gradient);
+        padding: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+
+      .chatbot-header-content h3 {
+        color: white;
+        font-size: 1.1rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .chatbot-header-content p {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.85rem;
+      }
+
+      .chatbot-close-btn {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.2rem;
+        cursor: pointer;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s;
+      }
+
+      .chatbot-close-btn:hover {
+        transform: scale(1.2);
+      }
+
+      .chatbot-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .chatbot-messages::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .chatbot-messages::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .chatbot-messages::-webkit-scrollbar-thumb {
+        background: rgba(100, 255, 218, 0.3);
+        border-radius: 3px;
+      }
+
+      .chatbot-messages::-webkit-scrollbar-thumb:hover {
+        background: rgba(100, 255, 218, 0.5);
+      }
+
+      .chatbot-message {
+        display: flex;
+        animation: fadeIn 0.3s ease-out;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .bot-message {
+        justify-content: flex-start;
+      }
+
+      .user-message {
+        justify-content: flex-end;
+      }
+
+      .message-content {
+        max-width: 75%;
+        padding: 0.75rem 1rem;
+        border-radius: 12px;
+        word-wrap: break-word;
+      }
+
+      .bot-message .message-content {
+        background: rgba(100, 255, 218, 0.1);
+        border: 1px solid rgba(100, 255, 218, 0.2);
+        color: var(--text-primary);
+      }
+
+      .user-message .message-content {
+        background: var(--primary-gradient);
+        color: white;
+      }
+
+      .message-content p {
+        margin: 0;
+        font-size: 0.95rem;
+        line-height: 1.4;
+      }
+
+      .chatbot-input-area {
+        padding: 1rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(0, 0, 0, 0.2);
+      }
+
+      .chatbot-form {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .chatbot-input {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        border: 1px solid rgba(100, 255, 218, 0.2);
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        outline: none;
+        transition: all 0.2s;
+      }
+
+      .chatbot-input:focus {
+        border-color: var(--accent-primary);
+        background: rgba(100, 255, 218, 0.1);
+        box-shadow: 0 0 10px rgba(100, 255, 218, 0.2);
+      }
+
+      .chatbot-input::placeholder {
+        color: rgba(180, 180, 180, 0.6);
+      }
+
+      .chatbot-send-btn {
+        width: 40px;
+        height: 40px;
+        border: none;
+        border-radius: 50%;
+        background: var(--primary-gradient);
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+      }
+
+      .chatbot-send-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+      }
+
+      .chatbot-send-btn:active {
+        transform: scale(0.95);
+      }
+
+      .chatbot-toggle-btn {
+        width: 60px;
+        height: 60px;
+        border: none;
+        border-radius: 50%;
+        background: var(--primary-gradient);
+        color: white;
+        font-size: 1.5rem;
+        cursor: pointer;
+        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        position: relative;
+      }
+
+      .chatbot-toggle-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+      }
+
+      .chatbot-toggle-btn.hidden {
+        display: none;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 480px) {
+        .chatbot-widget {
+          width: calc(100vw - 40px);
+          height: 70vh;
+          max-height: 500px;
+        }
+
+        .chatbot-container {
+          bottom: 10px;
+          left: 10px;
+          right: 10px;
+        }
+
+        .message-content {
+          max-width: 85%;
+        }
       }
 <head>
   <meta charset="UTF-8">
@@ -1902,6 +2208,214 @@
     </style>
   </head>
   <body>
+
+
+      <!-- Smooth Cursor Trail -->
+<style>
+  .cursor-trail-container {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 999999;
+  }
+
+  .trail-dot {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #64ffda 0%, #00b4d8 100%);
+    box-shadow: 
+      0 0 15px rgba(100, 255, 218, 0.8),
+      0 0 30px rgba(100, 255, 218, 0.4);
+    transform: translate(-50%, -50%);
+    will-change: transform, opacity;
+    mix-blend-mode: screen;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  .trail-dot:first-child {
+    width: 12px;
+    height: 12px;
+    background: linear-gradient(135deg, #64ffda 0%, #00b4d8 100%);
+    box-shadow: 
+      0 0 20px rgba(100, 255, 218, 0.9),
+      0 0 40px rgba(100, 255, 218, 0.6);
+    z-index: 2;
+  }
+
+  .cursor-clicking {
+    transform: translate(-50%, -50%) scale(1.5);
+    background: linear-gradient(135deg, #ff6b9d 0%, #ffcc00 100%) !important;
+    box-shadow: 
+      0 0 25px rgba(255, 107, 157, 0.9),
+      0 0 50px rgba(255, 107, 157, 0.6) !important;
+  }
+
+  .cursor-hovering {
+    transform: translate(-50%, -50%) scale(1.3);
+    background: linear-gradient(135deg, #00b4d8 0%, #64ffda 100%) !important;
+  }
+</style>
+
+<div class="cursor-trail-container" id="cursor-trail"></div>
+
+<script>
+(function() {
+  // Hide default cursor
+  document.body.style.cursor = 'none';
+  
+  const container = document.getElementById('cursor-trail');
+  const coords = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+  const trailCircles = [];
+  const COUNT = 12; // Fewer circles for smoother trail
+  
+  // Create trail circles
+  for (let i = 0; i < COUNT; i++) {
+    const circle = document.createElement('div');
+    circle.className = 'trail-dot';
+    
+    // Opacity decreases along the trail
+    const opacity = 0.9 - (i / COUNT) * 0.8;
+    circle.style.opacity = opacity.toString();
+    
+    // Size decreases along the trail
+    const scale = 1 - (i / COUNT) * 0.5;
+    circle.style.transform = `translate(-50%, -50%) scale(${scale})`;
+    
+    container.appendChild(circle);
+    trailCircles.push({ 
+      element: circle, 
+      x: coords.x, 
+      y: coords.y,
+      targetX: coords.x,
+      targetY: coords.y
+    });
+  }
+  
+  // Track mouse position
+  let isMoving = false;
+  let lastMouseX = coords.x;
+  let lastMouseY = coords.y;
+  let velocity = { x: 0, y: 0 };
+  
+  window.addEventListener('mousemove', e => {
+    coords.x = e.clientX;
+    coords.y = e.clientY;
+    
+    // Calculate velocity for smooth movement
+    velocity.x = e.clientX - lastMouseX;
+    velocity.y = e.clientY - lastMouseY;
+    lastMouseX = e.clientX;
+    lastMouseY = e.clientY;
+    
+    isMoving = true;
+    
+    // Reset movement timeout
+    clearTimeout(window.movementTimeout);
+    window.movementTimeout = setTimeout(() => {
+      isMoving = false;
+    }, 50);
+  });
+  
+  // Click effect
+  window.addEventListener('mousedown', () => {
+    trailCircles.forEach(circle => {
+      circle.element.classList.add('cursor-clicking');
+    });
+  });
+  
+  window.addEventListener('mouseup', () => {
+    trailCircles.forEach(circle => {
+      circle.element.classList.remove('cursor-clicking');
+    });
+  });
+  
+  // Hover effect for interactive elements
+  window.addEventListener('mouseover', e => {
+    const interactive = e.target.closest('a, button, input, select, textarea, [role="button"]');
+    trailCircles.forEach(circle => {
+      circle.element.classList.toggle('cursor-hovering', !!interactive);
+    });
+  });
+  
+  // Smooth animation function
+  function animateTrail() {
+    let targetX = coords.x;
+    let targetY = coords.y;
+    
+    // Add velocity offset to first circle for more natural feel
+    const velocityOffset = 0.5;
+    const offsetX = velocity.x * velocityOffset;
+    const offsetY = velocity.y * velocityOffset;
+    
+    trailCircles.forEach((circle, index) => {
+      // First circle follows cursor exactly
+      if (index === 0) {
+        circle.x = targetX + offsetX;
+        circle.y = targetY + offsetY;
+      } 
+      // Other circles follow with smooth delay
+      else {
+        const prevCircle = trailCircles[index - 1];
+        
+        // Smooth interpolation factor (changes based on movement speed)
+        const speed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+        const lerpFactor = isMoving ? 
+          Math.min(0.3 + (speed * 0.01), 0.5) :  // Faster movement = tighter trail
+          0.1; // Slow movement = more spread
+        
+        circle.x += (prevCircle.x - circle.x) * lerpFactor;
+        circle.y += (prevCircle.y - circle.y) * lerpFactor;
+      }
+      
+      // Apply position with easing
+      circle.element.style.left = circle.x + 'px';
+      circle.element.style.top = circle.y + 'px';
+      
+      // Dynamic opacity based on speed and position
+      if (index > 0) {
+        const speed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+        const baseOpacity = 0.9 - (index / COUNT) * 0.8;
+        const speedMultiplier = Math.min(1 + speed * 0.02, 1.5);
+        circle.element.style.opacity = (baseOpacity * speedMultiplier).toString();
+      }
+      
+      // Update target for next circle
+      targetX = circle.x;
+      targetY = circle.y;
+    });
+    
+    requestAnimationFrame(animateTrail);
+  }
+  
+  // Handle window resize
+  window.addEventListener('resize', () => {
+    // Adjust if cursor goes out of bounds
+    if (coords.x > window.innerWidth) coords.x = window.innerWidth;
+    if (coords.y > window.innerHeight) coords.y = window.innerHeight;
+  });
+  
+  // Handle mouse leave/enter
+  window.addEventListener('mouseleave', () => {
+    trailCircles.forEach(circle => {
+      circle.element.style.opacity = '0';
+    });
+  });
+  
+  window.addEventListener('mouseenter', () => {
+    trailCircles.forEach((circle, index) => {
+      const opacity = 0.9 - (index / COUNT) * 0.8;
+      circle.element.style.opacity = opacity.toString();
+    });
+  });
+  
+  // Start animation
+  animateTrail();
+})();
+</script>
+
+      
     <!-- Global Loader -->
 <div id="global-loader" class="global-loader hidden">
   <div class="spinner"></div>
@@ -1918,7 +2432,7 @@
           <div class="nav-menu" id="nav-menu">
             <a href="#dashboard" class="nav-link active">Dashboard</a>
             <a href="#analytics" class="nav-link">Analytics</a>
-            <a href="#goals" class="nav-link">Goals</a>
+            <a href="goals.html" class="nav-link">Goals</a>
             <a href="#settings" class="nav-link">Settings</a>
           </div>
           <div class="nav-actions">
@@ -2359,23 +2873,95 @@
 
   <!-- Footer -->
   <footer class="footer">
-    <div class="footer-container">
-      <div class="footer-section">
-        <div class="footer-logo">
-          <i class="fas fa-wallet"></i>
-          <span>ExpenseFlow</span>
-        </div>
-        
-        <div class="footer-section">
-          <h4>Company</h4>
-          <ul class="footer-links">
-            <li><a href="AboutUs.html">About Us</a></li>
-            <li><a href="PrivacyPolicy.html">Privacy Policy</a></li>
-            <li><a href="terms_service.html">Terms of Service</a></li>
-            <li><a href="#">Contact</a></li>
-          </ul>
-        </div>
-      </div>
+  <div class="footer-container">
+
+    <div class="footer-section">
+  <div class="footer-logo">
+    <i class="fas fa-wallet"></i>
+    <span>ExpenseFlow</span>
+  </div>
+
+  <p class="footer-description">
+    Smart money management made simple. Track, analyze, and optimize your financial habits.
+  </p>
+
+  <div class="social-links">
+    <a
+      href="https://x.com/9504_renu"
+      class="social-link"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="X (Twitter)"
+    >
+      <i class="fab fa-x-twitter"></i>
+    </a>
+
+    <a
+      href="https://github.com/Renu-code123/ExpenseFlow"
+      class="social-link"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Github"
+    >
+      <i class="fab fa-github"></i>
+    </a>
+
+    <a
+      href="mailto:renu89857@gmail.com"
+      class="social-link"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Email"
+    >
+      <i class="far fa-envelope"></i>
+    </a>
+
+    <a
+      href="https://www.linkedin.com/in/renu-kumari-prajapati"
+      class="social-link"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="LinkedIn"
+    >
+      <i class="fab fa-linkedin-in"></i>
+    </a>
+  </div>
+</div>
+
+
+    <div class="footer-section">
+      <h4>Company</h4>
+      <ul class="footer-links">
+        <li><a href="AboutUs.html">About Us</a></li>
+        <li><a href="PrivacyPolicy.html">Privacy Policy</a></li>
+        <li><a href="terms_service.html">Terms of Service</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-section">
+      <h4>Features</h4>
+      <ul class="footer-links">
+        <li><a href="#">Expense Tracking</a></li>
+        <li><a href="#">Budget Planning</a></li>
+        <li><a href="#">Analytics Dashboard</a></li>
+        <li><a href="#">Goal Setting</a></li>
+      </ul>
+    </div>
+
+  </div>
+
+<div class="footer-bottom">
+  <div class="footer-container">
+    <p>&copy; 2026 ExpenseFlow. All rights reserved. Made with ❤️ for better financial management.</p>
+    <div class="footer-stats">
+      <span>🏆 Trusted by 10,000+ users</span>
+      <span>💰 ₹50M+ tracked</span>
+      <span>📊 99.9% uptime</span>
+    </div>
+  </div>
+</div>
+</footer>
 
       <div class="footer-section">
         <h4>Features</h4>
@@ -2387,61 +2973,6 @@
         </ul>
       </div>
 
-    <button id="scrollToTopBtn" title="Go to top">
-    <i data-lucide="arrow-up-circle"></i>
-  </button>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="theme.js"></script>
-    <script src="trackerscript.js"></script>
-    
-    <!-- PWA Installation Prompt -->
-    <div id="install-prompt" class="install-prompt" style="display: none;">
-      <div class="install-prompt-content">
-        <div class="install-prompt-header">
-          <i class="fas fa-download"></i>
-          <h3>Install ExpenseFlow</h3>
-        </div>
-        <p>Install ExpenseFlow for quick access and offline functionality!</p>
-        <div class="install-prompt-actions">
-          <button id="install-button" class="install-btn">
-            <i class="fas fa-plus"></i> Install
-          </button>
-          <button id="install-dismiss" class="dismiss-btn">
-            <i class="fas fa-times"></i> Not now
-          </button>
-        </div>
-      <div class="footer-section">
-        <h4>Resources</h4>
-        <ul class="footer-links">
-          <li><a href="#">Help Center</a></li>
-          <li><a href="#">Financial Tips</a></li>
-          <li><a href="#">Video Tutorials</a></li>
-          <li><a href="#">Community</a></li>
-        </ul>
-      </div>
-
-      <div class="footer-section">
-        <h4>Company</h4>
-        <ul class="footer-links">
-          <li><a href="#">About Us</a></li>
-          <li><a href="#">Privacy Policy</a></li>
-          <li><a href="#">Terms of Service</a></li>
-          <li><a href="#">Contact</a></li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="footer-bottom">
-      <div class="footer-container">
-        <p>&copy; 2026 ExpenseFlow. All rights reserved. Made with ❤️ for better financial management.</p>
-        <div class="footer-stats">
-          <span>🏆 Trusted by 10,000+ users</span>
-          <span>💰 ₹50M+ tracked</span>
-          <span>📊 99.9% uptime</span>
-        </div>
-      </div>
-    </div>
-  </footer>
 
   <script src="trackerscript.js"></script>
   <script src="export-feature.js"></script>
@@ -2484,6 +3015,52 @@
 
 </body>
 
+    <!-- Chatbot Widget -->
+    <div id="chatbot-container" class="chatbot-container">
+      <div id="chatbot-widget" class="chatbot-widget">
+        <!-- Chat Header -->
+        <div class="chatbot-header">
+          <div class="chatbot-header-content">
+            <h3>ExpenseFlow Assistant</h3>
+            <p>Ask me anything about your finances</p>
+          </div>
+          <button id="chatbot-close" class="chatbot-close-btn">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        
+        <!-- Chat Messages -->
+        <div id="chatbot-messages" class="chatbot-messages">
+          <div class="chatbot-message bot-message">
+            <div class="message-content">
+              <p>Hi! 👋 I'm your ExpenseFlow Assistant. How can I help you manage your finances today?</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Chat Input -->
+        <div class="chatbot-input-area">
+          <form id="chatbot-form" class="chatbot-form">
+            <input 
+              type="text" 
+              id="chatbot-input" 
+              class="chatbot-input" 
+              placeholder="Type your message..." 
+              autocomplete="off"
+            >
+            <button type="submit" class="chatbot-send-btn">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </form>
+        </div>
+      </div>
+      
+      <!-- Chat Toggle Button -->
+      <button id="chatbot-toggle" class="chatbot-toggle-btn" title="Chat with Assistant">
+        <i class="fas fa-comments"></i>
+      </button>
+    </div>
+
     <script>
       // Mobile Navigation Toggle
       document.addEventListener('DOMContentLoaded', function() {
@@ -2518,7 +3095,125 @@
             navMenu.classList.remove('active');
           }
         });
+
+        // Chatbot Functionality
+        initializeChatbot();
       });
+
+      function initializeChatbot() {
+        const chatbotToggle = document.getElementById('chatbot-toggle');
+        const chatbotWidget = document.getElementById('chatbot-widget');
+        const chatbotForm = document.getElementById('chatbot-form');
+        const chatbotInput = document.getElementById('chatbot-input');
+        const chatbotMessages = document.getElementById('chatbot-messages');
+        const chatbotClose = document.getElementById('chatbot-close');
+
+        // Toggle chatbot window
+        chatbotToggle.addEventListener('click', () => {
+          chatbotWidget.classList.toggle('active');
+          if (chatbotWidget.classList.contains('active')) {
+            chatbotToggle.classList.add('hidden');
+            chatbotInput.focus();
+          } else {
+            chatbotToggle.classList.remove('hidden');
+          }
+        });
+
+        // Close chatbot window
+        chatbotClose.addEventListener('click', () => {
+          chatbotWidget.classList.remove('active');
+          chatbotToggle.classList.remove('hidden');
+        });
+
+        // Handle form submission
+        chatbotForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const message = chatbotInput.value.trim();
+          
+          if (message) {
+            // Add user message
+            addMessage(message, 'user');
+            chatbotInput.value = '';
+            
+            // Simulate bot response
+            setTimeout(() => {
+              const response = getBotResponse(message);
+              addMessage(response, 'bot');
+            }, 500);
+          }
+        });
+
+        function addMessage(text, sender) {
+          const messageDiv = document.createElement('div');
+          messageDiv.className = `chatbot-message ${sender}-message`;
+          
+          const contentDiv = document.createElement('div');
+          contentDiv.className = 'message-content';
+          
+          const p = document.createElement('p');
+          p.textContent = text;
+          
+          contentDiv.appendChild(p);
+          messageDiv.appendChild(contentDiv);
+          
+          chatbotMessages.appendChild(messageDiv);
+          
+          // Auto scroll to bottom
+          chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+        }
+
+        function getBotResponse(userMessage) {
+          const lowerMessage = userMessage.toLowerCase();
+          
+          // Expense-related responses
+          if (lowerMessage.includes('add') && (lowerMessage.includes('expense') || lowerMessage.includes('transaction'))) {
+            return "You can add an expense by scrolling down to the 'Add New Transaction' form. Fill in the description, amount, category, and date, then click submit! 📝";
+          }
+          
+          if (lowerMessage.includes('budget')) {
+            return "Budget planning is a great way to manage your spending! You can set budget goals by category to track your spending limits. Would you like tips on creating an effective budget? 💰";
+          }
+          
+          if (lowerMessage.includes('goal') || lowerMessage.includes('savings')) {
+            return "Setting financial goals helps you stay motivated! You can create short-term and long-term goals to work towards your financial dreams. What's your goal? 🎯";
+          }
+          
+          if (lowerMessage.includes('category')) {
+            return "We support many categories including: Food, Transportation, Shopping, Entertainment, Bills, Healthcare, Education, Travel, Salary, Freelance, Investment, and more! Pick what works for you. 📂";
+          }
+          
+          if (lowerMessage.includes('receipt')) {
+            return "You can upload receipts to verify your expenses! This helps you keep accurate records and track your spending better. Perfect for important purchases! 📸";
+          }
+          
+          if (lowerMessage.includes('sync') || lowerMessage.includes('offline')) {
+            return "ExpenseFlow works offline and syncs your data when you're back online! Your data is always safe and accessible. No worries about losing your information! 🔄";
+          }
+          
+          if (lowerMessage.includes('delete') || lowerMessage.includes('edit')) {
+            return "You can edit or delete transactions from your history. Just click on any transaction to modify it or remove it. Easy management! ✏️";
+          }
+          
+          if (lowerMessage.includes('help') || lowerMessage.includes('how')) {
+            return "I'm here to help! You can ask me about:\n• Adding expenses\n• Creating budgets\n• Setting goals\n• Managing receipts\n• Categories\n• And more!\n\nWhat would you like to know? 🤔";
+          }
+          
+          if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey')) {
+            return "Hey there! 👋 I'm your ExpenseFlow Assistant. How can I help you manage your finances today?";
+          }
+          
+          // Default responses
+          const responses = [
+            "That's a great question! Feel free to explore ExpenseFlow's features or ask me more about managing your expenses. 💡",
+            "I'm here to help you manage your finances better! Is there anything specific you'd like to know? 🤝",
+            "Thanks for that message! I'm learning to help you even better. Check out the features above or ask me another question! 🚀",
+            "Interesting! Remember, smart money management is all about tracking and planning. How can I assist you further? 📊",
+            "I'm always here to help! Feel free to ask me anything about budgeting, expense tracking, or financial planning. 💸"
+          ];
+          
+          return responses[Math.floor(Math.random() * responses.length)];
+        }
+      }
     </script>
   </body>
 </html>

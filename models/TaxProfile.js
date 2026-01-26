@@ -1,240 +1,191 @@
 const mongoose = require('mongoose');
 
-const taxBracketSchema = new mongoose.Schema({
-  minIncome: {
-    type: Number,
-    required: true,
-    min: 0
-  },
-  maxIncome: {
-    type: Number,
-    default: null // null means no upper limit
-  },
-  rate: {
-    type: Number,
-    required: true,
-    min: 0,
-    max: 100
-  },
-  fixedAmount: {
-    type: Number,
-    default: 0
-  }
-}, { _id: false });
-
-const deductionSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  code: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  maxLimit: {
-    type: Number,
-    default: null // null means no limit
-  },
-  description: String
-}, { _id: false });
-
 const taxProfileSchema = new mongoose.Schema({
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  taxYear: {
-    type: Number,
-    required: true
-  },
-  country: {
-    type: String,
-    required: true,
-    default: 'IN',
-    uppercase: true
-  },
-  region: {
-    type: String,
-    trim: true
-  },
-  regime: {
-    type: String,
-    enum: ['old', 'new', 'default'],
-    default: 'new'
-  },
-  filingStatus: {
-    type: String,
-    enum: ['individual', 'married_jointly', 'married_separately', 'head_of_household', 'business'],
-    default: 'individual'
-  },
-  employmentType: {
-    type: String,
-    enum: ['salaried', 'self_employed', 'business', 'freelancer', 'other'],
-    default: 'salaried'
-  },
-  taxBrackets: [taxBracketSchema],
-  standardDeduction: {
-    type: Number,
-    default: 50000 // Default for India
-  },
-  availableDeductions: [deductionSchema],
-  customDeductions: [{
-    name: String,
-    amount: Number,
-    section: String
-  }],
-  estimatedTaxCredits: {
-    type: Number,
-    default: 0
-  },
-  advanceTaxPaid: {
-    type: Number,
-    default: 0
-  },
-  tdsDeducted: {
-    type: Number,
-    default: 0
-  },
-  isActive: {
-    type: Boolean,
-    default: true
-  }
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+        unique: true,
+        index: true
+    },
+    primary_jurisdiction: {
+        country: {
+            type: String,
+            enum: ['US', 'UK', 'EU', 'IN', 'CA'],
+            required: true
+        },
+        state_province: String, // For US states, Canadian provinces, etc.
+        tax_year: {
+            type: Number,
+            default: () => new Date().getFullYear()
+        }
+    },
+    filing_status: {
+        type: String,
+        enum: ['single', 'married_joint', 'married_separate', 'head_of_household', 'widow'],
+        default: 'single'
+    },
+    dependents: {
+        type: Number,
+        default: 0,
+        min: 0
+    },
+    annual_income: {
+        salary: { type: Number, default: 0 },
+        business: { type: Number, default: 0 },
+        investment: { type: Number, default: 0 },
+        rental: { type: Number, default: 0 },
+        other: { type: Number, default: 0 }
+    },
+    tax_advantaged_accounts: [{
+        account_type: {
+            type: String,
+            enum: ['401k', 'IRA', 'Roth_IRA', 'HSA', 'ISA', 'RRSP', 'TFSA', 'PPF', 'EPF', 'NPS']
+        },
+        contribution_limit: Number,
+        current_contribution: { type: Number, default: 0 },
+        employer_match: { type: Number, default: 0 }
+    }],
+    deductions: {
+        standard_or_itemized: {
+            type: String,
+            enum: ['standard', 'itemized'],
+            default: 'standard'
+        },
+        itemized_deductions: {
+            mortgage_interest: { type: Number, default: 0 },
+            property_tax: { type: Number, default: 0 },
+            charitable: { type: Number, default: 0 },
+            medical: { type: Number, default: 0 },
+            state_local_tax: { type: Number, default: 0 }
+        },
+        business_expenses: {
+            home_office: { type: Number, default: 0 },
+            travel: { type: Number, default: 0 },
+            equipment: { type: Number, default: 0 },
+            supplies: { type: Number, default: 0 },
+            professional_services: { type: Number, default: 0 }
+        }
+    },
+    tax_preferences: {
+        risk_tolerance: {
+            type: String,
+            enum: ['conservative', 'moderate', 'aggressive'],
+            default: 'moderate'
+        },
+        enable_tax_loss_harvesting: { type: Boolean, default: true },
+        enable_wash_sale_detection: { type: Boolean, default: true },
+        enable_quarterly_estimates: { type: Boolean, default: false },
+        preferred_payment_method: {
+            type: String,
+            enum: ['bank_transfer', 'check', 'credit_card'],
+            default: 'bank_transfer'
+        }
+    },
+    estimated_tax_payments: [{
+        quarter: { type: Number, min: 1, max: 4 },
+        due_date: Date,
+        amount: Number,
+        paid: { type: Boolean, default: false },
+        paid_date: Date,
+        confirmation_number: String
+    }],
+    tax_bracket_info: {
+        federal_bracket: Number,
+        state_bracket: Number,
+        effective_tax_rate: Number,
+        marginal_tax_rate: Number
+    },
+    year_end_strategy: {
+        harvest_losses_before: Date,
+        max_contributions_by: Date,
+        charitable_giving_deadline: Date,
+        business_expense_deadline: Date
+    },
+    tax_professional: {
+        has_professional: { type: Boolean, default: false },
+        name: String,
+        firm: String,
+        contact: String,
+        notes: String
+    },
+    audit_settings: {
+        enable_audit_trail: { type: Boolean, default: true },
+        retention_years: { type: Number, default: 7 },
+        digital_copies: { type: Boolean, default: true }
+    }
 }, {
-  timestamps: true
+    timestamps: true
 });
 
-// Compound index for user and tax year
-taxProfileSchema.index({ user: 1, taxYear: 1 }, { unique: true });
+// Virtuals
+taxProfileSchema.virtual('total_annual_income').get(function() {
+    return Object.values(this.annual_income).reduce((sum, val) => sum + val, 0);
+});
 
-// Initialize default Indian tax brackets (New Regime FY 2024-25)
-taxProfileSchema.statics.getDefaultBrackets = function(country = 'IN', regime = 'new') {
-  if (country === 'IN') {
-    if (regime === 'new') {
-      return [
-        { minIncome: 0, maxIncome: 300000, rate: 0, fixedAmount: 0 },
-        { minIncome: 300001, maxIncome: 700000, rate: 5, fixedAmount: 0 },
-        { minIncome: 700001, maxIncome: 1000000, rate: 10, fixedAmount: 20000 },
-        { minIncome: 1000001, maxIncome: 1200000, rate: 15, fixedAmount: 50000 },
-        { minIncome: 1200001, maxIncome: 1500000, rate: 20, fixedAmount: 80000 },
-        { minIncome: 1500001, maxIncome: null, rate: 30, fixedAmount: 140000 }
-      ];
-    } else {
-      // Old Regime
-      return [
-        { minIncome: 0, maxIncome: 250000, rate: 0, fixedAmount: 0 },
-        { minIncome: 250001, maxIncome: 500000, rate: 5, fixedAmount: 0 },
-        { minIncome: 500001, maxIncome: 1000000, rate: 20, fixedAmount: 12500 },
-        { minIncome: 1000001, maxIncome: null, rate: 30, fixedAmount: 112500 }
-      ];
+taxProfileSchema.virtual('total_itemized_deductions').get(function() {
+    const itemized = Object.values(this.deductions.itemized_deductions).reduce((sum, val) => sum + val, 0);
+    const business = Object.values(this.deductions.business_expenses).reduce((sum, val) => sum + val, 0);
+    return itemized + business;
+});
+
+taxProfileSchema.virtual('total_tax_advantaged_contributions').get(function() {
+    return this.tax_advantaged_accounts.reduce((sum, acc) => sum + acc.current_contribution, 0);
+});
+
+// Methods
+taxProfileSchema.methods.updateTaxBracket = function(federalBracket, stateBracket, effectiveRate, marginalRate) {
+    this.tax_bracket_info = {
+        federal_bracket: federalBracket,
+        state_bracket: stateBracket,
+        effective_tax_rate: effectiveRate,
+        marginal_tax_rate: marginalRate
+    };
+    return this.save();
+};
+
+taxProfileSchema.methods.addEstimatedPayment = function(quarter, dueDate, amount) {
+    this.estimated_tax_payments.push({
+        quarter,
+        due_date: dueDate,
+        amount,
+        paid: false
+    });
+    return this.save();
+};
+
+taxProfileSchema.methods.markPaymentPaid = function(quarter, confirmationNumber) {
+    const payment = this.estimated_tax_payments.find(p => p.quarter === quarter);
+    if (payment) {
+        payment.paid = true;
+        payment.paid_date = new Date();
+        payment.confirmation_number = confirmationNumber;
     }
-  }
-  
-  // US Tax Brackets (2024) - Simplified
-  if (country === 'US') {
-    return [
-      { minIncome: 0, maxIncome: 11600, rate: 10, fixedAmount: 0 },
-      { minIncome: 11601, maxIncome: 47150, rate: 12, fixedAmount: 1160 },
-      { minIncome: 47151, maxIncome: 100525, rate: 22, fixedAmount: 5426 },
-      { minIncome: 100526, maxIncome: 191950, rate: 24, fixedAmount: 17168 },
-      { minIncome: 191951, maxIncome: 243725, rate: 32, fixedAmount: 39110 },
-      { minIncome: 243726, maxIncome: 609350, rate: 35, fixedAmount: 55678 },
-      { minIncome: 609351, maxIncome: null, rate: 37, fixedAmount: 183647 }
-    ];
-  }
-  
-  // Default progressive brackets
-  return [
-    { minIncome: 0, maxIncome: 50000, rate: 10, fixedAmount: 0 },
-    { minIncome: 50001, maxIncome: 100000, rate: 20, fixedAmount: 5000 },
-    { minIncome: 100001, maxIncome: null, rate: 30, fixedAmount: 15000 }
-  ];
+    return this.save();
 };
 
-// Get default deductions for a country
-taxProfileSchema.statics.getDefaultDeductions = function(country = 'IN') {
-  if (country === 'IN') {
-    return [
-      { name: 'Section 80C Investments', code: '80C', maxLimit: 150000, description: 'PPF, ELSS, Life Insurance, etc.' },
-      { name: 'Health Insurance Premium', code: '80D', maxLimit: 75000, description: 'Self and family health insurance' },
-      { name: 'Education Loan Interest', code: '80E', maxLimit: null, description: 'Interest on education loan' },
-      { name: 'Home Loan Interest', code: '24B', maxLimit: 200000, description: 'Interest on home loan' },
-      { name: 'Donations', code: '80G', maxLimit: null, description: 'Charitable donations' },
-      { name: 'NPS Contribution', code: '80CCD', maxLimit: 50000, description: 'National Pension Scheme' },
-      { name: 'Medical Expenses', code: '80DDB', maxLimit: 100000, description: 'Specified diseases treatment' },
-      { name: 'Rent Paid (HRA)', code: '10(13A)', maxLimit: null, description: 'House Rent Allowance' }
-    ];
-  }
-  
-  if (country === 'US') {
-    return [
-      { name: 'Standard Deduction', code: 'STD', maxLimit: 14600, description: 'Standard deduction for single filers' },
-      { name: 'Mortgage Interest', code: 'MORT', maxLimit: 750000, description: 'Interest on home mortgage' },
-      { name: 'State and Local Taxes', code: 'SALT', maxLimit: 10000, description: 'State and local tax deduction' },
-      { name: 'Charitable Contributions', code: 'CHAR', maxLimit: null, description: 'Donations to qualified organizations' },
-      { name: 'Medical Expenses', code: 'MED', maxLimit: null, description: 'Exceeding 7.5% of AGI' },
-      { name: 'Student Loan Interest', code: 'STUD', maxLimit: 2500, description: 'Interest on student loans' }
-    ];
-  }
-  
-  return [];
+taxProfileSchema.methods.shouldItemize = function(standardDeduction) {
+    return this.total_itemized_deductions > standardDeduction;
 };
 
-// Method to get tax brackets based on profile settings
-taxProfileSchema.methods.getTaxBrackets = function() {
-  if (this.taxBrackets && this.taxBrackets.length > 0) {
-    return this.taxBrackets;
-  }
-  return TaxProfile.getDefaultBrackets(this.country, this.regime);
+// Static methods
+taxProfileSchema.statics.getUserProfile = function(userId) {
+    return this.findOne({ user: userId });
 };
 
-// Method to calculate tax bracket for given income
-taxProfileSchema.methods.calculateTaxBracket = function(taxableIncome) {
-  const brackets = this.getTaxBrackets();
-  for (const bracket of brackets) {
-    const max = bracket.maxIncome || Infinity;
-    if (taxableIncome >= bracket.minIncome && taxableIncome <= max) {
-      return {
-        rate: bracket.rate,
-        bracketMin: bracket.minIncome,
-        bracketMax: bracket.maxIncome,
-        fixedAmount: bracket.fixedAmount
-      };
-    }
-  }
-  return brackets[brackets.length - 1];
+taxProfileSchema.statics.getProfilesNeedingQuarterlyEstimates = function() {
+    return this.find({
+        'tax_preferences.enable_quarterly_estimates': true,
+        'estimated_tax_payments': {
+            $elemMatch: {
+                paid: false,
+                due_date: {
+                    $gte: new Date(),
+                    $lte: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // Next 30 days
+                }
+            }
+        }
+    }).populate('user', 'name email');
 };
 
-// Static method to get standard deduction by country and filing status
-taxProfileSchema.statics.getStandardDeduction = function(country, filingStatus, year = 2024) {
-  const deductions = {
-    US: {
-      2024: {
-        individual: 14600,
-        married_jointly: 29200,
-        married_separately: 14600,
-        head_of_household: 21900
-      }
-    },
-    IN: {
-      2024: {
-        individual: 50000,
-        salaried: 50000
-      }
-    },
-    UK: {
-      2024: {
-        individual: 12570 // Personal allowance
-      }
-    }
-  };
-  
-  const countryDeductions = deductions[country]?.[year] || deductions.US[2024];
-  return countryDeductions[filingStatus] || countryDeductions.individual || 0;
-};
-
-const TaxProfile = mongoose.model('TaxProfile', taxProfileSchema);
-
-module.exports = TaxProfile;
+module.exports = mongoose.model('TaxProfile', taxProfileSchema);

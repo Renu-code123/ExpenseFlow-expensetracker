@@ -1,5 +1,7 @@
 # 💸 ExpenseFlow – Smart Expense Tracker
 
+**ExpenseFlow** is a modern, responsive **expense tracking web application** designed to help users manage their finances efficiently.  
+With a clean, elegant dark-themed UI and smart features like analytics, goals, and an AI-powered chatbot, ExpenseFlow makes money management simple and intuitive.
 **ExpenseFlow** is a modern and responsive **full-stack expense tracking web application** designed to help users manage their finances efficiently.
 With a clean and elegant dark-themed UI, it allows users to monitor spending, analyze balance, and achieve their financial goals effortlessly.
 
@@ -10,6 +12,7 @@ The application features a robust Node.js/Express backend with MongoDB database,
 - 🚀 [Live Demo](https://expenseflow-pearl.vercel.app)
 - 📚 [Backend Documentation](BACKEND.md)
 - 🗄️ [Database Documentation](DATABASE.md)
+- 🛡️ [Setup & Security](SETUP_AND_SECURITY.md)
 - ⚙️ [Getting Started](#getting-started)
 - 🐛 [Report a Bug](https://github.com/Renu-code123/ExpenseFlow/issues)
 - ✨ [Request a Feature](https://github.com/Renu-code123/ExpenseFlow/issues)
@@ -17,6 +20,18 @@ The application features a robust Node.js/Express backend with MongoDB database,
 ---
 
 ## 🧭 Table of Contents
+- [✨ Features](#-features)
+- [🖥️ Overview](#️-overview)
+- [🤖 Chatbot Feature](#-chatbot-feature)
+- [🛠️ Tech Stack](#️-tech-stack)
+- [📂 Folder Structure](#-folder-structure)
+- [🚀 How to Run Locally](#-how-to-run-locally)
+- [📸 Screenshots](#-screenshots)
+- [🧩 Future Enhancements](#-future-enhancements)
+- [🎯 Learning Outcomes](#-learning-outcomes)
+- [🤝 Contributing](#-contributing)
+- [🧾 License](#-license)
+- [👩‍💻 Author](#-author)
 
 - [✨ Features](#-features)  
 - [🖥️ Overview](#-overview)
@@ -25,18 +40,27 @@ The application features a robust Node.js/Express backend with MongoDB database,
 - [📂 Folder Structure](#-folder-structure)  
 - [🚀 How to Run Locally](#-how-to-run-locally)  
 - [📸 Screenshots](#-screenshots)  
-- [🧩 Future Enhancements](#-future-enhancements)  
-- [🎯 Learning Outcomes](#-learning-outcomes)  
-- [🤝 Contributing](#-contributing)  
-- [🧾 License](#-license)  
-- [👩‍💻 Author](#-author)  
-- [💬 Quote](#-quote)  
-- [🌟 Show Some Love](#-show-some-love)   
+   - [🧩 Future Enhancements](#-future-enhancements)  
+   - [🎯 Learning Outcomes](#-learning-outcomes)  
+   - [🤝 Contributing](#-contributing)  
+   - [🧾 License](#-license)  
+   - [👩‍💻 Author](#-author)  
+   - [💬 Quote](#-quote)  
+   - [🌟 Show Some Love](#-show-some-love)   
+   - [🛡️ Setup & Security](SETUP_AND_SECURITY.md)
 
 ---
 
 ## ✨ Features
 
+- 📊 **Smart Dashboard** – Displays total balance, income, expenses, and recent activity  
+- 💰 **Expense & Income Management** – Add, edit, or delete transactions easily  
+- 🎯 **Goal Tracking** – Set financial goals and monitor progress visually  
+- 📈 **Analytics View** – Understand spending patterns through insights  
+- 🤖 **Finance Chatbot** – Get instant help, tips, and app guidance  
+- 🌙 **Dark Mode UI** – Sleek, eye-friendly dark-themed interface  
+- ⚙️ **Responsive Design** – Works seamlessly on desktop and mobile  
+- 🔐 **PWA Ready** – Offline access using service workers and manifest  
 ### Core Features
 - 📊 **Smart Dashboard** – Displays total balance, spending trends, and updates.
 - 💰 **Expense & Income Management** – Add, edit, or remove transactions easily.
@@ -62,6 +86,29 @@ The application features a robust Node.js/Express backend with MongoDB database,
 
 ## 🖥️ Overview
 
+ExpenseFlow is a **frontend-focused expense tracker** built using HTML, CSS, and JavaScript.  
+It is ideal for beginners and intermediate developers who want hands-on experience building **real-world, data-driven web applications**.
+
+The project emphasizes:
+- User-centric UI/UX design  
+- Financial data visualization  
+- Clean and scalable project structure  
+- Easy future backend integration  
+
+---
+
+## 🤖 Chatbot Feature
+
+ExpenseFlow includes an **interactive chatbot** to enhance user experience and accessibility.
+
+### 💡 What the Chatbot Can Do:
+- 🧭 Guide users on how to use the app  
+- 💬 Answer common finance-related questions  
+- 📊 Explain dashboard data and features  
+- 🎯 Help users understand goal tracking  
+- ❓ Provide instant assistance without leaving the page  
+
+The chatbot improves usability by acting as a **virtual finance assistant**, making ExpenseFlow more beginner-friendly and engaging.
 ExpenseFlow is a comprehensive **full-stack expense tracking application** built with modern web technologies.
 It combines a responsive frontend with a powerful backend API, providing users with a complete financial management solution.
 
@@ -110,6 +157,7 @@ strengthen their frontend and project-structuring skills.
 ## 🛠️ Tech Stack
 
 | Category | Technology Used |
+|--------|-----------------|
 |----------|------------------|
 | **Frontend** | HTML5, CSS3, JavaScript (Vanilla JS) |
 | **Backend** | Node.js, Express.js |
@@ -122,6 +170,8 @@ strengthen their frontend and project-structuring skills.
 | **Email** | Nodemailer |
 | **Styling** | Tailwind CSS / Custom CSS |
 | **Version Control** | Git, GitHub |
+| **Deployment** | GitHub Pages |
+| **PWA Support** | manifest.json, service worker |
 | **Deployment** | Vercel (Frontend), Railway/Heroku (Backend) |
 | **PWA Support** | manifest.json, sw.js |
 
@@ -129,6 +179,18 @@ strengthen their frontend and project-structuring skills.
 
 ## 📂 Folder Structure
 
+```tree
+ExpenseFlow/
+│
+├── index.html            # Main HTML layout
+├── styles.css            # UI styling
+├── script.js             # Core app logic
+├── chatbot.js            # Chatbot functionality
+├── manifest.json         # PWA configuration
+├── sw.js                 # Service worker
+├── assets/               # Images and icons
+├── LICENSE               # MIT License
+└── README.md             # Documentation
 ```
 ExpenseFlow/
 │
@@ -205,13 +267,11 @@ ExpenseFlow/
 ├── README.md                        # Project documentation
 ├── BACKEND.md                       # Backend documentation
 ├── DATABASE.md                      # Database documentation
-├── TODO.md                          # Development tasks
 ├── CONTRIBUTING.md                  # Contribution guidelines
-├── Code_of_conduct.md               # Code of conduct
+├── CODE_OF_CONDUCT.md               # Code of conduct
 └── LICENSE                          # MIT License
 ```
 
----
 
 ## 🚀 How to Run Locally
 
@@ -298,6 +358,16 @@ If you’d like to improve **ExpenseFlow**, follow these steps 👇
 
 ---
 
+## All Contributors
+
+<a href="https://github.com/Renu-code123/ExpenseFlow/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Renu-code123/ExpenseFlow" />
+</a>
+
+💖 Thanks to all the amazing contributors who are helping build and improve **ExpenseFlow**!
+
+---
+
 ## 🧾 License
 
 This project is licensed under the **MIT License** – see the [LICENSE](./LICENSE) file for details.
@@ -313,6 +383,13 @@ This project is licensed under the **MIT License** – see the [LICENSE](./LICEN
 
 * **GitHub:** [@Renu-code123](https://github.com/Renu-code123)
 ---
+
+## 🧑‍💻 Core Team
+
+| Name | Role |
+|------|------|
+| Renu Kumari Prajapati | Project Admin |
+| Harshit Singh | Mentor |
 
 ## 💬 Quote
 
