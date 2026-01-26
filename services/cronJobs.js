@@ -69,22 +69,16 @@ class CronJobs {
       await this.updateExchangeRates();
     });
 
-    // Generate budget forecasts - Daily at 6 AM
-    cron.schedule('0 6 * * *', async () => {
-      console.log('[CronJobs] Generating budget forecasts...');
-      await this.generateDailyForecasts();
+    // Update portfolio prices - Every 15 minutes during market hours
+    cron.schedule('*/15 9-16 * * 1-5', async () => {
+      console.log('[CronJobs] Updating portfolio prices...');
+      await this.updatePortfolioPrices();
     });
 
-    // Run anomaly detection - Daily at 7 AM
-    cron.schedule('0 7 * * *', async () => {
-      console.log('[CronJobs] Running anomaly detection...');
-      await this.runAnomalyDetection();
-    });
-
-    // Update forecast accuracy - Daily at 11 PM
-    cron.schedule('0 23 * * *', async () => {
-      console.log('[CronJobs] Updating forecast accuracy...');
-      await this.updateForecastAccuracy();
+    // Daily portfolio metrics update - Daily at 5 PM
+    cron.schedule('0 17 * * *', async () => {
+      console.log('[CronJobs] Updating portfolio metrics...');
+      await this.updateDailyPortfolioMetrics();
     });
 
     console.log('Cron jobs initialized successfully');
@@ -328,127 +322,6 @@ class CronJobs {
       console.error('Budget alert error:', error);
     }
   }
-
-  static async generateDailyForecasts() {
-    try {
-      console.log('[CronJobs] Starting daily forecast generation...');
-      
-      const users = await User.find({ 
-        email_preferences: { weekly_reports: true }
-      });
-
-      let successCount = 0;
-      let errorCount = 0;
-
-      for (const user of users) {
-        try {
-          // Generate monthly forecast for all categories
-          await budgetForecastingService.generateForecast(user._id, {
-            periodType: 'monthly',
-            category: null,
-            algorithm: 'moving_average',
-            confidenceLevel: 95
-          });
-
-          // Generate forecasts for top 3 spending categories
-          const topCategories = await Expense.aggregate([
-            {
-              $match: {
-                user: user._id,
-                date: { $gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000) }
-              }
-            },
-            {
-              $group: {
-                _id: '$category',
-                total: { $sum: '$amount' }
-              }
-            },
-            { $sort: { total: -1 } },
-            { $limit: 3 }
-          ]);
-
-          for (const cat of topCategories) {
-            await budgetForecastingService.generateForecast(user._id, {
-              periodType: 'monthly',
-              category: cat._id,
-              algorithm: 'moving_average',
-              confidenceLevel: 95
-            });
-          }
-
-          successCount++;
-        } catch (error) {
-          console.error(`Forecast generation failed for user ${user._id}:`, error.message);
-          errorCount++;
-        }
-      }
-
-      console.log(`[CronJobs] Forecast generation complete: ${successCount} successful, ${errorCount} errors`);
-    } catch (error) {
-      console.error('[CronJobs] Daily forecast generation error:', error);
-    }
-  }
-
-  static async runAnomalyDetection() {
-    try {
-      console.log('[CronJobs] Starting anomaly detection...');
-      
-      const users = await User.find({});
-      let totalAnomalies = 0;
-      let criticalAnomalies = 0;
-
-      for (const user of users) {
-        try {
-          const result = await anomalyDetectionService.detectAnomalies(user._id, {
-            lookbackDays: 7,
-            sensitivityLevel: 'medium'
-          });
-
-          totalAnomalies += result.detected;
-
-          // Count critical anomalies
-          const critical = result.anomalies.filter(
-            a => a.severity === 'critical' || a.severity === 'high'
-          );
-          criticalAnomalies += critical.length;
-
-          // Send alert email for critical anomalies
-          if (critical.length > 0 && emailService.sendAnomalyAlert) {
-            await emailService.sendAnomalyAlert(user, critical);
-          }
-        } catch (error) {
-          console.error(`Anomaly detection failed for user ${user._id}:`, error.message);
-        }
-      }
-
-      console.log(`[CronJobs] Anomaly detection complete: ${totalAnomalies} total anomalies, ${criticalAnomalies} critical`);
-    } catch (error) {
-      console.error('[CronJobs] Anomaly detection error:', error);
-    }
-  }
-
-  static async updateForecastAccuracy() {
-    try {
-      console.log('[CronJobs] Updating forecast accuracy...');
-      
-      const users = await User.find({});
-      let updateCount = 0;
-
-      for (const user of users) {
-        try {
-          await budgetForecastingService.updateForecastAccuracy(user._id);
-          updateCount++;
-        } catch (error) {
-          console.error(`Accuracy update failed for user ${user._id}:`, error.message);
-        }
-      }
-
-      console.log(`[CronJobs] Forecast accuracy updated for ${updateCount} users`);
-    } catch (error) {
-      console.error('[CronJobs] Forecast accuracy update error:', error);
-    }
-  }
+$newMethods}
 }
-
 module.exports = CronJobs;
