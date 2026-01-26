@@ -116,6 +116,48 @@ class CronJobs {
       console.error('[CronJobs] Error applying late fees:', error);
     }
   }
+  
+  static async generateRecurringInvoices() {
+    try {
+      console.log('[CronJobs] Generating recurring invoices...');
+      const result = await InvoiceService.generateRecurringInvoices();
+      console.log(`[CronJobs] Generated ${result.count} recurring invoices`);
+    } catch (error) {
+      console.error('[CronJobs] Error generating recurring invoices:', error);
+    }
+  }
+  
+  static async sendPaymentReminders() {
+    try {
+      console.log('[CronJobs] Sending payment reminders...');
+      const result = await ReminderService.processAllReminders();
+      console.log(`[CronJobs] Sent ${result.success.length} reminders, ${result.failed.length} failed`);
+    } catch (error) {
+      console.error('[CronJobs] Error sending payment reminders:', error);
+    }
+  }
+  
+  static async applyLateFees() {
+    try {
+      console.log('[CronJobs] Applying late fees...');
+      const User = require('../models/User');
+      const users = await User.find({});
+      
+      let totalApplied = 0;
+      for (const user of users) {
+        try {
+          const result = await InvoiceService.applyLateFees(user._id);
+          totalApplied += result.count;
+        } catch (error) {
+          console.error(`[CronJobs] Error applying late fees for user ${user._id}:`, error);
+        }
+      }
+      
+      console.log(`[CronJobs] Applied late fees to ${totalApplied} invoices`);
+    } catch (error) {
+      console.error('[CronJobs] Error applying late fees:', error);
+    }
+  }
 
   static async updateExchangeRates() {
     try {
