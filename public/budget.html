@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Management - ExpenseFlow</title>
+    <link rel="stylesheet" href="budget.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+    <div class="budget-container">
+        <header class="budget-header">
+            <div class="header-left">
+                <a href="dashboard-clean.html" class="back-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+                <h1><i class="fas fa-bullseye"></i> Budget Management</h1>
+            </div>
+            <div class="header-right">
+                <button id="create-budget-btn" class="create-btn">
+                    <i class="fas fa-plus"></i> Create Budget
+                </button>
+            </div>
+        </header>
+
+        <main class="budget-main">
+            <!-- Budget Overview Cards -->
+            <div class="budget-overview">
+                <div class="overview-card total-budget">
+                    <div class="card-icon">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Total Budget</h3>
+                        <p class="card-value" id="total-budget">$2,500.00</p>
+                        <span class="card-subtitle">Monthly limit</span>
+                    </div>
+                </div>
+                
+                <div class="overview-card spent-budget">
+                    <div class="card-icon">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Total Spent</h3>
+                        <p class="card-value" id="total-spent">$1,847.32</p>
+                        <span class="card-subtitle">This month</span>
+                    </div>
+                </div>
+                
+                <div class="overview-card remaining-budget">
+                    <div class="card-icon">
+                        <i class="fas fa-piggy-bank"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Remaining</h3>
+                        <p class="card-value" id="remaining-budget">$652.68</p>
+                        <span class="card-subtitle">Available to spend</span>
+                    </div>
+                </div>
+                
+                <div class="overview-card budget-health">
+                    <div class="card-icon">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Budget Health</h3>
+                        <p class="card-value" id="budget-health">74%</p>
+                        <span class="card-subtitle">On track</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Budget Categories -->
+            <div class="budget-categories">
+                <div class="section-header">
+                    <h2><i class="fas fa-list"></i> Budget Categories</h2>
+                    <div class="filter-controls">
+                        <select id="budget-filter" class="filter-select">
+                            <option value="all">All Categories</option>
+                            <option value="over">Over Budget</option>
+                            <option value="warning">Near Limit</option>
+                            <option value="safe">On Track</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="budget-list" class="budget-grid">
+                    <!-- Budget items will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Budget Analytics -->
+            <div class="budget-analytics">
+                <div class="analytics-header">
+                    <h2><i class="fas fa-chart-bar"></i> Budget Analytics</h2>
+                    <select id="analytics-period" class="period-select">
+                        <option value="current">Current Month</option>
+                        <option value="last">Last Month</option>
+                        <option value="3months">Last 3 Months</option>
+                    </select>
+                </div>
+                
+                <div class="analytics-content">
+                    <div class="chart-section">
+                        <canvas id="budget-chart"></canvas>
+                    </div>
+                    
+                    <div class="insights-section">
+                        <h3>Budget Insights</h3>
+                        <div id="budget-insights" class="insights-list">
+                            <!-- Insights will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Create/Edit Budget Modal -->
+    <div id="budget-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="budget-modal-title">Create Budget</h3>
+                <button class="modal-close" id="budget-modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="budget-form" class="budget-form">
+                <input type="hidden" id="budget-id">
+                
+                <div class="form-group">
+                    <label for="budget-category">Category</label>
+                    <select id="budget-category" required>
+                        <option value="">Select Category</option>
+                        <option value="food">🍽️ Food & Dining</option>
+                        <option value="transport">🚗 Transportation</option>
+                        <option value="shopping">🛒 Shopping</option>
+                        <option value="entertainment">🎬 Entertainment</option>
+                        <option value="utilities">💡 Bills & Utilities</option>
+                        <option value="healthcare">🏥 Healthcare</option>
+                        <option value="education">📚 Education</option>
+                        <option value="travel">✈️ Travel</option>
+                        <option value="other">📋 Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="budget-amount">Monthly Budget Amount</label>
+                    <input type="number" id="budget-amount" placeholder="500.00" step="0.01" min="0" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="budget-period">Budget Period</label>
+                    <select id="budget-period" required>
+                        <option value="monthly">Monthly</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="yearly">Yearly</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="budget-alert">Alert Threshold (%)</label>
+                    <input type="number" id="budget-alert" placeholder="80" min="50" max="100" value="80">
+                    <small>Get notified when spending reaches this percentage</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="budget-notes">Notes (Optional)</label>
+                    <textarea id="budget-notes" rows="3" placeholder="Add any notes about this budget..."></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" id="budget-cancel-btn">Cancel</button>
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-save"></i> Save Budget
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="budget.js"></script>
+</body>
+</html>
