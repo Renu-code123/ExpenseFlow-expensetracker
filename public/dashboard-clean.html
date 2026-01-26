@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - ExpenseFlow</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <div class="header-left">
+                <h1><i class="fas fa-wallet"></i> ExpenseFlow Dashboard</h1>
+            </div>
+            <div class="header-right">
+                <div class="user-info">
+                    <span id="user-name">Welcome, User</span>
+                    <button id="logout-btn" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="dashboard-main">
+            <!-- Quick Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card balance-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>Total Balance</h3>
+                        <p class="stat-value" id="total-balance">$0.00</p>
+                        <span class="stat-trend positive">+2.5% from last month</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card income-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-arrow-up"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>This Month Income</h3>
+                        <p class="stat-value income" id="month-income">$0.00</p>
+                        <span class="stat-trend positive">+5.2% from last month</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card expense-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-arrow-down"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>This Month Expenses</h3>
+                        <p class="stat-value expense" id="month-expenses">$0.00</p>
+                        <span class="stat-trend negative">+1.8% from last month</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card savings-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-piggy-bank"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>Savings Rate</h3>
+                        <p class="stat-value" id="savings-rate">0%</p>
+                        <span class="stat-trend positive">+3.1% from last month</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Content Grid -->
+            <div class="dashboard-content">
+                <!-- Chart Section -->
+                <div class="chart-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-chart-line"></i> Spending Overview</h2>
+                        <div class="chart-controls">
+                            <select id="chart-period" class="period-select">
+                                <option value="7">Last 7 days</option>
+                                <option value="30" selected>Last 30 days</option>
+                                <option value="90">Last 3 months</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="expense-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recent Transactions -->
+                <div class="recent-transactions">
+                    <div class="section-header">
+                        <h2><i class="fas fa-history"></i> Recent Transactions</h2>
+                        <a href="transactions.html" class="view-all-btn">View All</a>
+                    </div>
+                    <div id="transactions-list" class="transactions-list">
+                        <div class="loading-state">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <span>Loading transactions...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Budget Overview -->
+                <div class="budget-overview">
+                    <div class="section-header">
+                        <h2><i class="fas fa-bullseye"></i> Budget Overview</h2>
+                        <button id="manage-budgets-btn" class="manage-btn">
+                            <i class="fas fa-cog"></i> Manage
+                        </button>
+                    </div>
+                    <div id="budget-list" class="budget-list">
+                        <div class="loading-state">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <span>Loading budgets...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Goals Progress -->
+                <div class="goals-progress">
+                    <div class="section-header">
+                        <h2><i class="fas fa-target"></i> Financial Goals</h2>
+                        <button id="manage-goals-btn" class="manage-btn">
+                            <i class="fas fa-plus"></i> Add Goal
+                        </button>
+                    </div>
+                    <div id="goals-list" class="goals-list">
+                        <div class="loading-state">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <span>Loading goals...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+                <div class="actions-grid">
+                    <button class="action-btn primary" id="add-expense-btn">
+                        <i class="fas fa-plus"></i>
+                        <span>Add Expense</span>
+                    </button>
+                    <button class="action-btn secondary" id="add-income-btn">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>Add Income</span>
+                    </button>
+                    <button class="action-btn tertiary" id="view-analytics-btn">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>View Analytics</span>
+                    </button>
+                    <button class="action-btn quaternary" id="export-data-btn">
+                        <i class="fas fa-download"></i>
+                        <span>Export Data</span>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Transaction Modal -->
+    <div id="transaction-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Add Transaction</h3>
+                <button class="modal-close" id="modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="transaction-form" class="transaction-form">
+                <div class="form-group">
+                    <label for="transaction-type">Type</label>
+                    <select id="transaction-type" required>
+                        <option value="">Select Type</option>
+                        <option value="expense">Expense</option>
+                        <option value="income">Income</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="transaction-description">Description</label>
+                    <input type="text" id="transaction-description" placeholder="Enter description" required>
+                </div>
+                <div class="form-group">
+                    <label for="transaction-amount">Amount</label>
+                    <input type="number" id="transaction-amount" placeholder="0.00" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="transaction-category">Category</label>
+                    <select id="transaction-category" required>
+                        <option value="">Select Category</option>
+                        <option value="food">Food & Dining</option>
+                        <option value="transport">Transportation</option>
+                        <option value="shopping">Shopping</option>
+                        <option value="entertainment">Entertainment</option>
+                        <option value="utilities">Bills & Utilities</option>
+                        <option value="healthcare">Healthcare</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" id="cancel-btn">Cancel</button>
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-save"></i> Save Transaction
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="dashboard.js"></script>
+</body>
+</html>

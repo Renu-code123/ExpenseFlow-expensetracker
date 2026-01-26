@@ -4,8 +4,8 @@ const Expense = require('../models/Expense');
 const BankConnection = require('../models/BankConnection');
 const emailService = require('../services/emailService');
 const currencyService = require('../services/currencyService');
-const TaxProfile = require('../models/TaxProfile');
-const taxOptimizationService = require('../services/taxOptimizationService');
+const budgetForecastingService = require('./budgetForecastingService');
+const anomalyDetectionService = require('./anomalyDetectionService');
 
 class CronJobs {
   static init() {
