@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics & Reports - ExpenseFlow</title>
+    <link rel="stylesheet" href="analytics.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1>📊 Analytics & Reports</h1>
+                <div class="header-actions">
+                    <select id="timeRange" class="time-selector">
+                        <option value="7">Last 7 Days</option>
+                        <option value="30" selected>Last 30 Days</option>
+                        <option value="90">Last 3 Months</option>
+                        <option value="365">Last Year</option>
+                    </select>
+                    <button class="export-btn" onclick="exportReport()">📤 Export Report</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Summary Cards -->
+        <section class="summary-section">
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <div class="card-icon">💰</div>
+                    <div class="card-content">
+                        <h3>Total Income</h3>
+                        <p class="amount income">₹45,250</p>
+                        <span class="change positive">+12.5%</span>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-icon">💸</div>
+                    <div class="card-content">
+                        <h3>Total Expenses</h3>
+                        <p class="amount expense">₹32,180</p>
+                        <span class="change negative">+8.3%</span>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-icon">💵</div>
+                    <div class="card-content">
+                        <h3>Net Savings</h3>
+                        <p class="amount savings">₹13,070</p>
+                        <span class="change positive">+28.9%</span>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-icon">📈</div>
+                    <div class="card-content">
+                        <h3>Avg Daily Spend</h3>
+                        <p class="amount">₹1,073</p>
+                        <span class="change negative">-5.2%</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Charts Section -->
+        <section class="charts-section">
+            <div class="charts-grid">
+                <!-- Spending Trend Chart -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>📈 Spending Trend</h3>
+                        <div class="chart-controls">
+                            <button class="chart-btn active" data-period="daily">Daily</button>
+                            <button class="chart-btn" data-period="weekly">Weekly</button>
+                            <button class="chart-btn" data-period="monthly">Monthly</button>
+                        </div>
+                    </div>
+                    <canvas id="spendingTrendChart"></canvas>
+                </div>
+
+                <!-- Category Breakdown -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>🎯 Category Breakdown</h3>
+                        <button class="toggle-btn" onclick="toggleChartType('categoryChart')">📊</button>
+                    </div>
+                    <canvas id="categoryChart"></canvas>
+                </div>
+
+                <!-- Income vs Expenses -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>⚖️ Income vs Expenses</h3>
+                        <span class="chart-subtitle">Monthly Comparison</span>
+                    </div>
+                    <canvas id="incomeExpenseChart"></canvas>
+                </div>
+
+                <!-- Top Merchants -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>🏪 Top Merchants</h3>
+                        <span class="chart-subtitle">Most Frequent</span>
+                    </div>
+                    <div class="merchants-list">
+                        <div class="merchant-item">
+                            <span class="merchant-name">Amazon</span>
+                            <span class="merchant-amount">₹8,450</span>
+                            <div class="merchant-bar" style="width: 85%"></div>
+                        </div>
+                        <div class="merchant-item">
+                            <span class="merchant-name">Swiggy</span>
+                            <span class="merchant-amount">₹5,230</span>
+                            <div class="merchant-bar" style="width: 52%"></div>
+                        </div>
+                        <div class="merchant-item">
+                            <span class="merchant-name">Uber</span>
+                            <span class="merchant-amount">₹3,180</span>
+                            <div class="merchant-bar" style="width: 32%"></div>
+                        </div>
+                        <div class="merchant-item">
+                            <span class="merchant-name">Zomato</span>
+                            <span class="merchant-amount">₹2,890</span>
+                            <div class="merchant-bar" style="width: 29%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Detailed Reports -->
+        <section class="reports-section">
+            <div class="reports-header">
+                <h2>📋 Detailed Reports</h2>
+                <div class="report-filters">
+                    <select id="reportType">
+                        <option value="category">Category Report</option>
+                        <option value="monthly">Monthly Report</option>
+                        <option value="yearly">Yearly Report</option>
+                        <option value="custom">Custom Report</option>
+                    </select>
+                    <button class="generate-btn" onclick="generateReport()">Generate Report</button>
+                </div>
+            </div>
+
+            <!-- Category Analysis Table -->
+            <div class="report-table-container">
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Amount</th>
+                            <th>Transactions</th>
+                            <th>% of Total</th>
+                            <th>Avg per Transaction</th>
+                            <th>Trend</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportTableBody">
+                        <tr>
+                            <td><span class="category-icon">🍔</span> Food & Dining</td>
+                            <td class="amount">₹12,450</td>
+                            <td>45</td>
+                            <td>38.7%</td>
+                            <td>₹277</td>
+                            <td><span class="trend up">↗️ +15%</span></td>
+                        </tr>
+                        <tr>
+                            <td><span class="category-icon">🛒</span> Shopping</td>
+                            <td class="amount">₹8,230</td>
+                            <td>23</td>
+                            <td>25.6%</td>
+                            <td>₹358</td>
+                            <td><span class="trend down">↘️ -8%</span></td>
+                        </tr>
+                        <tr>
+                            <td><span class="category-icon">🚗</span> Transportation</td>
+                            <td class="amount">₹5,180</td>
+                            <td>32</td>
+                            <td>16.1%</td>
+                            <td>₹162</td>
+                            <td><span class="trend up">↗️ +22%</span></td>
+                        </tr>
+                        <tr>
+                            <td><span class="category-icon">🎬</span> Entertainment</td>
+                            <td class="amount">₹3,890</td>
+                            <td>18</td>
+                            <td>12.1%</td>
+                            <td>₹216</td>
+                            <td><span class="trend neutral">➡️ 0%</span></td>
+                        </tr>
+                        <tr>
+                            <td><span class="category-icon">💊</span> Healthcare</td>
+                            <td class="amount">₹2,430</td>
+                            <td>8</td>
+                            <td>7.5%</td>
+                            <td>₹304</td>
+                            <td><span class="trend down">↘️ -12%</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Insights Section -->
+        <section class="insights-section">
+            <h2>💡 Financial Insights</h2>
+            <div class="insights-grid">
+                <div class="insight-card">
+                    <div class="insight-icon">🎯</div>
+                    <div class="insight-content">
+                        <h4>Spending Pattern</h4>
+                        <p>You spend 40% more on weekends. Consider setting weekend budgets.</p>
+                    </div>
+                </div>
+                <div class="insight-card">
+                    <div class="insight-icon">📊</div>
+                    <div class="insight-content">
+                        <h4>Budget Performance</h4>
+                        <p>You're 15% under budget this month. Great job on controlling expenses!</p>
+                    </div>
+                </div>
+                <div class="insight-card">
+                    <div class="insight-icon">💰</div>
+                    <div class="insight-content">
+                        <h4>Savings Opportunity</h4>
+                        <p>Reduce food delivery by 20% to save ₹2,500 monthly.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="analytics.js"></script>
+</body>
+</html>
