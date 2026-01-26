@@ -18,7 +18,21 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
-    minlength: 6
+    minlength: 12
+  },
+  preferredCurrency: {
+    type: String,
+    default: 'INR',
+    uppercase: true
+  },
+  locale: {
+    type: String,
+    default: 'en-US'
+  },
+  monthlyBudgetLimit: {
+    type: Number,
+    default: 0,
+    min: 0
   }
 }, {
   timestamps: true

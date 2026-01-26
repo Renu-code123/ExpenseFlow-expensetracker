@@ -2,26 +2,181 @@ const cron = require('node-cron');
 const User = require('../models/User');
 const Expense = require('../models/Expense');
 const emailService = require('../services/emailService');
+const currencyService = require('../services/currencyService');
+const InvoiceService = require('../services/invoiceService');
+const ReminderService = require('../services/reminderService');
 
 class CronJobs {
   static init() {
+    // Process recurring expenses - Daily at 6 AM
+    cron.schedule('0 6 * * *', async () => {
+      console.log('[CronJobs] Processing recurring expenses...');
+      await this.processRecurringExpenses();
+    });
+
+    // Send recurring expense reminders - Daily at 9 AM
+    cron.schedule('0 9 * * *', async () => {
+      console.log('[CronJobs] Sending recurring expense reminders...');
+      await this.sendRecurringReminders();
+    });
+    
+    // Generate recurring invoices - Daily at 6 AM
+    cron.schedule('0 6 * * *', async () => {
+      console.log('[CronJobs] Generating recurring invoices...');
+      await this.generateRecurringInvoices();
+    });
+    
+    // Send payment reminders - Daily at 10 AM
+    cron.schedule('0 10 * * *', async () => {
+      console.log('[CronJobs] Sending payment reminders...');
+      await this.sendPaymentReminders();
+    });
+    
+    // Apply late fees - Daily at 12 AM (midnight)
+    cron.schedule('0 0 * * *', async () => {
+      console.log('[CronJobs] Applying late fees to overdue invoices...');
+      await this.applyLateFees();
+    });
+
     // Weekly report - Every Sunday at 9 AM
     cron.schedule('0 9 * * 0', async () => {
-      console.log('Sending weekly reports...');
+      console.log('[CronJobs] Sending weekly reports...');
       await this.sendWeeklyReports();
     });
 
     // Monthly report - 1st day of month at 10 AM
     cron.schedule('0 10 1 * *', async () => {
-      console.log('Sending monthly reports...');
+      console.log('[CronJobs] Sending monthly reports...');
       await this.sendMonthlyReports();
     });
 
     // Budget alerts - Daily at 8 PM
     cron.schedule('0 20 * * *', async () => {
-      console.log('Checking budget alerts...');
+      console.log('[CronJobs] Checking budget alerts...');
       await this.checkBudgetAlerts();
     });
+
+    // Update exchange rates - Every 6 hours
+    cron.schedule('0 */6 * * *', async () => {
+      console.log('Updating exchange rates...');
+      await this.updateExchangeRates();
+    });
+
+    console.log('Cron jobs initialized successfully');
+  }
+
+  static async processRecurringExpenses() {
+    console.log('Processing recurring expenses (Placeholder)');
+    // Implementation would go here
+  }
+
+  static async sendRecurringReminders() {
+    console.log('Sending recurring reminders (Placeholder)');
+    // Implementation would go here
+  }
+  
+  static async generateRecurringInvoices() {
+    try {
+      console.log('[CronJobs] Generating recurring invoices...');
+      const result = await InvoiceService.generateRecurringInvoices();
+      console.log(`[CronJobs] Generated ${result.count} recurring invoices`);
+    } catch (error) {
+      console.error('[CronJobs] Error generating recurring invoices:', error);
+    }
+  }
+  
+  static async sendPaymentReminders() {
+    try {
+      console.log('[CronJobs] Sending payment reminders...');
+      const result = await ReminderService.processAllReminders();
+      console.log(`[CronJobs] Sent ${result.success.length} reminders, ${result.failed.length} failed`);
+    } catch (error) {
+      console.error('[CronJobs] Error sending payment reminders:', error);
+    }
+  }
+  
+  static async applyLateFees() {
+    try {
+      console.log('[CronJobs] Applying late fees...');
+      const User = require('../models/User');
+      const users = await User.find({});
+      
+      let totalApplied = 0;
+      for (const user of users) {
+        try {
+          const result = await InvoiceService.applyLateFees(user._id);
+          totalApplied += result.count;
+        } catch (error) {
+          console.error(`[CronJobs] Error applying late fees for user ${user._id}:`, error);
+        }
+      }
+      
+      console.log(`[CronJobs] Applied late fees to ${totalApplied} invoices`);
+    } catch (error) {
+      console.error('[CronJobs] Error applying late fees:', error);
+    }
+  }
+  
+  static async generateRecurringInvoices() {
+    try {
+      console.log('[CronJobs] Generating recurring invoices...');
+      const result = await InvoiceService.generateRecurringInvoices();
+      console.log(`[CronJobs] Generated ${result.count} recurring invoices`);
+    } catch (error) {
+      console.error('[CronJobs] Error generating recurring invoices:', error);
+    }
+  }
+  
+  static async sendPaymentReminders() {
+    try {
+      console.log('[CronJobs] Sending payment reminders...');
+      const result = await ReminderService.processAllReminders();
+      console.log(`[CronJobs] Sent ${result.success.length} reminders, ${result.failed.length} failed`);
+    } catch (error) {
+      console.error('[CronJobs] Error sending payment reminders:', error);
+    }
+  }
+  
+  static async applyLateFees() {
+    try {
+      console.log('[CronJobs] Applying late fees...');
+      const User = require('../models/User');
+      const users = await User.find({});
+      
+      let totalApplied = 0;
+      for (const user of users) {
+        try {
+          const result = await InvoiceService.applyLateFees(user._id);
+          totalApplied += result.count;
+        } catch (error) {
+          console.error(`[CronJobs] Error applying late fees for user ${user._id}:`, error);
+        }
+      }
+      
+      console.log(`[CronJobs] Applied late fees to ${totalApplied} invoices`);
+    } catch (error) {
+      console.error('[CronJobs] Error applying late fees:', error);
+    }
+  }
+
+  static async updateExchangeRates() {
+    try {
+      // Update rates for major base currencies
+      const baseCurrencies = ['USD', 'EUR', 'GBP', 'INR'];
+
+      for (const currency of baseCurrencies) {
+        try {
+          await currencyService.updateExchangeRates(currency);
+          console.log(`Updated exchange rates for ${currency}`);
+        } catch (error) {
+          console.error(`Failed to update rates for ${currency}:`, error.message);
+        }
+      }
+
+      console.log('Exchange rates update completed');
+    } catch (error) {
+      console.error('Exchange rates update error:', error);
+    }
   }
 
   static async sendWeeklyReports() {
