@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports & Export - ExpenseFlow</title>
+    <link rel="stylesheet" href="reports.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="nav-bar">
+        <div class="nav-content">
+            <a href="dashboard-clean.html" class="nav-back">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <div class="nav-title">
+                <i class="fas fa-file-alt"></i> Reports & Export
+            </div>
+            <div class="nav-actions">
+                <a href="goals.html" class="nav-link">Goals</a>
+                <a href="transactions.html" class="nav-link">Transactions</a>
+                <a href="analytics.html" class="nav-link">Analytics</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="header-content">
+                <h1>📊 Reports & Export Dashboard</h1>
+                <div class="header-actions">
+                    <button class="schedule-btn" onclick="openScheduleModal()">
+                        <i class="fas fa-clock"></i> Schedule Reports
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Export Section -->
+        <section class="quick-export-section">
+            <h2>⚡ Quick Export</h2>
+            <div class="quick-export-grid">
+                <button class="export-card" onclick="quickExport('monthly')">
+                    <div class="export-icon">📅</div>
+                    <div class="export-content">
+                        <h3>Monthly Report</h3>
+                        <p>Current month transactions and summary</p>
+                    </div>
+                </button>
+
+                <button class="export-card" onclick="quickExport('yearly')">
+                    <div class="export-icon">📆</div>
+                    <div class="export-content">
+                        <h3>Yearly Report</h3>
+                        <p>Complete year financial overview</p>
+                    </div>
+                </button>
+
+                <button class="export-card" onclick="quickExport('tax')">
+                    <div class="export-icon">🧾</div>
+                    <div class="export-content">
+                        <h3>Tax Report</h3>
+                        <p>Tax-ready expense categorization</p>
+                    </div>
+                </button>
+
+                <button class="export-card" onclick="quickExport('custom')">
+                    <div class="export-icon">⚙️</div>
+                    <div class="export-content">
+                        <h3>Custom Report</h3>
+                        <p>Build your own report format</p>
+                    </div>
+                </button>
+            </div>
+        </section>
+
+        <!-- Report Builder -->
+        <section class="report-builder-section">
+            <h2>🛠️ Report Builder</h2>
+            <div class="builder-container">
+                <form class="builder-form" onsubmit="handleFormSubmit(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="reportName">Report Name *</label>
+                            <input type="text" id="reportName" placeholder="e.g., Q1 Business Expenses" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="reportType">Report Type</label>
+                            <select id="reportType">
+                                <option value="summary">Summary Report</option>
+                                <option value="detailed">Detailed Report</option>
+                                <option value="comparison">Comparison Report</option>
+                                <option value="trend">Trend Analysis</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="dateFrom">From Date *</label>
+                            <input type="date" id="dateFrom" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="dateTo">To Date *</label>
+                            <input type="date" id="dateTo" required>
+                        </div>
+                    </div>
+
+                    <fieldset class="form-group">
+                        <legend>Categories to Include</legend>
+                        <div class="checkbox-grid">
+                            <label class="checkbox-item">
+                                <input type="checkbox" value="food" checked>
+                                <span class="checkmark"></span>
+                                Food & Dining
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" value="transport" checked>
+                                <span class="checkmark"></span>
+                                Transportation
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" value="shopping" checked>
+                                <span class="checkmark"></span>
+                                Shopping
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" value="utilities" checked>
+                                <span class="checkmark"></span>
+                                Bills & Utilities
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" value="entertainment" checked>
+                                <span class="checkmark"></span>
+                                Entertainment
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" value="healthcare" checked>
+                                <span class="checkmark"></span>
+                                Healthcare
+                            </label>
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="form-group">
+                        <legend>Export Format</legend>
+                        <div class="radio-group">
+                            <label class="radio-item">
+                                <input type="radio" name="format" value="pdf" checked>
+                                <span class="radio-mark"></span>
+                                PDF Report
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="format" value="excel">
+                                <span class="radio-mark"></span>
+                                Excel Spreadsheet
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="format" value="csv">
+                                <span class="radio-mark"></span>
+                                CSV Data
+                            </label>
+                        </div>
+                    </fieldset>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn-preview" onclick="previewReport()">Preview</button>
+                        <button type="submit" class="btn-generate">Generate Report</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Recent Reports -->
+        <section class="recent-reports-section">
+            <h2>📋 Recent Reports</h2>
+            <div class="reports-table-container">
+                <table class="reports-table">
+                    <thead>
+                        <tr>
+                            <th>Report Name</th>
+                            <th>Type</th>
+                            <th>Created</th>
+                            <th>Size</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportsTableBody">
+                        <tr>
+                            <td>Monthly Summary</td>
+                            <td>Summary</td>
+                            <td>2024-01-15</td>
+                            <td>2.3 MB</td>
+                            <td>
+                                <button class="btn-preview" onclick="previewReport()">Preview</button>
+                                <button class="btn-generate" onclick="downloadReport('Monthly Summary')">Download</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Q4 Tax Report</td>
+                            <td>Tax</td>
+                            <td>2024-01-10</td>
+                            <td>1.8 MB</td>
+                            <td>
+                                <button class="btn-preview" onclick="previewReport()">Preview</button>
+                                <button class="btn-generate" onclick="downloadReport('Q4 Tax Report')">Download</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Expense Analysis</td>
+                            <td>Analysis</td>
+                            <td>2024-01-08</td>
+                            <td>3.1 MB</td>
+                            <td>
+                                <button class="btn-preview" onclick="previewReport()">Preview</button>
+                                <button class="btn-generate" onclick="downloadReport('Expense Analysis')">Download</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Scheduled Reports -->
+        <section class="scheduled-reports-section">
+            <h2>⏰ Scheduled Reports</h2>
+            <div class="scheduled-grid" id="scheduledGrid">
+                <div class="empty-state">
+                    <i class="fas fa-calendar-alt"></i>
+                    <h3>No scheduled reports</h3>
+                    <p>Set up automated reports to receive them regularly</p>
+                    <button class="add-schedule-btn" onclick="openScheduleModal()">
+                        <i class="fas fa-plus"></i> Schedule Report
+                    </button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Schedule Report Modal -->
+    <div id="scheduleModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Schedule Automated Report</h3>
+                <button class="modal-close" onclick="closeScheduleModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="scheduleForm" class="schedule-form" onsubmit="handleScheduleSubmit(event)">
+                <div class="form-group">
+                    <label for="scheduleName">Report Name *</label>
+                    <input type="text" id="scheduleName" placeholder="e.g., Monthly Expense Summary" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="scheduleFrequency">Frequency</label>
+                        <select id="scheduleFrequency">
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly" selected>Monthly</option>
+                            <option value="quarterly">Quarterly</option>
+                            <option value="yearly">Yearly</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="scheduleFormat">Format</label>
+                        <select id="scheduleFormat">
+                            <option value="pdf">PDF Report</option>
+                            <option value="excel">Excel Spreadsheet</option>
+                            <option value="csv">CSV Data</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="scheduleEmail">Email Address *</label>
+                    <input type="email" id="scheduleEmail" placeholder="your@email.com" required>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" onclick="closeScheduleModal()">Cancel</button>
+                    <button type="submit" class="btn-submit">Schedule Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Report Preview Modal -->
+    <div id="previewModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3>Report Preview</h3>
+                <button class="modal-close" onclick="closePreviewModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="preview-content" id="previewContent">
+                <h3>Report Preview</h3>
+                <p>This is a preview of your custom report. In a real implementation, this would show the actual report data.</p>
+                <div style="margin: 1rem 0; padding: 1rem; background: rgba(255, 255, 255, 0.05); border-radius: 8px;">
+                    <h4>Sample Data</h4>
+                    <ul>
+                        <li>Total Expenses: $1,250.00</li>
+                        <li>Number of Transactions: 45</li>
+                        <li>Top Category: Food & Dining</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="reports.js"></script>
+</body>
+</html>
