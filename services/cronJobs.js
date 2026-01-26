@@ -4,8 +4,8 @@ const Expense = require('../models/Expense');
 const BankConnection = require('../models/BankConnection');
 const emailService = require('../services/emailService');
 const currencyService = require('../services/currencyService');
-const TaxProfile = require('../models/TaxProfile');
-const taxOptimizationService = require('../services/taxOptimizationService');
+const budgetForecastingService = require('./budgetForecastingService');
+const anomalyDetectionService = require('./anomalyDetectionService');
 
 class CronJobs {
   static init() {
@@ -69,22 +69,22 @@ class CronJobs {
       await this.updateExchangeRates();
     });
 
-    // Quarterly tax estimate reminders - 1st of each quarter month at 9 AM
-    cron.schedule('0 9 1 1,4,7,10 *', async () => {
-      console.log('[CronJobs] Sending quarterly tax estimate reminders...');
-      await this.sendQuarterlyTaxReminders();
+    // Generate budget forecasts - Daily at 6 AM
+    cron.schedule('0 6 * * *', async () => {
+      console.log('[CronJobs] Generating budget forecasts...');
+      await this.generateDailyForecasts();
     });
 
-    // Year-end tax planning - December 1st at 9 AM
-    cron.schedule('0 9 1 12 *', async () => {
-      console.log('[CronJobs] Sending year-end tax planning reminders...');
-      await this.sendYearEndTaxPlanningReminders();
+    // Run anomaly detection - Daily at 7 AM
+    cron.schedule('0 7 * * *', async () => {
+      console.log('[CronJobs] Running anomaly detection...');
+      await this.runAnomalyDetection();
     });
 
-    // Tax document generation reminder - March 1st at 9 AM
-    cron.schedule('0 9 1 3 *', async () => {
-      console.log('[CronJobs] Sending tax document preparation reminders...');
-      await this.sendTaxDocumentReminders();
+    // Update forecast accuracy - Daily at 11 PM
+    cron.schedule('0 23 * * *', async () => {
+      console.log('[CronJobs] Updating forecast accuracy...');
+      await this.updateForecastAccuracy();
     });
 
     console.log('Cron jobs initialized successfully');
@@ -329,113 +329,124 @@ class CronJobs {
     }
   }
 
-  static async sendQuarterlyTaxReminders() {
+  static async generateDailyForecasts() {
     try {
-      const profiles = await TaxProfile.getProfilesNeedingQuarterlyEstimates();
+      console.log('[CronJobs] Starting daily forecast generation...');
       
-      for (const profile of profiles) {
-        const upcomingPayments = profile.estimated_tax_payments.filter(
-          p => !p.paid && p.due_date >= new Date() && p.due_date <= new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-        );
-        
-        if (upcomingPayments.length > 0) {
-          for (const payment of upcomingPayments) {
-            await emailService.sendEmail({
-              to: profile.user.email,
-              subject: `Q${payment.quarter} Estimated Tax Payment Due`,
-              html: `
-                <h2>Quarterly Estimated Tax Payment Reminder</h2>
-                <p>Hi ${profile.user.name},</p>
-                <p>Your Q${payment.quarter} estimated tax payment of <strong>₹${payment.amount.toFixed(2)}</strong> is due on ${payment.due_date.toDateString()}.</p>
-                <p>Please make sure to submit your payment before the deadline to avoid penalties.</p>
-                <p><a href="${process.env.FRONTEND_URL}/tax/estimated">View Payment Details</a></p>
-              `
-            });
-          }
-        }
-      }
-      
-      console.log(`Sent quarterly tax reminders to ${profiles.length} users`);
-    } catch (error) {
-      console.error('Quarterly tax reminder error:', error);
-    }
-  }
+      const users = await User.find({ 
+        email_preferences: { weekly_reports: true }
+      });
 
-  static async sendYearEndTaxPlanningReminders() {
-    try {
-      const users = await User.find({});
-      const currentYear = new Date().getFullYear();
-      
+      let successCount = 0;
+      let errorCount = 0;
+
       for (const user of users) {
         try {
-          const profile = await TaxProfile.getUserProfile(user._id);
-          
-          if (profile) {
-            // Generate year-end checklist
-            const harvest = await taxOptimizationService.identifyTaxLossHarvestingOpportunities(user._id, currentYear);
-            const contributionRoom = taxOptimizationService.calculateContributionRoom(profile);
-            
-            await emailService.sendEmail({
-              to: user.email,
-              subject: 'Year-End Tax Planning Checklist',
-              html: `
-                <h2>Year-End Tax Planning Reminders</h2>
-                <p>Hi ${user.name},</p>
-                <p>As we approach the end of the year, here are some tax optimization opportunities:</p>
-                <ul>
-                  ${harvest.length > 0 ? `<li><strong>Tax Loss Harvesting:</strong> ${harvest.length} opportunities identified with potential savings of ₹${harvest[0].potential_savings?.toFixed(2) || 0}</li>` : ''}
-                  ${contributionRoom.total > 0 ? `<li><strong>Retirement Contributions:</strong> ₹${contributionRoom.total.toFixed(2)} remaining contribution room</li>` : ''}
-                  <li><strong>Charitable Donations:</strong> Make contributions before December 31st</li>
-                  <li><strong>Business Expenses:</strong> Review and document all deductible expenses</li>
-                </ul>
-                <p>Deadline: December 31, ${currentYear}</p>
-                <p><a href="${process.env.FRONTEND_URL}/tax/year-end">View Full Checklist</a></p>
-              `
+          // Generate monthly forecast for all categories
+          await budgetForecastingService.generateForecast(user._id, {
+            periodType: 'monthly',
+            category: null,
+            algorithm: 'moving_average',
+            confidenceLevel: 95
+          });
+
+          // Generate forecasts for top 3 spending categories
+          const topCategories = await Expense.aggregate([
+            {
+              $match: {
+                user: user._id,
+                date: { $gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000) }
+              }
+            },
+            {
+              $group: {
+                _id: '$category',
+                total: { $sum: '$amount' }
+              }
+            },
+            { $sort: { total: -1 } },
+            { $limit: 3 }
+          ]);
+
+          for (const cat of topCategories) {
+            await budgetForecastingService.generateForecast(user._id, {
+              periodType: 'monthly',
+              category: cat._id,
+              algorithm: 'moving_average',
+              confidenceLevel: 95
             });
           }
-        } catch (userError) {
-          console.error(`Error processing user ${user._id}:`, userError);
+
+          successCount++;
+        } catch (error) {
+          console.error(`Forecast generation failed for user ${user._id}:`, error.message);
+          errorCount++;
         }
       }
-      
-      console.log(`Sent year-end tax planning reminders to ${users.length} users`);
+
+      console.log(`[CronJobs] Forecast generation complete: ${successCount} successful, ${errorCount} errors`);
     } catch (error) {
-      console.error('Year-end tax planning reminder error:', error);
+      console.error('[CronJobs] Daily forecast generation error:', error);
     }
   }
 
-  static async sendTaxDocumentReminders() {
+  static async runAnomalyDetection() {
     try {
-      const users = await User.find({});
-      const lastYear = new Date().getFullYear() - 1;
+      console.log('[CronJobs] Starting anomaly detection...');
       
+      const users = await User.find({});
+      let totalAnomalies = 0;
+      let criticalAnomalies = 0;
+
       for (const user of users) {
-        const profile = await TaxProfile.getUserProfile(user._id);
-        
-        if (profile) {
-          await emailService.sendEmail({
-            to: user.email,
-            subject: `${lastYear} Tax Document Preparation`,
-            html: `
-              <h2>Tax Season is Here!</h2>
-              <p>Hi ${user.name},</p>
-              <p>It's time to prepare your ${lastYear} tax documents. ExpenseFlow can help you generate:</p>
-              <ul>
-                <li>Tax Summary Report</li>
-                <li>Capital Gains Schedule (Schedule D)</li>
-                <li>Business Income & Expenses (Schedule C)</li>
-                <li>Year-End Tax Optimization Report</li>
-              </ul>
-              <p>Filing Deadline: April 15, ${new Date().getFullYear()}</p>
-              <p><a href="${process.env.FRONTEND_URL}/tax/documents">Generate Tax Documents</a></p>
-            `
+        try {
+          const result = await anomalyDetectionService.detectAnomalies(user._id, {
+            lookbackDays: 7,
+            sensitivityLevel: 'medium'
           });
+
+          totalAnomalies += result.detected;
+
+          // Count critical anomalies
+          const critical = result.anomalies.filter(
+            a => a.severity === 'critical' || a.severity === 'high'
+          );
+          criticalAnomalies += critical.length;
+
+          // Send alert email for critical anomalies
+          if (critical.length > 0 && emailService.sendAnomalyAlert) {
+            await emailService.sendAnomalyAlert(user, critical);
+          }
+        } catch (error) {
+          console.error(`Anomaly detection failed for user ${user._id}:`, error.message);
         }
       }
-      
-      console.log(`Sent tax document reminders to ${users.length} users`);
+
+      console.log(`[CronJobs] Anomaly detection complete: ${totalAnomalies} total anomalies, ${criticalAnomalies} critical`);
     } catch (error) {
-      console.error('Tax document reminder error:', error);
+      console.error('[CronJobs] Anomaly detection error:', error);
+    }
+  }
+
+  static async updateForecastAccuracy() {
+    try {
+      console.log('[CronJobs] Updating forecast accuracy...');
+      
+      const users = await User.find({});
+      let updateCount = 0;
+
+      for (const user of users) {
+        try {
+          await budgetForecastingService.updateForecastAccuracy(user._id);
+          updateCount++;
+        } catch (error) {
+          console.error(`Accuracy update failed for user ${user._id}:`, error.message);
+        }
+      }
+
+      console.log(`[CronJobs] Forecast accuracy updated for ${updateCount} users`);
+    } catch (error) {
+      console.error('[CronJobs] Forecast accuracy update error:', error);
     }
   }
 }
