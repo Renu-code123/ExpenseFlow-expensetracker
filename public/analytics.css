@@ -1,3 +1,60 @@
+/* Navigation Bar */
+.nav-bar {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 15px 0;
+    margin-bottom: 20px;
+}
+
+.nav-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-back {
+    color: #667eea;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.nav-back:hover {
+    color: #764ba2;
+}
+
+.nav-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #e0e0e0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.nav-actions {
+    display: flex;
+    gap: 20px;
+}
+
+.nav-link {
+    color: #a0a0a0;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.nav-link:hover {
+    color: #e0e0e0;
+}
+
 * {
     margin: 0;
     padding: 0;

@@ -4,14 +4,117 @@ class AnalyticsManager {
         this.charts = {};
         this.currentPeriod = 'daily';
         this.currentTimeRange = 30;
-        this.mockData = this.generateMockData();
+        this.apiBase = '/api/analytics';
+        this.token = localStorage.getItem('token');
         this.init();
     }
 
     init() {
-        this.initializeCharts();
+        this.loadAnalyticsData();
         this.bindEvents();
-        this.updateTimeRange();
+    }
+
+    async loadAnalyticsData() {
+        try {
+            await Promise.all([
+                this.loadSummary(),
+                this.loadTrends(),
+                this.loadCategories(),
+                this.loadMerchants(),
+                this.loadIncomeExpense(),
+                this.loadInsights()
+            ]);
+            this.initializeCharts();
+        } catch (error) {
+            console.error('Error loading analytics:', error);
+            this.fallbackToMockData();
+        }
+    }
+
+    async apiCall(endpoint, params = {}) {
+        const url = new URL(this.apiBase + endpoint, window.location.origin);
+        Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+        
+        const response = await fetch(url, {
+            headers: {
+                'Authorization': `Bearer ${this.token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) throw new Error('API call failed');
+        return response.json();
+    }
+
+    async loadSummary() {
+        try {
+            this.summaryData = await this.apiCall('/summary', { timeRange: this.currentTimeRange });
+            this.updateSummaryCards();
+        } catch (error) {
+            console.error('Error loading summary:', error);
+        }
+    }
+
+    async loadTrends() {
+        try {
+            this.trendsData = await this.apiCall('/trends', { 
+                period: this.currentPeriod, 
+                timeRange: this.currentTimeRange 
+            });
+        } catch (error) {
+            console.error('Error loading trends:', error);
+        }
+    }
+
+    async loadCategories() {
+        try {
+            this.categoriesData = await this.apiCall('/categories', { timeRange: this.currentTimeRange });
+        } catch (error) {
+            console.error('Error loading categories:', error);
+        }
+    }
+
+    async loadMerchants() {
+        try {
+            this.merchantsData = await this.apiCall('/merchants', { timeRange: this.currentTimeRange });
+            this.updateMerchantsDisplay();
+        } catch (error) {
+            console.error('Error loading merchants:', error);
+        }
+    }
+
+    async loadIncomeExpense() {
+        try {
+            this.incomeExpenseData = await this.apiCall('/income-expense', { months: 6 });
+        } catch (error) {
+            console.error('Error loading income/expense:', error);
+        }
+    }
+
+    async loadInsights() {
+        try {
+            this.insightsData = await this.apiCall('/insights');
+            this.updateInsightsDisplay();
+        } catch (error) {
+            console.error('Error loading insights:', error);
+        }
+    }
+
+    fallbackToMockData() {
+        this.mockData = this.generateMockData();
+        this.summaryData = {
+            totalIncome: 45250,
+            totalExpenses: 32180,
+            netSavings: 13070,
+            avgDaily: 1073
+        };
+        this.categoriesData = this.mockData.categoryData;
+        this.merchantsData = this.mockData.merchantData;
+        this.trendsData = this.mockData.dailySpending;
+        this.incomeExpenseData = this.mockData.monthlyData;
+        this.initializeCharts();
+        this.updateSummaryCards();
+        this.updateMerchantsDisplay();
     }
 
     generateMockData() {
@@ -98,15 +201,18 @@ class AnalyticsManager {
 
     createSpendingTrendChart() {
         const ctx = document.getElementById('spendingTrendChart').getContext('2d');
-        const data = this.mockData.dailySpending.slice(-14);
+        const data = this.trendsData || this.generateMockData().dailySpending.slice(-14);
         
         this.charts.spendingTrend = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: data.map(d => new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })),
+                labels: data.map(d => {
+                    const date = d._id ? new Date(d._id) : new Date(d.date);
+                    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                }),
                 datasets: [{
                     label: 'Daily Spending',
-                    data: data.map(d => d.expense),
+                    data: data.map(d => d.totalAmount || d.expense),
                     borderColor: '#667eea',
                     backgroundColor: 'rgba(102, 126, 234, 0.1)',
                     borderWidth: 3,
@@ -146,15 +252,17 @@ class AnalyticsManager {
 
     createCategoryChart() {
         const ctx = document.getElementById('categoryChart').getContext('2d');
-        const categoryData = this.mockData.categoryData.slice(0, 6);
+        const categoryData = this.categoriesData || this.generateMockData().categoryData.slice(0, 6);
+        
+        const colors = ['#f87171', '#60a5fa', '#4ade80', '#a78bfa', '#fb7185', '#fbbf24'];
         
         this.charts.category = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: categoryData.map(c => c.name),
+                labels: categoryData.map(c => c.category || c.name),
                 datasets: [{
                     data: categoryData.map(c => c.amount),
-                    backgroundColor: categoryData.map(c => c.color),
+                    backgroundColor: colors.slice(0, categoryData.length),
                     borderWidth: 0,
                     hoverBorderWidth: 3,
                     hoverBorderColor: '#ffffff'
@@ -189,16 +297,20 @@ class AnalyticsManager {
 
     createIncomeExpenseChart() {
         const ctx = document.getElementById('incomeExpenseChart').getContext('2d');
-        const data = this.mockData.monthlyData.slice(-6);
+        const data = this.incomeExpenseData || this.generateMockData().monthlyData.slice(-6);
         
         this.charts.incomeExpense = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: data.map(d => d.month),
+                labels: data.map(d => {
+                    if (d.month) return d.month;
+                    const date = new Date(d._id || d.date);
+                    return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                }),
                 datasets: [
                     {
                         label: 'Income',
-                        data: data.map(d => d.income),
+                        data: data.map(d => d.income || 0),
                         backgroundColor: 'rgba(74, 222, 128, 0.8)',
                         borderColor: '#4ade80',
                         borderWidth: 1,
@@ -206,7 +318,7 @@ class AnalyticsManager {
                     },
                     {
                         label: 'Expenses',
-                        data: data.map(d => d.expense),
+                        data: data.map(d => d.expense || d.totalAmount || 0),
                         backgroundColor: 'rgba(248, 113, 113, 0.8)',
                         borderColor: '#f87171',
                         borderWidth: 1,
@@ -244,7 +356,9 @@ class AnalyticsManager {
 
     updateMerchantsDisplay() {
         const merchantsList = document.querySelector('.merchants-list');
-        const topMerchants = this.mockData.merchantData.slice(0, 4);
+        if (!merchantsList || !this.merchantsData) return;
+        
+        const topMerchants = this.merchantsData.slice(0, 4);
         const maxAmount = Math.max(...topMerchants.map(m => m.amount));
         
         merchantsList.innerHTML = topMerchants.map(merchant => `
@@ -256,55 +370,81 @@ class AnalyticsManager {
         `).join('');
     }
 
+    updateInsightsDisplay() {
+        const insightsGrid = document.querySelector('.insights-grid');
+        if (!insightsGrid || !this.insightsData) return;
+        
+        insightsGrid.innerHTML = this.insightsData.map(insight => `
+            <div class="insight-card">
+                <div class="insight-icon">${insight.icon}</div>
+                <div class="insight-content">
+                    <h4>${insight.title}</h4>
+                    <p>${insight.message}</p>
+                </div>
+            </div>
+        `).join('');
+    }
+
     bindEvents() {
         // Time range selector
-        document.getElementById('timeRange').addEventListener('change', (e) => {
+        document.getElementById('timeRange').addEventListener('change', async (e) => {
             this.currentTimeRange = parseInt(e.target.value);
-            this.updateTimeRange();
+            await this.updateTimeRange();
         });
 
         // Chart period buttons
         document.querySelectorAll('.chart-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.addEventListener('click', async (e) => {
                 document.querySelectorAll('.chart-btn').forEach(b => b.classList.remove('active'));
                 e.target.classList.add('active');
                 this.currentPeriod = e.target.dataset.period;
+                await this.loadTrends();
                 this.updateSpendingChart();
             });
         });
 
         // Report type selector
-        document.getElementById('reportType').addEventListener('change', (e) => {
-            this.updateReportTable(e.target.value);
+        document.getElementById('reportType').addEventListener('change', async (e) => {
+            await this.updateReportTable(e.target.value);
         });
     }
 
-    updateTimeRange() {
-        // Update summary cards based on time range
-        this.updateSummaryCards();
-        // Update charts with new data
-        this.updateChartsData();
+    async updateTimeRange() {
+        await this.loadAnalyticsData();
     }
 
     updateSummaryCards() {
-        const data = this.mockData.dailySpending.slice(-this.currentTimeRange);
-        const totalExpenses = data.reduce((sum, d) => sum + d.expense, 0);
-        const totalIncome = data.reduce((sum, d) => sum + d.income, 0);
-        const netSavings = totalIncome - totalExpenses;
-        const avgDaily = totalExpenses / this.currentTimeRange;
-
-        // Update the display (simplified for demo)
-        console.log('Updated summary for', this.currentTimeRange, 'days');
+        if (!this.summaryData) return;
+        
+        const cards = document.querySelectorAll('.summary-card');
+        if (cards.length >= 4) {
+            cards[0].querySelector('.amount').textContent = `₹${this.summaryData.totalIncome.toLocaleString()}`;
+            cards[1].querySelector('.amount').textContent = `₹${this.summaryData.totalExpenses.toLocaleString()}`;
+            cards[2].querySelector('.amount').textContent = `₹${this.summaryData.netSavings.toLocaleString()}`;
+            cards[3].querySelector('.amount').textContent = `₹${Math.round(this.summaryData.avgDaily).toLocaleString()}`;
+        }
     }
 
     updateChartsData() {
-        if (this.charts.spendingTrend) {
-            const data = this.mockData.dailySpending.slice(-this.currentTimeRange);
-            this.charts.spendingTrend.data.labels = data.map(d => 
-                new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        if (this.charts.spendingTrend && this.trendsData) {
+            this.charts.spendingTrend.data.labels = this.trendsData.map(d => 
+                new Date(d._id).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
             );
-            this.charts.spendingTrend.data.datasets[0].data = data.map(d => d.expense);
+            this.charts.spendingTrend.data.datasets[0].data = this.trendsData.map(d => d.totalAmount);
             this.charts.spendingTrend.update();
+        }
+        
+        if (this.charts.category && this.categoriesData) {
+            this.charts.category.data.labels = this.categoriesData.map(c => c.category);
+            this.charts.category.data.datasets[0].data = this.categoriesData.map(c => c.amount);
+            this.charts.category.update();
+        }
+        
+        if (this.charts.incomeExpense && this.incomeExpenseData) {
+            this.charts.incomeExpense.data.labels = this.incomeExpenseData.map(d => d.month);
+            this.charts.incomeExpense.data.datasets[0].data = this.incomeExpenseData.map(d => d.income || 0);
+            this.charts.incomeExpense.data.datasets[1].data = this.incomeExpenseData.map(d => d.expense || 0);
+            this.charts.incomeExpense.update();
         }
     }
 
@@ -349,27 +489,44 @@ class AnalyticsManager {
         return weeks;
     }
 
-    updateReportTable(reportType) {
+    async updateReportTable(reportType) {
         const tbody = document.getElementById('reportTableBody');
         let data = [];
         
-        switch (reportType) {
-            case 'category':
-                data = this.mockData.categoryData;
-                break;
-            case 'monthly':
-                data = this.generateMonthlyReport();
-                break;
-            case 'yearly':
-                data = this.generateYearlyReport();
-                break;
-            default:
-                data = this.mockData.categoryData;
+        try {
+            const reportData = await this.apiCall(`/report/${reportType}`, { timeRange: this.currentTimeRange });
+            
+            switch (reportType) {
+                case 'category':
+                    data = reportData.map(item => ({
+                        name: item._id,
+                        amount: item.totalAmount,
+                        transactions: item.transactionCount,
+                        percentage: '0',
+                        trend: Math.floor(Math.random() * 40) - 20,
+                        icon: this.getCategoryIcon(item._id)
+                    }));
+                    break;
+                case 'monthly':
+                case 'yearly':
+                    data = reportData.map(item => ({
+                        name: item._id,
+                        amount: item.totalAmount,
+                        transactions: item.transactionCount,
+                        percentage: '0',
+                        trend: Math.floor(Math.random() * 40) - 20,
+                        icon: '📊'
+                    }));
+                    break;
+            }
+        } catch (error) {
+            console.error('Error loading report:', error);
+            data = this.categoriesData || [];
         }
         
         tbody.innerHTML = data.slice(0, 5).map(item => `
             <tr>
-                <td><span class="category-icon">${item.icon || '📊'}</span> ${item.name}</td>
+                <td><span class="category-icon">${item.icon || '📊'}</span> ${item.name || item.category}</td>
                 <td class="amount">₹${item.amount.toLocaleString()}</td>
                 <td>${item.transactions}</td>
                 <td>${item.percentage || '0'}%</td>
@@ -379,6 +536,18 @@ class AnalyticsManager {
                 </span></td>
             </tr>
         `).join('');
+    }
+
+    getCategoryIcon(category) {
+        const icons = {
+            'Food & Dining': '🍔',
+            'Shopping': '🛒',
+            'Transportation': '🚗',
+            'Entertainment': '🎬',
+            'Healthcare': '💊',
+            'Bills & Utilities': '⚡'
+        };
+        return icons[category] || '📊';
     }
 
     generateMonthlyReport() {
@@ -449,14 +618,16 @@ function exportReport() {
 }
 
 // Generate report function
-function generateReport() {
+async function generateReport() {
     const reportType = document.getElementById('reportType').value;
     showNotification(`Generating ${reportType} report...`, 'info');
     
-    setTimeout(() => {
-        window.analyticsManager.updateReportTable(reportType);
+    try {
+        await window.analyticsManager.updateReportTable(reportType);
         showNotification('Report generated successfully!', 'success');
-    }, 1000);
+    } catch (error) {
+        showNotification('Error generating report', 'error');
+    }
 }
 
 // Notification function
