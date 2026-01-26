@@ -1771,6 +1771,257 @@
         max-width: 100%;
         min-width: 0;
       }
+
+      /* Chatbot Styles */
+      .chatbot-container {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        z-index: 999;
+        font-family: 'Inter', sans-serif;
+      }
+
+      .chatbot-widget {
+        width: 380px;
+        height: 500px;
+        background: var(--bg-secondary);
+        border: 1px solid rgba(100, 255, 218, 0.2);
+        border-radius: 15px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        animation: slideInUp 0.4s ease-out;
+        display: none;
+      }
+
+      .chatbot-widget.active {
+        display: flex;
+      }
+
+      @keyframes slideInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .chatbot-header {
+        background: var(--primary-gradient);
+        padding: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+
+      .chatbot-header-content h3 {
+        color: white;
+        font-size: 1.1rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .chatbot-header-content p {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.85rem;
+      }
+
+      .chatbot-close-btn {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.2rem;
+        cursor: pointer;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s;
+      }
+
+      .chatbot-close-btn:hover {
+        transform: scale(1.2);
+      }
+
+      .chatbot-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .chatbot-messages::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .chatbot-messages::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .chatbot-messages::-webkit-scrollbar-thumb {
+        background: rgba(100, 255, 218, 0.3);
+        border-radius: 3px;
+      }
+
+      .chatbot-messages::-webkit-scrollbar-thumb:hover {
+        background: rgba(100, 255, 218, 0.5);
+      }
+
+      .chatbot-message {
+        display: flex;
+        animation: fadeIn 0.3s ease-out;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .bot-message {
+        justify-content: flex-start;
+      }
+
+      .user-message {
+        justify-content: flex-end;
+      }
+
+      .message-content {
+        max-width: 75%;
+        padding: 0.75rem 1rem;
+        border-radius: 12px;
+        word-wrap: break-word;
+      }
+
+      .bot-message .message-content {
+        background: rgba(100, 255, 218, 0.1);
+        border: 1px solid rgba(100, 255, 218, 0.2);
+        color: var(--text-primary);
+      }
+
+      .user-message .message-content {
+        background: var(--primary-gradient);
+        color: white;
+      }
+
+      .message-content p {
+        margin: 0;
+        font-size: 0.95rem;
+        line-height: 1.4;
+      }
+
+      .chatbot-input-area {
+        padding: 1rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(0, 0, 0, 0.2);
+      }
+
+      .chatbot-form {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .chatbot-input {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        border: 1px solid rgba(100, 255, 218, 0.2);
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        outline: none;
+        transition: all 0.2s;
+      }
+
+      .chatbot-input:focus {
+        border-color: var(--accent-primary);
+        background: rgba(100, 255, 218, 0.1);
+        box-shadow: 0 0 10px rgba(100, 255, 218, 0.2);
+      }
+
+      .chatbot-input::placeholder {
+        color: rgba(180, 180, 180, 0.6);
+      }
+
+      .chatbot-send-btn {
+        width: 40px;
+        height: 40px;
+        border: none;
+        border-radius: 50%;
+        background: var(--primary-gradient);
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+      }
+
+      .chatbot-send-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+      }
+
+      .chatbot-send-btn:active {
+        transform: scale(0.95);
+      }
+
+      .chatbot-toggle-btn {
+        width: 60px;
+        height: 60px;
+        border: none;
+        border-radius: 50%;
+        background: var(--primary-gradient);
+        color: white;
+        font-size: 1.5rem;
+        cursor: pointer;
+        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        position: relative;
+      }
+
+      .chatbot-toggle-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+      }
+
+      .chatbot-toggle-btn.hidden {
+        display: none;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 480px) {
+        .chatbot-widget {
+          width: calc(100vw - 40px);
+          height: 70vh;
+          max-height: 500px;
+        }
+
+        .chatbot-container {
+          bottom: 10px;
+          left: 10px;
+          right: 10px;
+        }
+
+        .message-content {
+          max-width: 85%;
+        }
+      }
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -2484,6 +2735,52 @@
 
 </body>
 
+    <!-- Chatbot Widget -->
+    <div id="chatbot-container" class="chatbot-container">
+      <div id="chatbot-widget" class="chatbot-widget">
+        <!-- Chat Header -->
+        <div class="chatbot-header">
+          <div class="chatbot-header-content">
+            <h3>ExpenseFlow Assistant</h3>
+            <p>Ask me anything about your finances</p>
+          </div>
+          <button id="chatbot-close" class="chatbot-close-btn">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        
+        <!-- Chat Messages -->
+        <div id="chatbot-messages" class="chatbot-messages">
+          <div class="chatbot-message bot-message">
+            <div class="message-content">
+              <p>Hi! 👋 I'm your ExpenseFlow Assistant. How can I help you manage your finances today?</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Chat Input -->
+        <div class="chatbot-input-area">
+          <form id="chatbot-form" class="chatbot-form">
+            <input 
+              type="text" 
+              id="chatbot-input" 
+              class="chatbot-input" 
+              placeholder="Type your message..." 
+              autocomplete="off"
+            >
+            <button type="submit" class="chatbot-send-btn">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </form>
+        </div>
+      </div>
+      
+      <!-- Chat Toggle Button -->
+      <button id="chatbot-toggle" class="chatbot-toggle-btn" title="Chat with Assistant">
+        <i class="fas fa-comments"></i>
+      </button>
+    </div>
+
     <script>
       // Mobile Navigation Toggle
       document.addEventListener('DOMContentLoaded', function() {
@@ -2518,7 +2815,125 @@
             navMenu.classList.remove('active');
           }
         });
+
+        // Chatbot Functionality
+        initializeChatbot();
       });
+
+      function initializeChatbot() {
+        const chatbotToggle = document.getElementById('chatbot-toggle');
+        const chatbotWidget = document.getElementById('chatbot-widget');
+        const chatbotForm = document.getElementById('chatbot-form');
+        const chatbotInput = document.getElementById('chatbot-input');
+        const chatbotMessages = document.getElementById('chatbot-messages');
+        const chatbotClose = document.getElementById('chatbot-close');
+
+        // Toggle chatbot window
+        chatbotToggle.addEventListener('click', () => {
+          chatbotWidget.classList.toggle('active');
+          if (chatbotWidget.classList.contains('active')) {
+            chatbotToggle.classList.add('hidden');
+            chatbotInput.focus();
+          } else {
+            chatbotToggle.classList.remove('hidden');
+          }
+        });
+
+        // Close chatbot window
+        chatbotClose.addEventListener('click', () => {
+          chatbotWidget.classList.remove('active');
+          chatbotToggle.classList.remove('hidden');
+        });
+
+        // Handle form submission
+        chatbotForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const message = chatbotInput.value.trim();
+          
+          if (message) {
+            // Add user message
+            addMessage(message, 'user');
+            chatbotInput.value = '';
+            
+            // Simulate bot response
+            setTimeout(() => {
+              const response = getBotResponse(message);
+              addMessage(response, 'bot');
+            }, 500);
+          }
+        });
+
+        function addMessage(text, sender) {
+          const messageDiv = document.createElement('div');
+          messageDiv.className = `chatbot-message ${sender}-message`;
+          
+          const contentDiv = document.createElement('div');
+          contentDiv.className = 'message-content';
+          
+          const p = document.createElement('p');
+          p.textContent = text;
+          
+          contentDiv.appendChild(p);
+          messageDiv.appendChild(contentDiv);
+          
+          chatbotMessages.appendChild(messageDiv);
+          
+          // Auto scroll to bottom
+          chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+        }
+
+        function getBotResponse(userMessage) {
+          const lowerMessage = userMessage.toLowerCase();
+          
+          // Expense-related responses
+          if (lowerMessage.includes('add') && (lowerMessage.includes('expense') || lowerMessage.includes('transaction'))) {
+            return "You can add an expense by scrolling down to the 'Add New Transaction' form. Fill in the description, amount, category, and date, then click submit! 📝";
+          }
+          
+          if (lowerMessage.includes('budget')) {
+            return "Budget planning is a great way to manage your spending! You can set budget goals by category to track your spending limits. Would you like tips on creating an effective budget? 💰";
+          }
+          
+          if (lowerMessage.includes('goal') || lowerMessage.includes('savings')) {
+            return "Setting financial goals helps you stay motivated! You can create short-term and long-term goals to work towards your financial dreams. What's your goal? 🎯";
+          }
+          
+          if (lowerMessage.includes('category')) {
+            return "We support many categories including: Food, Transportation, Shopping, Entertainment, Bills, Healthcare, Education, Travel, Salary, Freelance, Investment, and more! Pick what works for you. 📂";
+          }
+          
+          if (lowerMessage.includes('receipt')) {
+            return "You can upload receipts to verify your expenses! This helps you keep accurate records and track your spending better. Perfect for important purchases! 📸";
+          }
+          
+          if (lowerMessage.includes('sync') || lowerMessage.includes('offline')) {
+            return "ExpenseFlow works offline and syncs your data when you're back online! Your data is always safe and accessible. No worries about losing your information! 🔄";
+          }
+          
+          if (lowerMessage.includes('delete') || lowerMessage.includes('edit')) {
+            return "You can edit or delete transactions from your history. Just click on any transaction to modify it or remove it. Easy management! ✏️";
+          }
+          
+          if (lowerMessage.includes('help') || lowerMessage.includes('how')) {
+            return "I'm here to help! You can ask me about:\n• Adding expenses\n• Creating budgets\n• Setting goals\n• Managing receipts\n• Categories\n• And more!\n\nWhat would you like to know? 🤔";
+          }
+          
+          if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey')) {
+            return "Hey there! 👋 I'm your ExpenseFlow Assistant. How can I help you manage your finances today?";
+          }
+          
+          // Default responses
+          const responses = [
+            "That's a great question! Feel free to explore ExpenseFlow's features or ask me more about managing your expenses. 💡",
+            "I'm here to help you manage your finances better! Is there anything specific you'd like to know? 🤝",
+            "Thanks for that message! I'm learning to help you even better. Check out the features above or ask me another question! 🚀",
+            "Interesting! Remember, smart money management is all about tracking and planning. How can I assist you further? 📊",
+            "I'm always here to help! Feel free to ask me anything about budgeting, expense tracking, or financial planning. 💸"
+          ];
+          
+          return responses[Math.floor(Math.random() * responses.length)];
+        }
+      }
     </script>
   </body>
 </html>
