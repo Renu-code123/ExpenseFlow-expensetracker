@@ -1,148 +1,136 @@
 const Joi = require('joi');
 
-// Tax profile schema
+// Validation schemas
 const taxProfileSchema = Joi.object({
-  country: Joi.string().valid('IN', 'US', 'UK', 'CA', 'AU').default('IN'),
-  regime: Joi.string().valid('old', 'new').default('new'),
-  filingStatus: Joi.string().valid('single', 'married_joint', 'married_separate', 'head_of_household').default('single'),
-  standardDeduction: Joi.number().min(0),
-  tdsDeducted: Joi.number().min(0).default(0),
-  advanceTaxPaid: Joi.number().min(0).default(0),
-  customDeductions: Joi.array().items(
-    Joi.object({
-      name: Joi.string().required().max(100),
-      section: Joi.string().required().max(20),
-      amount: Joi.number().min(0).required(),
-      description: Joi.string().max(500)
-    })
-  )
+    primary_jurisdiction: Joi.object({
+        country: Joi.string().valid('US', 'UK', 'EU', 'IN', 'CA').required(),
+        state_province: Joi.string().allow('').optional(),
+        tax_year: Joi.number().min(2020).max(2030).optional()
+    }).required(),
+    filing_status: Joi.string().valid('single', 'married_joint', 'married_separate', 'head_of_household', 'widow').required(),
+    dependents: Joi.number().min(0).default(0),
+    annual_income: Joi.object({
+        salary: Joi.number().min(0).default(0),
+        business: Joi.number().min(0).default(0),
+        investment: Joi.number().min(0).default(0),
+        rental: Joi.number().min(0).default(0),
+        other: Joi.number().min(0).default(0)
+    }).optional(),
+    tax_advantaged_accounts: Joi.array().items(Joi.object({
+        account_type: Joi.string().valid('401k', 'IRA', 'Roth_IRA', 'HSA', 'ISA', 'RRSP', 'TFSA', 'PPF', 'EPF', 'NPS').required(),
+        contribution_limit: Joi.number().min(0).required(),
+        current_contribution: Joi.number().min(0).default(0),
+        employer_match: Joi.number().min(0).default(0)
+    })).optional(),
+    deductions: Joi.object({
+        standard_or_itemized: Joi.string().valid('standard', 'itemized').default('standard'),
+        itemized_deductions: Joi.object({
+            mortgage_interest: Joi.number().min(0).default(0),
+            property_tax: Joi.number().min(0).default(0),
+            charitable: Joi.number().min(0).default(0),
+            medical: Joi.number().min(0).default(0),
+            state_local_tax: Joi.number().min(0).default(0)
+        }).optional(),
+        business_expenses: Joi.object({
+            home_office: Joi.number().min(0).default(0),
+            travel: Joi.number().min(0).default(0),
+            equipment: Joi.number().min(0).default(0),
+            supplies: Joi.number().min(0).default(0),
+            professional_services: Joi.number().min(0).default(0)
+        }).optional()
+    }).optional(),
+    tax_preferences: Joi.object({
+        risk_tolerance: Joi.string().valid('conservative', 'moderate', 'aggressive').default('moderate'),
+        enable_tax_loss_harvesting: Joi.boolean().default(true),
+        enable_wash_sale_detection: Joi.boolean().default(true),
+        enable_quarterly_estimates: Joi.boolean().default(false),
+        preferred_payment_method: Joi.string().valid('bank_transfer', 'check', 'credit_card').default('bank_transfer')
+    }).optional(),
+    tax_professional: Joi.object({
+        has_professional: Joi.boolean().default(false),
+        name: Joi.string().allow('').optional(),
+        firm: Joi.string().allow('').optional(),
+        contact: Joi.string().allow('').optional(),
+        notes: Joi.string().allow('').optional()
+    }).optional()
 });
 
-// Tax calculation options
-const taxCalculationSchema = Joi.object({
-  taxYear: Joi.number().integer().min(2020).max(new Date().getFullYear() + 1),
-  customDeductions: Joi.array().items(
-    Joi.object({
-      name: Joi.string().required(),
-      section: Joi.string(),
-      amount: Joi.number().min(0).required()
-    })
-  )
+const taxDocumentSchema = Joi.object({
+    document_type: Joi.string().valid(
+        '1099_INT', '1099_DIV', '1099_B', 'Schedule_D', 'Schedule_C', 'Form_8949',
+        'P60', 'P11D', 'SA100', 'T4', 'T5', 'ITR', 'Form_16', 'Form_26AS',
+        'Tax_Summary', 'Estimated_Tax', 'Year_End_Report'
+    ).required(),
+    tax_year: Joi.number().min(2020).max(2030).required()
 });
 
-// Report generation schema
-const reportGenerationSchema = Joi.object({
-  reportType: Joi.string().valid(
-    'income_statement',
-    'expense_summary',
-    'profit_loss',
-    'tax_report',
-    'category_breakdown',
-    'monthly_comparison',
-    'annual_summary'
-  ).required(),
-  startDate: Joi.date().iso(),
-  endDate: Joi.date().iso().min(Joi.ref('startDate')),
-  currency: Joi.string().valid('INR', 'USD', 'EUR', 'GBP').default('INR'),
-  includeForecasts: Joi.boolean().default(false),
-  workspaceId: Joi.string().regex(/^[a-fA-F0-9]{24}$/)
+const estimatedPaymentSchema = Joi.object({
+    quarter: Joi.number().min(1).max(4).required(),
+    confirmation_number: Joi.string().required().min(5).max(50)
 });
 
-// Report list query schema
-const reportListSchema = Joi.object({
-  page: Joi.number().integer().min(1).default(1),
-  limit: Joi.number().integer().min(1).max(50).default(10),
-  reportType: Joi.string().valid(
-    'income_statement',
-    'expense_summary',
-    'profit_loss',
-    'tax_report',
-    'category_breakdown',
-    'monthly_comparison',
-    'annual_summary'
-  ),
-  status: Joi.string().valid('ready', 'processing', 'failed')
+const taxRuleSchema = Joi.object({
+    jurisdiction: Joi.object({
+        country: Joi.string().valid('US', 'UK', 'EU', 'IN', 'CA').required(),
+        state_province: Joi.string().allow('').optional(),
+        tax_year: Joi.number().min(2020).max(2030).required()
+    }).required(),
+    rule_type: Joi.string().valid('income_tax', 'capital_gains', 'deduction', 'credit', 'wash_sale', 'contribution_limit').required(),
+    isActive: Joi.boolean().default(true)
 });
 
-// Deduction category schema
-const deductionCategorySchema = Joi.object({
-  code: Joi.string().required().max(20),
-  name: Joi.string().required().max(100),
-  description: Joi.string().max(500),
-  section: Joi.string().max(20),
-  maxDeductionLimit: Joi.number().min(0),
-  type: Joi.string().valid('deductible', 'partially_deductible', 'non_deductible').default('deductible'),
-  deductiblePercentage: Joi.number().min(0).max(100).default(100),
-  keywords: Joi.array().items(Joi.string()),
-  categoryMappings: Joi.array().items(
-    Joi.object({
-      expenseCategory: Joi.string().required(),
-      deductiblePercentage: Joi.number().min(0).max(100).default(100)
-    })
-  )
-});
-
-// Expense tax tagging schema
-const expenseTaxTagSchema = Joi.object({
-  expenseId: Joi.string().regex(/^[a-fA-F0-9]{24}$/).required(),
-  isTaxDeductible: Joi.boolean().required(),
-  taxCategory: Joi.string().max(50),
-  section: Joi.string().max(20),
-  deductiblePercentage: Joi.number().min(0).max(100)
-});
-
-// Validation middleware factory
-const validate = (schema, property = 'body') => {
-  return (req, res, next) => {
-    const { error, value } = schema.validate(req[property], {
-      abortEarly: false,
-      stripUnknown: true
-    });
-    
+// Validation middleware
+const validateTaxProfile = (req, res, next) => {
+    const { error } = taxProfileSchema.validate(req.body);
     if (error) {
-      const errors = error.details.map(detail => ({
-        field: detail.path.join('.'),
-        message: detail.message
-      }));
-      
-      return res.status(400).json({
-        success: false,
-        error: 'Validation failed',
-        details: errors
-      });
+        return res.status(400).json({
+            success: false,
+            message: 'Validation error',
+            details: error.details[0].message
+        });
     }
-    
-    req[property] = value;
     next();
-  };
 };
 
-// Middleware exports
+const validateTaxDocument = (req, res, next) => {
+    const { error } = taxDocumentSchema.validate(req.body);
+    if (error) {
+        return res.status(400).json({
+            success: false,
+            message: 'Validation error',
+            details: error.details[0].message
+        });
+    }
+    next();
+};
+
+const validateEstimatedPayment = (req, res, next) => {
+    const { error } = estimatedPaymentSchema.validate(req.body);
+    if (error) {
+        return res.status(400).json({
+            success: false,
+            message: 'Validation error',
+            details: error.details[0].message
+        });
+    }
+    next();
+};
+
+const validateTaxRule = (req, res, next) => {
+    const { error } = taxRuleSchema.validate(req.body);
+    if (error) {
+        return res.status(400).json({
+            success: false,
+            message: 'Validation error',
+            details: error.details[0].message
+        });
+    }
+    next();
+};
+
 module.exports = {
-  validateTaxProfile: validate(taxProfileSchema),
-  validateTaxCalculation: validate(taxCalculationSchema),
-  validateReportGeneration: validate(reportGenerationSchema),
-  validateReportList: validate(reportListSchema, 'query'),
-  validateDeductionCategory: validate(deductionCategorySchema),
-  validateExpenseTaxTag: validate(expenseTaxTagSchema),
-  
-  // Alternative validation function
-  validateRequest: validate,
-  
-  // Schema exports for reuse
-  schemas: {
-    taxProfileSchema,
-    taxCalculationSchema,
-    reportGenerationSchema,
-    reportListSchema,
-    deductionCategorySchema,
-    expenseTaxTagSchema
-  },
-  
-  // Alias for compatibility
-  taxSchemas: {
-    createProfile: taxProfileSchema,
-    updateProfile: taxProfileSchema,
-    createCategory: deductionCategorySchema
-  }
+    validateTaxProfile,
+    validateTaxDocument,
+    validateEstimatedPayment,
+    validateTaxRule
 };

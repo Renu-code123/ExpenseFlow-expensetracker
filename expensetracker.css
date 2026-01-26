@@ -1736,3 +1736,243 @@ button {
   max-width: 100%;
   min-width: 0;
 }
+
+
+/* Workspace Dropdown Styles */
+.workspace-dropdown-container {
+    position: relative;
+}
+
+.workspace-current {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.workspace-current:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.workspace-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.workspace-avatar.active {
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.5);
+}
+
+.workspace-info {
+    flex: 1;
+    text-align: left;
+}
+
+.workspace-label {
+    display: block;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 2px;
+}
+
+.workspace-name {
+    display: block;
+    font-weight: 600;
+    color: white;
+}
+
+.dropdown-arrow {
+    transition: transform 0.3s ease;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.workspace-dropdown-container:hover .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+.workspace-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: rgba(30, 30, 46, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 16px;
+    z-index: 1000;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.workspace-dropdown.show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: all;
+}
+
+.dropdown-section {
+    margin-bottom: 16px;
+}
+
+.dropdown-section h6 {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    padding-left: 12px;
+}
+
+.workspace-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 4px;
+}
+
+.workspace-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.workspace-item.active {
+    background: rgba(102, 126, 234, 0.15);
+    border-left: 3px solid #667eea;
+}
+
+.workspace-avatar-sm {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.workspace-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.workspace-details {
+    flex: 1;
+    text-align: left;
+}
+
+.workspace-title {
+    display: block;
+    font-weight: 500;
+    color: white;
+    font-size: 14px;
+}
+
+.workspace-subtitle {
+    display: block;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.badge {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.badge.owner {
+    background: rgba(102, 126, 234, 0.2);
+    color: #667eea;
+}
+
+.badge.admin {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
+}
+
+.dropdown-footer {
+    margin-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 16px;
+}
+
+.btn-create-workspace,
+.btn-manage-workspaces {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.8);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: left;
+    font-size: 14px;
+}
+
+.btn-create-workspace:hover {
+    background: rgba(102, 126, 234, 0.1);
+    color: #667eea;
+}
+
+.btn-manage-workspaces:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+}
+
+/* Loading states */
+.data-loading {
+    position: relative;
+    min-height: 100px;
+}
+
+.data-loading.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    transform: translate(-50%, -50%);
+}
+
+@keyframes spin {
+    to { transform: translate(-50%, -50%) rotate(360deg); }
+}

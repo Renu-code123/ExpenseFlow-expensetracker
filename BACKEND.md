@@ -24,6 +24,7 @@ This document provides comprehensive information about the ExpenseFlow backend a
 
 ## 🏗️ Backend Overview
 
+
 ExpenseFlow backend is built with **Node.js** and **Express.js**, providing a robust REST API with real-time capabilities. The backend handles:
 
 - User authentication and authorization
@@ -33,6 +34,68 @@ ExpenseFlow backend is built with **Node.js** and **Express.js**, providing a ro
 - Multi-channel notifications
 - Currency conversion and analytics
 - Security monitoring and rate limiting
+
+---
+
+## 🧠 Advanced Analytics & AI Intelligence
+
+ExpenseFlow integrates advanced analytics and AI-powered intelligence for:
+- Predictive analytics (budget forecasting, cash flow projections)
+- Automated insights and anomaly detection
+- Machine learning models for expense categorization and fraud detection
+- KPI tracking, benchmarking, and financial health scoring
+
+See [SETUP_AND_SECURITY.md](SETUP_AND_SECURITY.md) for details on fraud detection, security, and compliance.
+
+---
+
+## 📊 Financial Insights & Reporting
+
+- Smart financial insights using ML/statistical analysis
+- Anomaly detection for unusual transactions
+- Spending pattern recognition and cash flow forecasting
+- Automatic subscription detection and financial health scoring
+
+---
+
+## 💱 Multi-Currency & Internationalization
+
+- Real-time exchange rates and multi-currency wallets
+- Automatic currency conversion and trend analysis
+- Internationalization: multi-language, timezone, and regional tax support
+- Country-specific tax calculations and compliance
+
+---
+
+## 💼 Investment Portfolio & Asset Tracking
+
+- Multi-asset portfolio management (stocks, crypto, bonds, etc.)
+- Real-time price updates and tax lot tracking
+- Performance analytics, portfolio rebalancing, and historical charts
+- API endpoints for portfolio creation, asset management, and reporting
+
+---
+
+## 🏆 Gamification & Social Features
+
+- Financial challenges, achievements, leaderboards, and streaks
+- Group expense management and collaborative planning
+- Role-based permissions, approval workflows, and audit trails
+- Shared goals, expense splitting, and workspace management
+
+---
+
+## 🛡️ Security, Compliance & Audit
+
+ExpenseFlow implements:
+- Real-time fraud detection and behavioral analysis
+- Immutable audit logs and compliance monitoring
+- Automated alerting, device fingerprinting, and advanced authentication
+- Data retention, legal hold, and regulatory reporting
+
+See [SETUP_AND_SECURITY.md](SETUP_AND_SECURITY.md) for full details.
+
+---
 
 ### Tech Stack
 
