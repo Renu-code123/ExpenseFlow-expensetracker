@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Management - ExpenseFlow</title>
+    <link rel="stylesheet" href="budget.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+    
+    <!-- Enhanced Cursor Trail -->
+    <div class="cursor-trail-container" id="cursor-trail"></div>
+
+    <div class="budget-container">
+        <header class="budget-header">
+            <div class="header-left">
+                <a href="dashboard-clean.html" class="back-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+                <h1><i class="fas fa-bullseye"></i> Budget Management</h1>
+                <div class="header-subtitle">Track and optimize your spending</div>
+            </div>
+            <div class="header-right">
+                <button id="create-budget-btn" class="create-btn">
+                    <i class="fas fa-plus"></i> Create Budget
+                </button>
+                <div class="header-actions">
+                    <button class="action-icon" title="Export Report">
+                        <i class="fas fa-file-export"></i>
+                    </button>
+                    <button class="action-icon" title="Settings">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="budget-main">
+            <!-- Budget Overview Cards -->
+            <div class="budget-overview">
+                <div class="overview-card total-budget glass-effect">
+                    <div class="card-icon pulse">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Total Budget</h3>
+                        <p class="card-value" id="total-budget">$2,500.00</p>
+                        <div class="progress-indicator">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 74%"></div>
+                            </div>
+                            <span class="card-subtitle">74% of monthly limit</span>
+                        </div>
+                    </div>
+                    <div class="card-wave"></div>
+                </div>
+                
+                <div class="overview-card spent-budget glass-effect">
+                    <div class="card-icon">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Total Spent</h3>
+                        <p class="card-value" id="total-spent">$1,847.32</p>
+                        <div class="trend-indicator up">
+                            <i class="fas fa-arrow-up"></i>
+                            <span class="trend-text">12% from last month</span>
+                        </div>
+                        <span class="card-subtitle">This month</span>
+                    </div>
+                    <div class="card-wave"></div>
+                </div>
+                
+                <div class="overview-card remaining-budget glass-effect">
+                    <div class="card-icon">
+                        <i class="fas fa-piggy-bank"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Remaining</h3>
+                        <p class="card-value" id="remaining-budget">$652.68</p>
+                        <div class="daily-budget">
+                            <i class="fas fa-calendar-day"></i>
+                            <span>$21.09 per day</span>
+                        </div>
+                        <span class="card-subtitle">Available to spend</span>
+                    </div>
+                    <div class="card-wave"></div>
+                </div>
+                
+                <div class="overview-card budget-health glass-effect">
+                    <div class="card-icon">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Budget Health</h3>
+                        <p class="card-value" id="budget-health">74%</p>
+                        <div class="health-status">
+                            <div class="health-dot healthy"></div>
+                            <span>On track</span>
+                        </div>
+                        <span class="card-subtitle">Good performance</span>
+                    </div>
+                    <div class="card-wave"></div>
+                </div>
+            </div>
+
+            <!-- Budget Categories -->
+            <div class="budget-categories">
+                <div class="section-header">
+                    <div class="section-title">
+                        <h2><i class="fas fa-list"></i> Budget Categories</h2>
+                        <p class="section-subtitle">Manage your spending categories</p>
+                    </div>
+                    <div class="filter-controls">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" placeholder="Search categories..." id="category-search">
+                        </div>
+                        <select id="budget-filter" class="filter-select">
+                            <option value="all">All Categories</option>
+                            <option value="over">Over Budget</option>
+                            <option value="warning">Near Limit</option>
+                            <option value="safe">On Track</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="budget-list" class="budget-grid">
+                    <!-- Budget items will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Budget Analytics -->
+            <div class="budget-analytics glass-effect">
+                <div class="analytics-header">
+                    <div class="analytics-title">
+                        <h2><i class="fas fa-chart-bar"></i> Budget Analytics</h2>
+                        <p class="analytics-subtitle">Visualize your spending patterns</p>
+                    </div>
+                    <div class="period-controls">
+                        <select id="analytics-period" class="period-select">
+                            <option value="current">Current Month</option>
+                            <option value="last">Last Month</option>
+                            <option value="3months">Last 3 Months</option>
+                        </select>
+                        <button class="refresh-btn">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="analytics-content">
+                    <div class="chart-section">
+                        <div class="chart-header">
+                            <h4>Spending Distribution</h4>
+                            <div class="chart-legend">
+                                <div class="legend-item">
+                                    <span class="legend-color" style="background: #64ffda"></span>
+                                    <span>Within Budget</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-color" style="background: #ff6b9d"></span>
+                                    <span>Over Budget</span>
+                                </div>
+                            </div>
+                        </div>
+                        <canvas id="budget-chart"></canvas>
+                    </div>
+                    
+                    <div class="insights-section">
+                        <div class="insights-header">
+                            <h3><i class="fas fa-lightbulb"></i> Budget Insights</h3>
+                            <span class="insights-count">3 insights</span>
+                        </div>
+                        <div id="budget-insights" class="insights-list">
+                            <!-- Insights will be loaded here -->
+                        </div>
+                        <button class="view-all-insights">
+                            View All Insights <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Create/Edit Budget Modal -->
+    <div id="budget-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-icon">
+                    <i class="fas fa-bullseye"></i>
+                </div>
+                <div class="modal-title">
+                    <h3 id="budget-modal-title">Create Budget</h3>
+                    <p>Set up a new spending limit</p>
+                </div>
+                <button class="modal-close" id="budget-modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="budget-form" class="budget-form">
+                <input type="hidden" id="budget-id">
+                
+                <div class="form-group">
+                    <label for="budget-category">
+                        <i class="fas fa-tag"></i> Category
+                    </label>
+                    <select id="budget-category" required>
+                        <option value="">Select Category</option>
+                        <option value="food">🍽️ Food & Dining</option>
+                        <option value="transport">🚗 Transportation</option>
+                        <option value="shopping">🛒 Shopping</option>
+                        <option value="entertainment">🎬 Entertainment</option>
+                        <option value="utilities">💡 Bills & Utilities</option>
+                        <option value="healthcare">🏥 Healthcare</option>
+                        <option value="education">📚 Education</option>
+                        <option value="travel">✈️ Travel</option>
+                        <option value="other">📋 Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="budget-amount">
+                            <i class="fas fa-dollar-sign"></i> Monthly Budget
+                        </label>
+                        <div class="input-with-icon">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="budget-amount" placeholder="500.00" step="0.01" min="0" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="budget-period">
+                            <i class="fas fa-calendar-alt"></i> Period
+                        </label>
+                        <select id="budget-period" required>
+                            <option value="monthly">Monthly</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="yearly">Yearly</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="budget-alert">
+                        <i class="fas fa-bell"></i> Alert Threshold
+                        <span class="threshold-value">80%</span>
+                    </label>
+                    <input type="range" id="budget-alert" min="50" max="100" value="80">
+                    <div class="range-labels">
+                        <span>50%</span>
+                        <span>75%</span>
+                        <span>100%</span>
+                    </div>
+                    <small>Get notified when spending reaches this percentage</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="budget-notes">
+                        <i class="fas fa-sticky-note"></i> Notes (Optional)
+                    </label>
+                    <textarea id="budget-notes" rows="3" placeholder="Add any notes about this budget..."></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" id="budget-cancel-btn">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-save"></i> Save Budget
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="budget.js"></script>
+</body>
+</html>
