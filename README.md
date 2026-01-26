@@ -299,9 +299,7 @@ If you’d like to improve **ExpenseFlow**, follow these steps 👇
 
 ---
 
----
-
-## 👥 All Contributors
+## All Contributors
 
 <a href="https://github.com/Renu-code123/ExpenseFlow/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=Renu-code123/ExpenseFlow" />
@@ -326,6 +324,13 @@ This project is licensed under the **MIT License** – see the [LICENSE](./LICEN
 
 * **GitHub:** [@Renu-code123](https://github.com/Renu-code123)
 ---
+
+## 🧑‍💻 Core Team
+
+| Name | Role |
+|------|------|
+| Renu Kumari Prajapati | Project Admin |
+| Harshit Singh | Mentor |
 
 ## 💬 Quote
 
