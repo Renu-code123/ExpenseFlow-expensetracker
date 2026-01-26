@@ -7,9 +7,10 @@
   --dark-gradient: linear-gradient(135deg, #232526 0%, #414345 100%);
 
   /* Background Colors */
-  --bg-primary: #0f0f23;
-  --bg-secondary: #1a1a2e;
-  --bg-tertiary: #16213e;
+  --bg-primary: #14162a;
+  --bg-secondary: #1f2240;
+  --bg-tertiary: #242866;
+
   --bg-glass: rgba(255, 255, 255, 0.1);
 
   /* Text Colors */

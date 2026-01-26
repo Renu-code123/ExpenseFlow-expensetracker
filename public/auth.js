@@ -1,4 +1,7 @@
+// ===================== LOGIN =====================
+
 const loginForm = document.getElementById("loginForm");
+
 if (loginForm) {
     loginForm.addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -7,31 +10,43 @@ if (loginForm) {
         const password = document.getElementById("loginPassword").value.trim();
 
         try {
-            const res = await fetch("/api/auth/login", {
+            const res = await fetch("http://localhost:3000/api/auth/login", {
                 method: "POST",
                 headers: {
-                    "content-type": "application/json",
+                    "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({
+                    email,
+                    password
+                })
             });
+
             const data = await res.json();
+
             if (!res.ok) {
-                alert(data.message || "Login failed");
+                alert(data.error || data.message || "Login failed");
+
                 return;
             }
-            // save token to local storage
-            localStorage.setItem("token", data.token);
+
+            // ✅ SAVE AUTH DATA
+            localStorage.setItem("authToken", data.token);
             localStorage.setItem("user", JSON.stringify(data.user));
-            // redirect to index
-            window.location.href = "/index.html";
+
+            // ✅ REDIRECT
+            window.location.href = "dashboard.html";
+
         } catch (err) {
-            console.error("Error during login:", err);
-            alert("server error during login");
+            console.error("Login error:", err);
+            alert("Server error during login");
         }
     });
 }
 
-// register user function
+
+
+// ===================== REGISTER =====================
+
 const registerForm = document.getElementById("registerForm");
 
 if (registerForm) {
@@ -43,29 +58,33 @@ if (registerForm) {
         const password = document.getElementById("password").value.trim();
 
         function isStrongPassword(password) {
-        return (
-            password.length >= 8 &&
-            /[A-Z]/.test(password) &&
-            /[a-z]/.test(password) &&
-            /[0-9]/.test(password) &&
-            /[^A-Za-z0-9]/.test(password)
-        );
+            return (
+                password.length >= 8 &&
+                /[A-Z]/.test(password) &&
+                /[a-z]/.test(password) &&
+                /[0-9]/.test(password) &&
+                /[^A-Za-z0-9]/.test(password)
+            );
         }
 
         if (!isStrongPassword(password)) {
-        alert(
-            "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character."
-        );
-        return;
+            alert(
+                "Password must contain uppercase, lowercase, number & special character."
+            );
+            return;
         }
 
         try {
-            const res = await fetch("/api/auth/register", {
+            const res = await fetch("http://localhost:3000/api/auth/register", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
+                    "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ name, email, password }),
+                body: JSON.stringify({
+                    name,
+                    email,
+                    password
+                })
             });
 
             const data = await res.json();
@@ -75,27 +94,27 @@ if (registerForm) {
                 return;
             }
 
-            localStorage.setItem("token", data.token);
+            // ✅ SAVE TOKEN
+            localStorage.setItem("authToken", data.token);
             localStorage.setItem("user", JSON.stringify(data.user));
 
-            window.location.href = "/index.html";
+            // ✅ REDIRECT
+            window.location.href = "dashboard.html";
+
         } catch (err) {
-            console.error(err);
+            console.error("Registration error:", err);
             alert("Server error during registration");
         }
     });
 }
 
-// logout function
+
+
+// ===================== LOGOUT =====================
+
 function logout() {
-  // Clear auth data
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("user");
 
-  // Optional: clear everything
-  // localStorage.clear();
-
-  // Redirect to login
-  window.location.href = '/login.html';
+    window.location.href = "index.html";
 }
-
