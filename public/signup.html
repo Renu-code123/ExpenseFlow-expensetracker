@@ -308,9 +308,24 @@
             </div>
             <div class="form-group">
                 <label for="password" >Password:</label>
-               <input type="password" id="password" placeholder="Password" required>
+
+                <div style="position: relative;">
+                  <input type="password" id="password" placeholder="Password" required>
+                  <i class="far fa-eye" id="togglePassword"></i>
+                </div>
+               
+               <div id="passwordHint" class="password-hint">
+                <strong>Password must include:</strong>
+                <ul>
+                  <li id="rule-length">At least 8 characters</li>
+                  <li id="rule-upper">One uppercase letter</li>
+                  <li id="rule-lower">One lowercase letter</li>
+                  <li id="rule-number">One number</li>
+                  <li id="rule-special">One special character</li>
+                </ul>
+              </div>
             </div>
-        <button type="submit" class="btn">Register</button>
+        <button type="submit" class="btn" id="registerBtn" disabled>Register</button>
          <p>Already have an account? <a href="login.html">Login here</a></p>
         </form>
 
