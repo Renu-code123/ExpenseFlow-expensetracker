@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"  favicon="favicon.ico">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
@@ -34,21 +34,76 @@
       background: linear-gradient(135deg, #64ffda, #00b4d8);
       transform: translate(-50%, -50%);
     }
-
   </style>
 </head>
 
- 
+    .nav-cta {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .nav-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(100, 255, 218, 0.3);
+    }
+
+    /* Hero Section */
+    .hero-section {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6rem 2rem 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-background {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    .floating-shape {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.3;
+      animation: float 20s infinite ease-in-out;
+    }
+
+    .shape-1 {
+      width: 400px;
+      height: 400px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      top: -100px;
+      left: -100px;
+      animation-delay: 0s;
+    }
+
+    .shape-2 {
+      width: 500px;
+      height: 500px;
+      background: linear-gradient(135deg, #64ffda, #4fc3f7);
+      bottom: -150px;
+      right: -150px;
+      animation-delay: 5s;
+    }
 <body>
 
 <!-- Cursor -->
 <div id="cursor-trail" class="cursor-trail-container"></div>
-<script>
 
   window.addEventListener('mousemove', e => {
     coords.x = e.clientX;
     coords.y = e.clientY;
-    
+
     // Calculate velocity for smooth movement
     velocity.x = e.clientX - lastMouseX;
     velocity.y = e.clientY - lastMouseY;
@@ -56,7 +111,7 @@
     lastMouseY = e.clientY;
 
     isMoving = true;
-    
+
     // Reset movement timeout
     clearTimeout(window.movementTimeout);
     window.movementTimeout = setTimeout(() => {
@@ -70,9 +125,8 @@
       circle.element.classList.add('cursor-clicking');
     });
   });
-  
-  window.addEventListener('mouseup', () => {
 
+  window.addEventListener('mouseup', () => {
     trailCircles.forEach(circle => {
       circle.element.classList.remove('cursor-clicking');
     });
@@ -159,7 +213,7 @@
 
   // Start animation
   animateTrail();
-
+})();
 </script>
 
   <!-- Header -->
@@ -311,6 +365,15 @@
         </div>
       </div>
 
+      <div class="nav-menu" id="nav-menu">
+        <a href="#dashboard" class="nav-link active">Dashboard</a>
+        <a href="#analytics" class="nav-link">Analytics</a>
+        <a href="#goals" class="nav-link">Goals</a>
+        <a href="#settings" class="nav-link">Settings</a>
+        <a href="Monthlysummary.html" class="nav-link">Summary</a>
+        <a href="contributor.html" class="nav-link">Contributors</a>
+      </div>
+
       <div class="nav-toggle" id="nav-toggle">
         <span></span><span></span><span></span>
       </div>
@@ -360,7 +423,7 @@
   <section class="form-section">
     <h3>Add Transaction</h3>
 
-    <form id="form" class="transaction-form">
+    <form id="form">
       <input id="text" type="text" placeholder="Description" required />
       <input id="amount" type="number" placeholder="Amount" required />
       <select id="type" required>
@@ -375,76 +438,12 @@
 </main>
 
 <!-- FOOTER -->
-<!-- FOOTER -->
 <footer class="footer">
-  <div class="footer-container">
-
-    <!-- Brand -->
-    <div class="footer-section">
-      <div class="footer-logo">
-        <i class="fas fa-wallet"></i>
-        <span>ExpenseFlow</span>
-      </div>
-      <p>
-        Smart money management made simple.
-        Track, analyze, and optimize your finances with confidence.
-      </p>
-
-      <div class="social-links">
-        <a href="#" class="social-link" aria-label="Github">
-          <i class="fab fa-github"></i>
-        </a>
-        <a href="#" class="social-link" aria-label="LinkedIn">
-          <i class="fab fa-linkedin-in"></i>
-        </a>
-        <a href="#" class="social-link" aria-label="Twitter">
-          <i class="fab fa-x-twitter"></i>
-        </a>
-      </div>
-    </div>
-
-    <!-- Product -->
-    <div class="footer-section">
-      <h4>Product</h4>
-      <ul class="footer-links">
-        <li><a href="#">Dashboard</a></li>
-        <li><a href="#">Analytics</a></li>
-        <li><a href="#">Budget Goals</a></li>
-        <li><a href="#">Reports</a></li>
-      </ul>
-    </div>
-
-    <!-- Company -->
-    <div class="footer-section">
-      <h4>Company</h4>
-      <ul class="footer-links">
-        <li><a href="#">About Us</a></li>
-        <li><a href="#">Contributors</a></li>
-        <li><a href="#">Privacy Policy</a></li>
-        <li><a href="#">Terms of Service</a></li>
-      </ul>
-    </div>
-
-    <!-- Support -->
-    <div class="footer-section">
-      <h4>Support</h4>
-      <ul class="footer-links">
-        <li><a href="#">Help Center</a></li>
-        <li><a href="#">Contact</a></li>
-        <li><a href="#">Report Bug</a></li>
-      </ul>
-    </div>
-
-  </div>
-
-  <!-- Bottom bar -->
-  <div class="footer-bottom">
-    <p>© 2026 ExpenseFlow. All rights reserved.</p>
-  </div>
+  <p>© 2026 ExpenseFlow. All rights reserved.</p>
 </footer>
 
 <!-- SCRIPTS (LOAD ONCE) -->
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="trackerscript.js"></script>
 <script src="analytics-dashboard.js"></script>
 <script src="auth.js"></script>
