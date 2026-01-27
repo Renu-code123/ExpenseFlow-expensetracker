@@ -270,7 +270,7 @@ ExpenseFlow/
 ├── CONTRIBUTING.md                  # Contribution guidelines
 ├── CODE_OF_CONDUCT.md               # Code of conduct
 └── LICENSE                          # MIT License
-```
+
 
 
 ## 🚀 How to Run Locally
@@ -278,13 +278,13 @@ ExpenseFlow/
 Follow these simple steps to set up and view the project on your local machine 👇  
 
 ### 1️⃣ Clone the Repository
-```bash
+```
 git clone https://github.com/Renu-code123/ExpenseFlow-expensetracker.git
-````
+```
 
 ### 2️⃣ Navigate into the Project Folder
 
-```bash
+```
 cd ExpenseFlow-expensetracker
 ```
 
@@ -294,10 +294,24 @@ Simply open the `expenseTracker.html` file in your browser.
 
 Or run a live development server using:
 
-```bash
+```
 npx live-server
 ```
+Or using Docker
+prerequisites (Docker Desktop)
 
+To build the Image: 
+```
+docker build -t expenseflow .
+```
+To Run the Container:
+```
+docker compose up -d
+```
+Stop the container
+```
+docker compose stop
+```
 ---
 
 ## 📸 Screenshots
