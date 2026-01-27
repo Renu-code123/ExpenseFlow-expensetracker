@@ -35,7 +35,7 @@ The application features a robust Node.js/Express backend with MongoDB database,
 
 - [✨ Features](#-features)  
 - [🖥️ Overview](#-overview)
-- [🤔 Why to use ExpenseFlow?](#-Why to use ExpenseFlow?)  
+- [🤔 Why to use ExpenseFlow?](#-why-to-use-ExpenseFlow)  
 - [🛠️ Tech Stack](#-tech-stack)  
 - [📂 Folder Structure](#-folder-structure)  
 - [🚀 How to Run Locally](#-how-to-run-locally)  
@@ -129,7 +129,6 @@ The app emphasizes:
 - Cross-platform compatibility
 
 ---
----
 
 ## 🤔 Why to use ExpenseFlow?
 
@@ -145,7 +144,9 @@ ExpenseFlow serves as:
 
 By using ExpenseFlow, users can build financial awareness while developers can
 strengthen their frontend and project-structuring skills.
+
 ---
+
 ## ✨ Features
 - Expense tracking & splitting
 - Budget goals
@@ -157,7 +158,6 @@ strengthen their frontend and project-structuring skills.
 ## 🛠️ Tech Stack
 
 | Category | Technology Used |
-|--------|-----------------|
 |----------|------------------|
 | **Frontend** | HTML5, CSS3, JavaScript (Vanilla JS) |
 | **Backend** | Node.js, Express.js |
@@ -192,6 +192,7 @@ ExpenseFlow/
 ├── LICENSE               # MIT License
 └── README.md             # Documentation
 ```
+```bash
 ExpenseFlow/
 │
 ├── public/                          # Frontend static files
@@ -270,7 +271,7 @@ ExpenseFlow/
 ├── CONTRIBUTING.md                  # Contribution guidelines
 ├── CODE_OF_CONDUCT.md               # Code of conduct
 └── LICENSE                          # MIT License
-
+```
 
 
 ## 🚀 How to Run Locally
