@@ -14,6 +14,8 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const expenseRoutes = require('./routes/expenses');
 const syncRoutes = require('./routes/sync');
+const splitsRoutes = require('./routes/splits');
+const groupsRoutes = require('./routes/groups');
 
 const app = express();
 const server = http.createServer(app);
@@ -160,7 +162,8 @@ app.use('/api/currency', require('./routes/currency'));
 app.use('/api/groups', require('./routes/groups'));
 app.use('/api/splits', require('./routes/splits'));
 app.use('/api/workspaces', require('./routes/workspaces'));
-app.use('/api/investments', require('./routes/investments'));
+app.use('/api/tax', require('./routes/tax'));
+app.use('/api/accounts', require('./routes/accounts'));
 
 // Root route to serve the UI
 app.get('/', (req, res) => {
