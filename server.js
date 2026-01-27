@@ -161,6 +161,7 @@ app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/currency', require('./routes/currency'));
 app.use('/api/splits', require('./middleware/rateLimiter').expenseLimiter, splitsRoutes);
 app.use('/api/groups', require('./middleware/rateLimiter').expenseLimiter, groupsRoutes);
+app.use('/api/workspaces', require('./routes/workspace'));
 
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
