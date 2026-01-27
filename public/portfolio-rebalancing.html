@@ -1,0 +1,1651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#667eea">
+    <title>Portfolio Rebalancing Tool - ExpenseFlow</title>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            
+            --bg-primary: #0f0f23;
+            --bg-secondary: #1a1a2e;
+            --bg-tertiary: #16213e;
+            
+            --text-primary: #ffffff;
+            --text-secondary: #b4b4b4;
+            --accent-primary: #64ffda;
+            --success: #00e676;
+            --error: #ff5722;
+            --warning: #ffc107;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .nav-bar {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .nav-back {
+            color: var(--text-primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .nav-back:hover {
+            color: var(--accent-primary);
+        }
+
+        .nav-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-success {
+            background: var(--success-gradient);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);
+        }
+
+        .btn-warning {
+            background: var(--warning-gradient);
+            color: white;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .allocation-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+        }
+
+        .allocation-label {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .allocation-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .allocation-info h4 {
+            font-size: 0.95rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .allocation-info p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .allocation-value {
+            text-align: right;
+        }
+
+        .allocation-percentage {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .allocation-deviation {
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+
+        .deviation-positive {
+            color: var(--error);
+        }
+
+        .deviation-negative {
+            color: var(--warning);
+        }
+
+        .deviation-ok {
+            color: var(--success);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary-gradient);
+            transition: width 0.3s;
+        }
+
+        .trade-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .trade-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .trade-action {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .trade-action.buy {
+            background: rgba(0, 230, 118, 0.2);
+            color: var(--success);
+        }
+
+        .trade-action.sell {
+            background: rgba(255, 87, 34, 0.2);
+            color: var(--error);
+        }
+
+        .trade-priority {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+        }
+
+        .priority-high {
+            background: rgba(255, 87, 34, 0.2);
+            color: var(--error);
+        }
+
+        .priority-medium {
+            background: rgba(255, 193, 7, 0.2);
+            color: var(--warning);
+        }
+
+        .priority-low {
+            background: rgba(79, 172, 254, 0.2);
+            color: #4facfe;
+        }
+
+        .trade-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+            margin-top: 0.75rem;
+        }
+
+        .trade-detail {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .trade-detail-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .trade-detail-value {
+            font-weight: 600;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .summary-item {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+        }
+
+        .summary-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .summary-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .alert-box {
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .alert-info {
+            background: rgba(79, 172, 254, 0.2);
+            border: 1px solid rgba(79, 172, 254, 0.4);
+            color: #4facfe;
+        }
+
+        .alert-warning {
+            background: rgba(255, 193, 7, 0.2);
+            border: 1px solid rgba(255, 193, 7, 0.4);
+            color: var(--warning);
+        }
+
+        .alert-success {
+            background: rgba(0, 230, 118, 0.2);
+            border: 1px solid rgba(0, 230, 118, 0.4);
+            color: var(--success);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            opacity: 0.5;
+            margin-bottom: 1rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.5rem;
+            padding: 0.5rem;
+            transition: all 0.3s;
+        }
+
+        .close-btn:hover {
+            color: var(--text-primary);
+            transform: rotate(90deg);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .tab-container {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-weight: 500;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: var(--accent-primary);
+            border-bottom-color: var(--accent-primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .trade-details {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="nav-bar">
+        <div class="nav-content">
+            <a href="investment-portfolio.html" class="nav-back">
+                <i class="fas fa-arrow-left"></i> Back to Portfolio
+            </a>
+            <div class="nav-title">
+                <i class="fas fa-balance-scale"></i> Portfolio Rebalancing
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="header-content">
+                <h1>⚖️ Portfolio Rebalancing Tool</h1>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn btn-secondary" onclick="loadData()">
+                        <i class="fas fa-sync"></i> Refresh
+                    </button>
+                    <button class="btn btn-primary" onclick="showSetTargetModal()">
+                        <i class="fas fa-target"></i> Set Target Allocation
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Portfolio Selection -->
+        <div style="margin-bottom: 2rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Select Portfolio</label>
+            <select id="portfolioSelect" onchange="selectPortfolio()" style="padding: 0.75rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: var(--text-primary); border-radius: 8px; font-size: 1rem; cursor: pointer; max-width: 300px;">
+            </select>
+        </div>
+
+        <!-- Alert Section -->
+        <div id="alertSection"></div>
+
+        <!-- Tabs -->
+        <div class="tab-container">
+            <button class="tab active" onclick="switchTab('overview')">Overview</button>
+            <button class="tab" onclick="switchTab('recommendations')">Recommendations</button>
+            <button class="tab" onclick="switchTab('history')">History</button>
+            <button class="tab" onclick="switchTab('settings')">Settings</button>
+        </div>
+
+        <!-- Tab: Overview -->
+        <div id="tab-overview" class="tab-content active">
+            <div class="grid-2">
+                <!-- Current Allocation -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-chart-pie"></i> Current Allocation
+                        </h2>
+                    </div>
+                    <div id="currentAllocationList">
+                        <div class="empty-state">
+                            <div class="empty-icon">📊</div>
+                            <p>Loading allocation data...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Target Allocation -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-bullseye"></i> Target Allocation
+                        </h2>
+                        <button class="btn btn-secondary" onclick="showSetTargetModal()" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                    </div>
+                    <div id="targetAllocationList">
+                        <div class="empty-state">
+                            <div class="empty-icon">🎯</div>
+                            <p>No target allocation set</p>
+                            <button class="btn btn-primary" onclick="showSetTargetModal()" style="margin-top: 1rem;">
+                                <i class="fas fa-plus"></i> Set Target
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Allocation Comparison Chart -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-chart-bar"></i> Allocation Comparison
+                    </h2>
+                </div>
+                <div style="height: 300px;">
+                    <canvas id="comparisonChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Recommendations -->
+        <div id="tab-recommendations" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-lightbulb"></i> Rebalancing Recommendations
+                    </h2>
+                    <button class="btn btn-primary" onclick="calculateRebalancing()">
+                        <i class="fas fa-calculator"></i> Calculate
+                    </button>
+                </div>
+                
+                <div id="recommendationsContent">
+                    <div class="empty-state">
+                        <div class="empty-icon">💡</div>
+                        <h3>No Recommendations Yet</h3>
+                        <p style="color: var(--text-secondary); margin: 1rem 0;">Click "Calculate" to generate rebalancing recommendations</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: History -->
+        <div id="tab-history" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-history"></i> Rebalancing History
+                    </h2>
+                </div>
+                <div id="historyContent">
+                    <div class="empty-state">
+                        <div class="empty-icon">📜</div>
+                        <p>No rebalancing history</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Settings -->
+        <div id="tab-settings" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-cog"></i> Rebalancing Settings
+                    </h2>
+                </div>
+                <form id="settingsForm" onsubmit="saveSettings(event)">
+                    <div class="form-group">
+                        <label class="form-label">Rebalancing Frequency</label>
+                        <select class="form-select" id="frequency">
+                            <option value="monthly">Monthly</option>
+                            <option value="quarterly" selected>Quarterly</option>
+                            <option value="semi-annually">Semi-Annually</option>
+                            <option value="annually">Annually</option>
+                            <option value="threshold-based">Threshold-Based</option>
+                            <option value="manual">Manual Only</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Minimum Trade Amount ($)</label>
+                        <input type="number" class="form-input" id="minTradeAmount" value="100" step="10">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" id="autoRebalance" style="margin-right: 0.5rem;">
+                            Enable Automatic Rebalancing
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" id="taxOptimized" checked style="margin-right: 0.5rem;">
+                            Consider Tax Implications
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" id="useCashFlow" checked style="margin-right: 0.5rem;">
+                            Use Cash Flow for Rebalancing
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> Save Settings
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Set Target Allocation Modal -->
+    <div id="setTargetModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Set Target Allocation</h2>
+                <button class="close-btn" onclick="closeModal('setTargetModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="targetAllocationForm" onsubmit="saveTargetAllocation(event)">
+                <div class="form-group">
+                    <label class="form-label">Strategy Name</label>
+                    <input type="text" class="form-input" id="strategyName" value="Default Allocation Strategy" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-input" id="strategyDescription" rows="2" placeholder="Optional description..."></textarea>
+                </div>
+
+                <h3 style="margin: 1.5rem 0 1rem;">Asset Type Allocations</h3>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">Total must equal 100%</p>
+
+                <div id="allocationInputs">
+                    <!-- Allocation inputs will be added dynamically -->
+                </div>
+
+                <button type="button" class="btn btn-secondary" onclick="addAllocationInput()" style="width: 100%; margin-bottom: 1rem;">
+                    <i class="fas fa-plus"></i> Add Asset Type
+                </button>
+
+                <div style="display: flex; gap: 1rem;">
+                    <button type="submit" class="btn btn-success" style="flex: 1;">
+                        <i class="fas fa-save"></i> Save Target
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('setTargetModal')" style="flex: 1;">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Preview Rebalancing Modal -->
+    <div id="previewModal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Preview Rebalancing</h2>
+                <button class="close-btn" onclick="closeModal('previewModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="previewContent">
+                <!-- Preview content will be loaded here -->
+            </div>
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <button class="btn btn-success" onclick="executeRebalancing()" style="flex: 1;">
+                    <i class="fas fa-check"></i> Execute Rebalancing
+                </button>
+                <button class="btn btn-secondary" onclick="closeModal('previewModal')" style="flex: 1;">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let portfolios = [];
+        let currentPortfolio = null;
+        let targetAllocation = null;
+        let currentAllocation = null;
+        let currentRebalancing = null;
+        let comparisonChart = null;
+
+        const assetTypes = [
+            { value: 'stock', label: '📈 Stock', icon: '📈' },
+            { value: 'crypto', label: '💰 Cryptocurrency', icon: '💰' },
+            { value: 'bond', label: '📊 Bond', icon: '📊' },
+            { value: 'mutual_fund', label: '🎯 Mutual Fund', icon: '🎯' },
+            { value: 'etf', label: '📦 ETF', icon: '📦' },
+            { value: 'real_estate', label: '🏢 Real Estate', icon: '🏢' },
+            { value: 'commodity', label: '⛽ Commodity', icon: '⛽' },
+            { value: 'cash', label: '💵 Cash', icon: '💵' }
+        ];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadPortfolios();
+        });
+
+        // Load portfolios
+        async function loadPortfolios() {
+            try {
+                const response = await fetch('/api/investments/portfolios', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    portfolios = result.data || result;
+                } else {
+                    portfolios = getDemoPortfolios();
+                }
+            } catch (error) {
+                console.error('Error loading portfolios:', error);
+                portfolios = getDemoPortfolios();
+            }
+            
+            renderPortfolioSelect();
+            if (portfolios.length > 0) {
+                await selectPortfolio(portfolios[0]._id);
+            }
+        }
+
+        // Render portfolio select
+        function renderPortfolioSelect() {
+            const select = document.getElementById('portfolioSelect');
+            select.innerHTML = portfolios.map(p => `
+                <option value="${p._id}">${p.name}</option>
+            `).join('');
+        }
+
+        // Select portfolio
+        async function selectPortfolio(portfolioId = null) {
+            const select = document.getElementById('portfolioSelect');
+            const id = portfolioId || select.value;
+            
+            currentPortfolio = portfolios.find(p => p._id === id);
+            if (!currentPortfolio) return;
+
+            await loadData();
+        }
+
+        // Load all data
+        async function loadData() {
+            if (!currentPortfolio) return;
+
+            await Promise.all([
+                loadTargetAllocation(),
+                loadCurrentAllocation(),
+                checkRebalancingNeeded(),
+                loadHistory()
+            ]);
+
+            renderCurrentAllocation();
+            renderTargetAllocation();
+            renderComparisonChart();
+        }
+
+        // Load target allocation
+        async function loadTargetAllocation() {
+            try {
+                const response = await fetch(`/api/rebalancing/portfolios/${currentPortfolio._id}/target-allocation`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    targetAllocation = result.data;
+                } else {
+                    targetAllocation = null;
+                }
+            } catch (error) {
+                console.error('Error loading target allocation:', error);
+                targetAllocation = null;
+            }
+        }
+
+        // Load current allocation
+        async function loadCurrentAllocation() {
+            try {
+                const response = await fetch(`/api/rebalancing/portfolios/${currentPortfolio._id}/current-allocation`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    currentAllocation = result.data;
+                } else {
+                    currentAllocation = getDemoCurrentAllocation();
+                }
+            } catch (error) {
+                console.error('Error loading current allocation:', error);
+                currentAllocation = getDemoCurrentAllocation();
+            }
+        }
+
+        // Check if rebalancing needed
+        async function checkRebalancingNeeded() {
+            if (!targetAllocation) return;
+
+            try {
+                const response = await fetch(`/api/rebalancing/portfolios/${currentPortfolio._id}/rebalancing/check`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    displayRebalancingAlert(result.data);
+                }
+            } catch (error) {
+                console.error('Error checking rebalancing:', error);
+            }
+        }
+
+        // Display alert
+        function displayRebalancingAlert(data) {
+            const alertSection = document.getElementById('alertSection');
+            
+            if (!data.needed) {
+                alertSection.innerHTML = `
+                    <div class="alert-box alert-success">
+                        <i class="fas fa-check-circle" style="font-size: 1.5rem;"></i>
+                        <div>
+                            <strong>Portfolio is Balanced</strong>
+                            <p style="margin: 0; font-size: 0.9rem;">${data.reason}</p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                alertSection.innerHTML = `
+                    <div class="alert-box alert-warning">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 1.5rem;"></i>
+                        <div style="flex: 1;">
+                            <strong>Rebalancing Recommended</strong>
+                            <p style="margin: 0; font-size: 0.9rem;">${data.reason}. Max deviation: ${data.maxDeviation.toFixed(2)}%</p>
+                        </div>
+                        <button class="btn btn-warning" onclick="switchTab('recommendations'); calculateRebalancing();">
+                            View Recommendations
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Render current allocation
+        function renderCurrentAllocation() {
+            const container = document.getElementById('currentAllocationList');
+            
+            if (!currentAllocation || currentAllocation.allocations.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📊</div>
+                        <p>No current allocation data</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const html = currentAllocation.allocations.map(alloc => {
+                const assetTypeInfo = assetTypes.find(at => at.value === alloc.assetType) || { icon: '📦', label: alloc.assetType };
+                
+                return `
+                    <div class="allocation-item">
+                        <div class="allocation-label">
+                            <div class="allocation-icon">${assetTypeInfo.icon}</div>
+                            <div class="allocation-info">
+                                <h4>${assetTypeInfo.label}</h4>
+                                <p>$${alloc.currentValue.toFixed(2)}</p>
+                            </div>
+                        </div>
+                        <div class="allocation-value">
+                            <div class="allocation-percentage">${alloc.currentPercentage.toFixed(1)}%</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${alloc.currentPercentage}%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = html;
+        }
+
+        // Render target allocation
+        function renderTargetAllocation() {
+            const container = document.getElementById('targetAllocationList');
+            
+            if (!targetAllocation) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🎯</div>
+                        <p>No target allocation set</p>
+                        <button class="btn btn-primary" onclick="showSetTargetModal()" style="margin-top: 1rem;">
+                            <i class="fas fa-plus"></i> Set Target
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            const html = targetAllocation.allocations.map(alloc => {
+                const assetTypeInfo = assetTypes.find(at => at.value === alloc.assetType) || { icon: '📦', label: alloc.assetType };
+                const currentAlloc = currentAllocation?.allocations.find(a => a.assetType === alloc.assetType);
+                const currentPercentage = currentAlloc?.currentPercentage || 0;
+                const deviation = currentPercentage - alloc.targetPercentage;
+                const deviationClass = Math.abs(deviation) <= alloc.toleranceBand ? 'deviation-ok' : 
+                                      deviation > 0 ? 'deviation-positive' : 'deviation-negative';
+                
+                return `
+                    <div class="allocation-item">
+                        <div class="allocation-label">
+                            <div class="allocation-icon">${assetTypeInfo.icon}</div>
+                            <div class="allocation-info">
+                                <h4>${assetTypeInfo.label}</h4>
+                                <p>±${alloc.toleranceBand}% tolerance</p>
+                            </div>
+                        </div>
+                        <div class="allocation-value">
+                            <div class="allocation-percentage">${alloc.targetPercentage.toFixed(1)}%</div>
+                            <div class="allocation-deviation ${deviationClass}">
+                                ${deviation > 0 ? '+' : ''}${deviation.toFixed(1)}% deviation
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${alloc.targetPercentage}%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = html;
+        }
+
+        // Render comparison chart
+        function renderComparisonChart() {
+            if (!targetAllocation || !currentAllocation) return;
+
+            const ctx = document.getElementById('comparisonChart');
+            if (comparisonChart) {
+                comparisonChart.destroy();
+            }
+
+            const labels = targetAllocation.allocations.map(alloc => {
+                const assetTypeInfo = assetTypes.find(at => at.value === alloc.assetType) || { label: alloc.assetType };
+                return assetTypeInfo.label;
+            });
+
+            const targetData = targetAllocation.allocations.map(alloc => alloc.targetPercentage);
+            const currentData = targetAllocation.allocations.map(alloc => {
+                const currentAlloc = currentAllocation.allocations.find(a => a.assetType === alloc.assetType);
+                return currentAlloc ? currentAlloc.currentPercentage : 0;
+            });
+
+            comparisonChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: 'Current %',
+                            data: currentData,
+                            backgroundColor: 'rgba(102, 126, 234, 0.7)',
+                            borderColor: '#667eea',
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'Target %',
+                            data: targetData,
+                            backgroundColor: 'rgba(100, 255, 218, 0.3)',
+                            borderColor: '#64ffda',
+                            borderWidth: 2,
+                            borderDash: [5, 5]
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#b4b4b4', font: { size: 12 } }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { color: '#b4b4b4', callback: value => value + '%' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        x: {
+                            ticks: { color: '#b4b4b4' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Calculate rebalancing
+        async function calculateRebalancing() {
+            if (!targetAllocation) {
+                alert('Please set a target allocation first');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/rebalancing/portfolios/${currentPortfolio._id}/rebalancing/calculate`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    currentRebalancing = result.data;
+                    renderRecommendations(currentRebalancing);
+                } else {
+                    throw new Error('Failed to calculate rebalancing');
+                }
+            } catch (error) {
+                console.error('Error calculating rebalancing:', error);
+                alert('Error calculating rebalancing: ' + error.message);
+            }
+        }
+
+        // Render recommendations
+        function renderRecommendations(rebalancing) {
+            const container = document.getElementById('recommendationsContent');
+            
+            if (!rebalancing.recommendedTrades || rebalancing.recommendedTrades.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">✅</div>
+                        <h3>No Rebalancing Needed</h3>
+                        <p style="color: var(--text-secondary);">Your portfolio is within the target allocation ranges</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const tradesHtml = rebalancing.recommendedTrades.map(trade => `
+                <div class="trade-card">
+                    <div class="trade-header">
+                        <div>
+                            <strong>${trade.name || trade.symbol}</strong>
+                            <span class="trade-action ${trade.action}">${trade.action.toUpperCase()}</span>
+                        </div>
+                        <span class="trade-priority priority-${trade.priority}">${trade.priority.toUpperCase()}</span>
+                    </div>
+                    <div class="trade-details">
+                        <div class="trade-detail">
+                            <div class="trade-detail-label">Trade Value</div>
+                            <div class="trade-detail-value">$${trade.tradeValue.toFixed(2)}</div>
+                        </div>
+                        <div class="trade-detail">
+                            <div class="trade-detail-label">Shares</div>
+                            <div class="trade-detail-value">${trade.sharesToTrade.toFixed(4)}</div>
+                        </div>
+                        <div class="trade-detail">
+                            <div class="trade-detail-label">Estimated Fees</div>
+                            <div class="trade-detail-value">$${trade.estimatedFees.totalFees.toFixed(2)}</div>
+                        </div>
+                        <div class="trade-detail">
+                            <div class="trade-detail-label">Tax Impact</div>
+                            <div class="trade-detail-value" style="color: ${trade.taxImpact.estimatedTax > 0 ? 'var(--error)' : 'var(--success)'};">
+                                $${trade.taxImpact.estimatedTax.toFixed(2)}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = `
+                ${tradesHtml}
+                
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <div class="summary-value">${rebalancing.summary.totalTrades}</div>
+                        <div class="summary-label">Total Trades</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-value" style="color: var(--error);">$${rebalancing.summary.totalFees.toFixed(2)}</div>
+                        <div class="summary-label">Total Fees</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-value" style="color: var(--error);">$${rebalancing.summary.totalTaxImpact.toFixed(2)}</div>
+                        <div class="summary-label">Tax Impact</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                    <button class="btn btn-success" onclick="previewRebalancing()" style="flex: 1;">
+                        <i class="fas fa-eye"></i> Preview & Execute
+                    </button>
+                    <button class="btn btn-secondary" onclick="saveRebalancingProposal()">
+                        <i class="fas fa-save"></i> Save as Proposal
+                    </button>
+                </div>
+            `;
+        }
+
+        // Preview rebalancing
+        function previewRebalancing() {
+            if (!currentRebalancing) return;
+            
+            // Show preview modal with detailed information
+            showModal('previewModal');
+            
+            const content = document.getElementById('previewContent');
+            content.innerHTML = `
+                <div class="alert-box alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <p>Review the rebalancing plan below. Executing will create the trades in your portfolio.</p>
+                </div>
+                
+                <h3 style="margin: 1.5rem 0 1rem;">Trades Summary</h3>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <div class="summary-value">${currentRebalancing.summary.totalTrades}</div>
+                        <div class="summary-label">Trades</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-value">$${currentRebalancing.summary.netCost.toFixed(2)}</div>
+                        <div class="summary-label">Total Cost</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-value">${currentRebalancing.summary.deviationImprovement.toFixed(1)}%</div>
+                        <div class="summary-label">Avg Deviation</div>
+                    </div>
+                </div>
+
+                <h3 style="margin: 1.5rem 0 1rem;">Trade Details</h3>
+                ${currentRebalancing.recommendedTrades.map(trade => `
+                    <div class="trade-card">
+                        <div class="trade-header">
+                            <div>
+                                <strong>${trade.name || trade.symbol}</strong>
+                                <span class="trade-action ${trade.action}">${trade.action.toUpperCase()}</span>
+                            </div>
+                        </div>
+                        <div class="trade-details">
+                            <div class="trade-detail">
+                                <div class="trade-detail-label">Value</div>
+                                <div class="trade-detail-value">$${trade.tradeValue.toFixed(2)}</div>
+                            </div>
+                            <div class="trade-detail">
+                                <div class="trade-detail-label">Fees</div>
+                                <div class="trade-detail-value">$${trade.estimatedFees.totalFees.toFixed(2)}</div>
+                            </div>
+                            <div class="trade-detail">
+                                <div class="trade-detail-label">Tax</div>
+                                <div class="trade-detail-value">$${trade.taxImpact.estimatedTax.toFixed(2)}</div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        // Execute rebalancing
+        async function executeRebalancing() {
+            if (!currentRebalancing) return;
+
+            if (!confirm('Are you sure you want to execute this rebalancing? This will create actual trades.')) {
+                return;
+            }
+
+            try {
+                // First save as proposal
+                const saveResponse = await fetch(`/api/rebalancing/portfolios/${currentPortfolio._id}/rebalancing`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify(currentRebalancing)
+                });
+
+                if (!saveResponse.ok) {
+                    throw new Error('Failed to save rebalancing');
+                }
+
+                const saveResult = await saveResponse.json();
+                const rebalancingId = saveResult.data._id;
+
+                // Execute the rebalancing
+                const execResponse = await fetch(`/api/rebalancing/rebalancing/${rebalancingId}/execute`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (!execResponse.ok) {
+                    throw new Error('Failed to execute rebalancing');
+                }
+
+                closeModal('previewModal');
+                alert('Rebalancing executed successfully!');
+                await loadData();
+                switchTab('history');
+            } catch (error) {
+                console.error('Error executing rebalancing:', error);
+                alert('Error executing rebalancing: ' + error.message);
+            }
+        }
+
+        // Save rebalancing proposal
+        async function saveRebalancingProposal() {
+            if (!currentRebalancing) return;
+
+            try {
+                const response = await fetch(`/api/rebalancing/portfolios/${currentPortfolio._id}/rebalancing`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify(currentRebalancing)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to save proposal');
+                }
+
+                alert('Rebalancing proposal saved successfully!');
+                await loadHistory();
+                switchTab('history');
+            } catch (error) {
+                console.error('Error saving proposal:', error);
+                alert('Error saving proposal: ' + error.message);
+            }
+        }
+
+        // Load history
+        async function loadHistory() {
+            try {
+                const response = await fetch(`/api/rebalancing/portfolios/${currentPortfolio._id}/rebalancing/history`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    renderHistory(result.data);
+                }
+            } catch (error) {
+                console.error('Error loading history:', error);
+            }
+        }
+
+        // Render history
+        function renderHistory(history) {
+            const container = document.getElementById('historyContent');
+            
+            if (!history || history.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📜</div>
+                        <p>No rebalancing history</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const html = history.map(item => {
+                const statusColor = item.status === 'executed' ? 'var(--success)' : 
+                                   item.status === 'cancelled' ? 'var(--error)' : 
+                                   item.status === 'approved' ? 'var(--warning)' : '#4facfe';
+                
+                return `
+                    <div class="trade-card" style="cursor: pointer;" onclick="viewRebalancingDetails('${item._id}')">
+                        <div class="trade-header">
+                            <div>
+                                <strong>${item.type.charAt(0).toUpperCase() + item.type.slice(1)} Rebalancing</strong>
+                                <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0;">
+                                    ${new Date(item.createdAt).toLocaleDateString()}
+                                </p>
+                            </div>
+                            <span style="padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.85rem; background: rgba(255,255,255,0.1); color: ${statusColor};">
+                                ${item.status.toUpperCase()}
+                            </span>
+                        </div>
+                        <div class="trade-details">
+                            <div class="trade-detail">
+                                <div class="trade-detail-label">Trades</div>
+                                <div class="trade-detail-value">${item.summary.totalTrades}</div>
+                            </div>
+                            <div class="trade-detail">
+                                <div class="trade-detail-label">Total Cost</div>
+                                <div class="trade-detail-value">$${item.summary.netCost.toFixed(2)}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = html;
+        }
+
+        // Show set target modal
+        function showSetTargetModal() {
+            showModal('setTargetModal');
+            
+            if (targetAllocation) {
+                document.getElementById('strategyName').value = targetAllocation.name;
+                document.getElementById('strategyDescription').value = targetAllocation.description || '';
+                
+                // Populate existing allocations
+                const container = document.getElementById('allocationInputs');
+                container.innerHTML = '';
+                targetAllocation.allocations.forEach(alloc => {
+                    addAllocationInput(alloc.assetType, alloc.targetPercentage, alloc.toleranceBand);
+                });
+            } else {
+                // Add some default allocations
+                document.getElementById('allocationInputs').innerHTML = '';
+                addAllocationInput('stock', 40, 5);
+                addAllocationInput('bond', 30, 5);
+                addAllocationInput('cash', 30, 5);
+            }
+        }
+
+        // Add allocation input
+        function addAllocationInput(assetType = '', percentage = 0, tolerance = 5) {
+            const container = document.getElementById('allocationInputs');
+            const index = container.children.length;
+            
+            const html = `
+                <div class="allocation-input-group" style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 0.5rem; margin-bottom: 0.75rem;">
+                    <select class="form-select" name="assetType_${index}" required>
+                        <option value="">Select Asset Type</option>
+                        ${assetTypes.map(at => `
+                            <option value="${at.value}" ${assetType === at.value ? 'selected' : ''}>${at.label}</option>
+                        `).join('')}
+                    </select>
+                    <input type="number" class="form-input" name="percentage_${index}" placeholder="%" min="0" max="100" step="0.1" value="${percentage}" required>
+                    <input type="number" class="form-input" name="tolerance_${index}" placeholder="±%" min="0" max="20" step="0.5" value="${tolerance}" required>
+                    <button type="button" class="btn btn-secondary" onclick="this.parentElement.remove()" style="padding: 0.75rem;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            container.insertAdjacentHTML('beforeend', html);
+        }
+
+        // Save target allocation
+        async function saveTargetAllocation(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('strategyName').value;
+            const description = document.getElementById('strategyDescription').value;
+            
+            // Collect allocations
+            const allocations = [];
+            const container = document.getElementById('allocationInputs');
+            const groups = container.querySelectorAll('.allocation-input-group');
+            
+            groups.forEach((group, index) => {
+                const assetType = group.querySelector(`[name="assetType_${index}"]`).value;
+                const targetPercentage = parseFloat(group.querySelector(`[name="percentage_${index}"]`).value);
+                const toleranceBand = parseFloat(group.querySelector(`[name="tolerance_${index}"]`).value);
+                
+                if (assetType && targetPercentage) {
+                    allocations.push({
+                        assetType,
+                        targetPercentage,
+                        toleranceBand
+                    });
+                }
+            });
+
+            // Validate total percentage
+            const totalPercentage = allocations.reduce((sum, alloc) => sum + alloc.targetPercentage, 0);
+            if (Math.abs(totalPercentage - 100) > 0.01) {
+                alert(`Total allocation must equal 100%. Current total: ${totalPercentage.toFixed(1)}%`);
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/rebalancing/portfolios/${currentPortfolio._id}/target-allocation`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        name,
+                        description,
+                        allocations,
+                        rebalancingSettings: {
+                            frequency: document.getElementById('frequency').value,
+                            minTradeAmount: parseFloat(document.getElementById('minTradeAmount').value),
+                            autoRebalance: document.getElementById('autoRebalance').checked,
+                            taxOptimized: document.getElementById('taxOptimized').checked,
+                            useCashFlow: document.getElementById('useCashFlow').checked
+                        }
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to save target allocation');
+                }
+
+                closeModal('setTargetModal');
+                alert('Target allocation saved successfully!');
+                await loadData();
+            } catch (error) {
+                console.error('Error saving target allocation:', error);
+                alert('Error saving target allocation: ' + error.message);
+            }
+        }
+
+        // Save settings
+        async function saveSettings(event) {
+            event.preventDefault();
+            
+            if (!targetAllocation) {
+                alert('Please set a target allocation first');
+                return;
+            }
+
+            const settings = {
+                frequency: document.getElementById('frequency').value,
+                minTradeAmount: parseFloat(document.getElementById('minTradeAmount').value),
+                autoRebalance: document.getElementById('autoRebalance').checked,
+                taxOptimized: document.getElementById('taxOptimized').checked,
+                useCashFlow: document.getElementById('useCashFlow').checked
+            };
+
+            try {
+                const response = await fetch(`/api/rebalancing/portfolios/${currentPortfolio._id}/target-allocation`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        ...targetAllocation,
+                        rebalancingSettings: settings
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to save settings');
+                }
+
+                alert('Settings saved successfully!');
+                await loadData();
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                alert('Error saving settings: ' + error.message);
+            }
+        }
+
+        // Switch tab
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+        }
+
+        // Modal functions
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // Demo data functions
+        function getDemoPortfolios() {
+            return [
+                { _id: 'portfolio-1', name: 'My Main Portfolio', description: 'Long-term investment portfolio', baseCurrency: 'USD' },
+                { _id: 'portfolio-2', name: 'Crypto Holdings', description: 'Cryptocurrency investments', baseCurrency: 'USD' },
+                { _id: 'portfolio-3', name: 'Emergency Fund', description: 'Safe investments', baseCurrency: 'USD' }
+            ];
+        }
+
+        function getDemoCurrentAllocation() {
+            return {
+                totalValue: 50000,
+                allocations: [
+                    { assetType: 'stock', currentValue: 22000, currentPercentage: 44, assets: [] },
+                    { assetType: 'bond', currentValue: 12000, currentPercentage: 24, assets: [] },
+                    { assetType: 'etf', currentValue: 10000, currentPercentage: 20, assets: [] },
+                    { assetType: 'cash', currentValue: 6000, currentPercentage: 12, assets: [] }
+                ]
+            };
+        }
+    </script>
+</body>
+</html>

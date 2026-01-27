@@ -14,6 +14,7 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const expenseRoutes = require('./routes/expenses');
 const syncRoutes = require('./routes/sync');
+const { initializeScheduler } = require('./services/rebalancingScheduler');
 
 const app = express();
 const server = http.createServer(app);
@@ -113,6 +114,9 @@ mongoose.connect(process.env.MONGODB_URI)
     // Initialize cron jobs after DB connection
     CronJobs.init();
     console.log('Email cron jobs initialized');
+    // Initialize rebalancing scheduler
+    initializeScheduler();
+    console.log('Rebalancing scheduler initialized');
   })
   .catch(err => console.error('MongoDB connection error:', err));
 
@@ -161,6 +165,7 @@ app.use('/api/groups', require('./routes/groups'));
 app.use('/api/splits', require('./routes/splits'));
 app.use('/api/workspaces', require('./routes/workspaces'));
 app.use('/api/investments', require('./routes/investments'));
+app.use('/api/rebalancing', require('./routes/rebalancing'));
 
 // Root route to serve the UI
 app.get('/', (req, res) => {

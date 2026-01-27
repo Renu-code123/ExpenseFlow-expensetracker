@@ -8,3 +8,10 @@
 - [x] Verify End-to-End Integration of all features
 - [x] Update Documentation (README.md, BACKEND.md) to reflect current status
 - [x] Test all implemented features
+- [x] **Portfolio Rebalancing Tool** (Issue #368)
+  - [x] Set target allocation percentages by asset/type
+  - [x] Visual comparison: current vs target allocation
+  - [x] Automatic rebalancing suggestions
+  - [x] Preview trade recommendations before executing
+  - [x] Rebalancing cost calculator (fees, tax implications)
+  - [x] Scheduled auto-rebalancing alerts (quarterly, annually)
