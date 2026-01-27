@@ -175,7 +175,6 @@ strengthen their frontend and project-structuring skills.
 | **Deployment** | Vercel (Frontend), Railway/Heroku (Backend) |
 | **PWA Support** | manifest.json, sw.js |
 
----
 --- ## 📂 Folder Structure
 ExpenseFlow/
 │
