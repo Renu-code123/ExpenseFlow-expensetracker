@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics - ExpenseFlow</title>
+  <link rel="stylesheet" href="expensetracker.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <nav class="navbar">
+      <div class="nav-container">
+        <div class="nav-logo">
+          <i class="fas fa-wallet"></i>
+          <span>ExpenseFlow</span>
+        </div>
+        <div class="nav-menu" id="nav-menu">
+          <a href="index.html" class="nav-link">Dashboard</a>
+          <a href="analytics.html" class="nav-link active">Analytics</a>
+          <a href="#goals" class="nav-link">Goals</a>
+          <a href="#settings" class="nav-link">Settings</a>
+        </div>
+        <div class="nav-toggle" id="nav-toggle">
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="container">
+      <div class="analytics-header">
+        <h1 class="hero-title">Analytics Dashboard</h1>
+        <p class="hero-subtitle">Gain insights into your spending patterns</p>
+      </div>
+
+      <!-- Analytics Dashboard Section -->
+      <div class="analytics-dashboard" id="analytics-dashboard">
+        <div class="analytics-header">
+          <h3><i class="fas fa-chart-bar"></i> Analytics Dashboard</h3>
+          <button class="refresh-analytics-btn" id="refresh-analytics">
+            <i class="fas fa-sync-alt"></i> Refresh
+          </button>
+        </div>
+
+        <div class="analytics-grid">
+          <!-- Spending Velocity Widget -->
+          <div class="analytics-widget velocity-widget" id="velocity-widget">
+            <div class="widget-loading">
+              <i class="fas fa-spinner fa-spin"></i>
+              <span>Loading velocity...</span>
+            </div>
+          </div>
+
+          <!-- Category Breakdown Chart -->
+          <div class="analytics-widget category-widget" id="category-chart">
+            <div class="widget-loading">
+              <i class="fas fa-spinner fa-spin"></i>
+              <span>Loading categories...</span>
+            </div>
+          </div>
+
+          <!-- Spending Trends Chart -->
+          <div class="analytics-widget trends-widget" id="trends-chart">
+            <div class="widget-loading">
+              <i class="fas fa-spinner fa-spin"></i>
+              <span>Loading trends...</span>
+            </div>
+          </div>
+
+          <!-- Predictions Widget -->
+          <div class="analytics-widget predictions-widget" id="predictions-widget">
+            <div class="widget-loading">
+              <i class="fas fa-spinner fa-spin"></i>
+              <span>Loading predictions...</span>
+            </div>
+          </div>
+
+          <!-- Insights Container -->
+          <div class="analytics-widget insights-widget" id="insights-container">
+            <div class="widget-loading">
+              <i class="fas fa-spinner fa-spin"></i>
+              <span>Generating insights...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="trackerscript.js"></script>
+  <script src="analytics-dashboard.js"></script>
+  <script src="analytics-local.js"></script>
+</body>
+</html>
