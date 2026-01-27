@@ -100,13 +100,269 @@
 <!-- Cursor -->
 <div id="cursor-trail" class="cursor-trail-container"></div>
 
-<!-- HEADER -->
-<header class="header">
-  <nav class="navbar">
-    <div class="nav-container">
-      <div class="nav-logo">
-        <i class="fas fa-wallet"></i>
-        <span>ExpenseFlow</span>
+  window.addEventListener('mousemove', e => {
+    coords.x = e.clientX;
+    coords.y = e.clientY;
+
+    // Calculate velocity for smooth movement
+    velocity.x = e.clientX - lastMouseX;
+    velocity.y = e.clientY - lastMouseY;
+    lastMouseX = e.clientX;
+    lastMouseY = e.clientY;
+
+    isMoving = true;
+
+    // Reset movement timeout
+    clearTimeout(window.movementTimeout);
+    window.movementTimeout = setTimeout(() => {
+      isMoving = false;
+    }, 50);
+  });
+
+  // Click effect
+  window.addEventListener('mousedown', () => {
+    trailCircles.forEach(circle => {
+      circle.element.classList.add('cursor-clicking');
+    });
+  });
+
+  window.addEventListener('mouseup', () => {
+    trailCircles.forEach(circle => {
+      circle.element.classList.remove('cursor-clicking');
+    });
+  });
+
+  // Hover effect for interactive elements
+  window.addEventListener('mouseover', e => {
+    const interactive = e.target.closest('a, button, input, select, textarea, [role="button"]');
+    trailCircles.forEach(circle => {
+      circle.element.classList.toggle('cursor-hovering', !!interactive);
+    });
+  });
+
+  // Smooth animation function
+  function animateTrail() {
+    let targetX = coords.x;
+    let targetY = coords.y;
+
+    // Add velocity offset to first circle for more natural feel
+    const velocityOffset = 0.5;
+    const offsetX = velocity.x * velocityOffset;
+    const offsetY = velocity.y * velocityOffset;
+
+    trailCircles.forEach((circle, index) => {
+      // First circle follows cursor exactly
+      if (index === 0) {
+        circle.x = targetX + offsetX;
+        circle.y = targetY + offsetY;
+      } 
+      // Other circles follow with smooth delay
+      else {
+        const prevCircle = trailCircles[index - 1];
+
+        // Smooth interpolation factor (changes based on movement speed)
+        const speed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+        const lerpFactor = isMoving ? 
+          Math.min(0.3 + (speed * 0.01), 0.5) :  // Faster movement = tighter trail
+          0.1; // Slow movement = more spread
+
+        circle.x += (prevCircle.x - circle.x) * lerpFactor;
+        circle.y += (prevCircle.y - circle.y) * lerpFactor;
+      }
+
+      // Apply position with easing
+      circle.element.style.left = circle.x + 'px';
+      circle.element.style.top = circle.y + 'px';
+
+      // Dynamic opacity based on speed and position
+      if (index > 0) {
+        const speed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+        const baseOpacity = 0.9 - (index / COUNT) * 0.8;
+        const speedMultiplier = Math.min(1 + speed * 0.02, 1.5);
+        circle.element.style.opacity = (baseOpacity * speedMultiplier).toString();
+      }
+
+      // Update target for next circle
+      targetX = circle.x;
+      targetY = circle.y;
+    });
+
+    requestAnimationFrame(animateTrail);
+  }
+
+  // Handle window resize
+  window.addEventListener('resize', () => {
+    // Adjust if cursor goes out of bounds
+    if (coords.x > window.innerWidth) coords.x = window.innerWidth;
+    if (coords.y > window.innerHeight) coords.y = window.innerHeight;
+  });
+
+  // Handle mouse leave/enter
+  window.addEventListener('mouseleave', () => {
+    trailCircles.forEach(circle => {
+      circle.element.style.opacity = '0';
+    });
+  });
+
+  window.addEventListener('mouseenter', () => {
+    trailCircles.forEach((circle, index) => {
+      const opacity = 0.9 - (index / COUNT) * 0.8;
+      circle.element.style.opacity = opacity.toString();
+    });
+  });
+
+  // Start animation
+  animateTrail();
+})();
+</script>
+
+  <!-- Header -->
+  <header class="header">
+    <nav class="navbar">
+      <div class="nav-container">
+        <div class="nav-logo">
+          <i class="fas fa-wallet"></i>
+          <span>ExpenseFlow</span>
+        </div>
+        <div class="nav-menu" id="nav-menu">
+          <a href="#dashboard" class="nav-link active">Dashboard</a>
+          <a href="analytics.html" class="nav-link">Analytics</a>
+          <a href="#goals" class="nav-link">Goals</a>
+          <a href="settings.html" class="nav-link">Settings</a>
+          <a href="Monthlysummary.html" class="nav-link">Monthly/Yearly Summary</a>
+          <a href="./contributor.html" class="nav-link">Contributors</a>
+        </div>
+        <div class="nav-toggle" id="nav-toggle">
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+        </div>
+        <div class="user-profile">
+          <div id="workspace-selector" class="workspace-selector"></div>
+          <select id="language-switcher" class="language-select" aria-label="Language">
+            <option value="en">EN</option>
+            <option value="es">ES</option>
+            <option value="fr">FR</option>
+          </select>
+          <button class="currency-btn" onclick="openCurrencyModal()" title="Currency Settings">
+            <i class="fas fa-coins"></i>
+            <span id="current-currency">INR</span>
+          </button>
+          <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face"
+            alt="User" class="profile-img">
+          <span class="username" id="navUsername"></span>
+          <div id="redirect">
+            <a href="#" id="logoutLink" onclick="logout()">Logout</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Full Hero Section -->
+    <div class="hero-section-full">
+      <div class="hero-background-animation">
+        <div class="floating-shape shape-1"></div>
+        <div class="floating-shape shape-2"></div>
+        <div class="floating-shape shape-3"></div>
+      </div>
+      <div class="hero-content-wrapper">
+        <div class="hero-badge">
+          <i class="fas fa-star"></i>
+          <span data-i18n="hero.badge">Trusted by 10,000+ users worldwide</span>
+        </div>
+        <h1 class="hero-title i18n-multiline" data-i18n="hero.title">Smart Money Management
+          Made Simple</h1>
+        <p class="hero-subtitle i18n-multiline" data-i18n="hero.subtitle">Take control of your finances with our
+          intelligent expense tracker.
+          Track, analyze, and optimize your spending habits effortlessly.</p>
+        <div class="hero-cta">
+          <button class="cta-primary" onclick="document.getElementById('form').scrollIntoView({ behavior: 'smooth' })">
+            <i class="fas fa-rocket"></i> <span data-i18n="hero.cta.start">Start Tracking Now</span>
+          </button>
+          <button class="cta-secondary"
+            onclick="document.getElementById('features-section').scrollIntoView({ behavior: 'smooth' })">
+            <i class="fas fa-info-circle"></i> <span data-i18n="hero.cta.learn">Learn More</span>
+          </button>
+        </div>
+        <div class="hero-features">
+          <div class="feature-pill">
+            <i class="fas fa-robot"></i>
+            <span>AI-Powered</span>
+          </div>
+          <div class="feature-pill">
+            <i class="fas fa-lock"></i>
+            <span>Secure & Private</span>
+          </div>
+          <div class="feature-pill">
+            <i class="fas fa-mobile-alt"></i>
+            <span>Works Offline</span>
+          </div>
+          <div class="feature-pill">
+            <i class="fas fa-globe"></i>
+            <span>Multi-Currency</span>
+          </div>
+        </div>
+        <div class="scroll-indicator">
+          <i class="fas fa-chevron-down"></i>
+          <span>Scroll to explore</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Features Section -->
+    <section id="features-section" class="features-showcase">
+      <div class="container">
+        <div class="section-header-center">
+          <h2 class="section-title" data-i18n="feature.heading">Powerful Features for Smart Finance</h2>
+          <p class="section-subtitle" data-i18n="feature.subheading">Everything you need to manage your money effectively</p>
+        </div>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-brain"></i>
+            </div>
+            <h3>AI Categorization</h3>
+            <p>Automatically categorize your expenses with intelligent machine learning algorithms</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-chart-pie"></i>
+            </div>
+            <h3>Visual Analytics</h3>
+            <p>Beautiful charts and insights to understand your spending patterns at a glance</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-sync-alt"></i>
+            </div>
+            <h3>Recurring Expenses</h3>
+            <p>Track subscriptions and recurring bills automatically with smart reminders</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-file-export"></i>
+            </div>
+            <h3>Export & Reports</h3>
+            <p>Generate detailed reports in CSV or PDF format for tax season</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-bullseye"></i>
+            </div>
+            <h3>Budget Goals</h3>
+            <p>Set financial goals and track your progress with intuitive dashboards</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-shield-alt"></i>
+            </div>
+            <h3>Secure & Private</h3>
+            <p>Bank-level encryption keeps your financial data safe and private</p>
+          </div>
+        </div>
       </div>
 
       <div class="nav-menu" id="nav-menu">
