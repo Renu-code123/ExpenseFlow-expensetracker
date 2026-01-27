@@ -1,8 +1,6 @@
 const express = require('express');
 const router = express.Router();
-// Handle both export styles: module.exports = auth OR module.exports = { auth }
-const authModule = require('../middleware/auth');
-const auth = authModule.auth || authModule;
+const auth = require('../middleware/auth');
 const investmentService = require('../services/investmentService');
 const validators = require('../middleware/investmentValidator');
 

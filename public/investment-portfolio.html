@@ -1,0 +1,1523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#667eea">
+    <meta name="description" content="Investment Portfolio - Track and manage your investments">
+    <title>Investment Portfolio - ExpenseFlow</title>
+
+    <!-- Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Chart.js for visualization -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            
+            --bg-primary: #0f0f23;
+            --bg-secondary: #1a1a2e;
+            --bg-tertiary: #16213e;
+            --bg-glass: rgba(255, 255, 255, 0.1);
+            
+            --text-primary: #ffffff;
+            --text-secondary: #b4b4b4;
+            --text-accent: #64ffda;
+            
+            --accent-primary: #64ffda;
+            --accent-secondary: #ff6b9d;
+            --success: #00e676;
+            --error: #ff5722;
+            --warning: #ffc107;
+            
+            --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            --shadow-hover: 0 15px 35px rgba(0, 0, 0, 0.1);
+            --shadow-card: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Navigation Bar */
+        .nav-bar {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .nav-back {
+            color: var(--text-primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .nav-back:hover {
+            color: var(--accent-primary);
+        }
+
+        .nav-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-link {
+            color: var(--text-primary);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Page Header */
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin: 0;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--accent-primary);
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-icon.purple {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .stat-icon.pink {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .stat-icon.blue {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .stat-icon.green {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .stat-icon.orange {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .stat-value.positive {
+            color: var(--success);
+        }
+
+        .stat-value.negative {
+            color: var(--error);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .stat-trend {
+            display: inline-block;
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+        }
+
+        .stat-trend.positive {
+            background: rgba(0, 230, 118, 0.2);
+            color: var(--success);
+        }
+
+        .stat-trend.negative {
+            background: rgba(255, 87, 34, 0.2);
+            color: var(--error);
+        }
+
+        /* Chart Container */
+        .chart-container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .chart-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chart-btn {
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-primary);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+
+        .chart-btn.active {
+            background: var(--primary-gradient);
+            border-color: var(--accent-primary);
+        }
+
+        .chart-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+        }
+
+        /* Asset Cards */
+        .assets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .asset-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .asset-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-primary);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .asset-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .asset-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .asset-menu {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.25rem;
+            transition: all 0.3s;
+        }
+
+        .asset-menu:hover {
+            color: var(--text-primary);
+        }
+
+        .asset-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .asset-symbol {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .asset-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1rem 0;
+            padding: 1rem 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .detail-label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .detail-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .detail-value.positive {
+            color: var(--success);
+        }
+
+        .detail-value.negative {
+            color: var(--error);
+        }
+
+        .asset-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .asset-allocation {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .asset-allocation-bar {
+            width: 60px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+
+        .asset-allocation-fill {
+            height: 100%;
+            background: var(--primary-gradient);
+            transition: width 0.3s;
+        }
+
+        /* Performance Table */
+        .table-container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            overflow-x: auto;
+        }
+
+        .table-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            padding: 1rem;
+            text-align: left;
+            color: var(--text-secondary);
+            font-weight: 500;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.95rem;
+        }
+
+        tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .badge.stock {
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+        }
+
+        .badge.crypto {
+            background: rgba(240, 147, 251, 0.2);
+            color: #f093fb;
+        }
+
+        .badge.bond {
+            background: rgba(79, 172, 254, 0.2);
+            color: #4facfe;
+        }
+
+        .badge.etf {
+            background: rgba(67, 233, 123, 0.2);
+            color: #43e97b;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 700px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.5rem;
+            padding: 0.5rem;
+            transition: all 0.3s;
+        }
+
+        .close-btn:hover {
+            color: var(--text-primary);
+            transform: rotate(90deg);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .form-input,
+        .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-title {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-description {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .assets-grid {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-content {
+                padding: 1rem;
+            }
+
+            .nav-actions {
+                display: none;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .assets-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .asset-details {
+                grid-template-columns: 1fr;
+            }
+
+            .header-actions {
+                width: 100%;
+            }
+
+            .btn {
+                flex: 1;
+            }
+
+            .modal-content {
+                padding: 1.5rem;
+            }
+
+            .chart-wrapper {
+                height: 250px;
+            }
+
+            table {
+                font-size: 0.85rem;
+            }
+
+            th, td {
+                padding: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="nav-bar">
+        <div class="nav-content">
+            <a href="dashboard-clean.html" class="nav-back">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <div class="nav-title">
+                <i class="fas fa-chart-line"></i> Investment Portfolio
+            </div>
+            <div class="nav-actions">
+                <a href="goals.html" class="nav-link">Goals</a>
+                <a href="analytics.html" class="nav-link">Analytics</a>
+                <a href="reports.html" class="nav-link">Reports</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="header-content">
+                <h1>📈 Investment Portfolio</h1>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="loadPortfolios()">
+                        <i class="fas fa-sync"></i> Refresh
+                    </button>
+                    <button class="btn btn-primary" onclick="showAddAssetModal()">
+                        <i class="fas fa-plus"></i> Add Asset
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Portfolio Selection -->
+        <div style="margin-bottom: 2rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Select Portfolio</label>
+            <select id="portfolioSelect" onchange="selectPortfolio()" style="padding: 0.75rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: var(--text-primary); border-radius: 8px; font-size: 1rem; cursor: pointer; max-width: 300px;">
+                <!-- Portfolios will be loaded here -->
+            </select>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon purple">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                </div>
+                <div class="stat-value" id="totalValue">$0.00</div>
+                <div class="stat-label">Portfolio Value</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon pink">
+                        <i class="fas fa-arrow-up"></i>
+                    </div>
+                </div>
+                <div class="stat-value" id="investedAmount">$0.00</div>
+                <div class="stat-label">Total Invested</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon blue">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                </div>
+                <div class="stat-value positive" id="totalGain">$0.00</div>
+                <div class="stat-label">Total Gain/Loss</div>
+                <span class="stat-trend positive" id="gainTrend">+0.00%</span>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon green">
+                        <i class="fas fa-percent"></i>
+                    </div>
+                </div>
+                <div class="stat-value" id="returnPercent">0.00%</div>
+                <div class="stat-label">Return %</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon orange">
+                        <i class="fas fa-list"></i>
+                    </div>
+                </div>
+                <div class="stat-value" id="assetCount">0</div>
+                <div class="stat-label">Total Assets</div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+            <!-- Allocation Chart -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h2 class="chart-title">
+                        <i class="fas fa-pie-chart"></i> Asset Allocation
+                    </h2>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="allocationChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Performance Chart -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h2 class="chart-title">
+                        <i class="fas fa-chart-line"></i> Performance
+                    </h2>
+                    <div class="chart-controls">
+                        <button class="chart-btn active" data-period="1M" onclick="changeChartPeriod('1M')">1M</button>
+                        <button class="chart-btn" data-period="3M" onclick="changeChartPeriod('3M')">3M</button>
+                        <button class="chart-btn" data-period="1Y" onclick="changeChartPeriod('1Y')">1Y</button>
+                        <button class="chart-btn" data-period="ALL" onclick="changeChartPeriod('ALL')">All</button>
+                    </div>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assets Section -->
+        <div class="section-header" style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; font-size: 1.25rem; font-weight: 600;">
+            <i class="fas fa-box"></i> Your Assets
+        </div>
+        <div id="assetsContainer" class="assets-grid">
+            <!-- Assets will be loaded here -->
+        </div>
+
+        <!-- Performance Table -->
+        <div class="table-container">
+            <h2 class="table-title">
+                <i class="fas fa-table"></i> Detailed Performance
+            </h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Asset Name</th>
+                        <th>Type</th>
+                        <th>Quantity</th>
+                        <th>Cost Price</th>
+                        <th>Current Price</th>
+                        <th>Current Value</th>
+                        <th>Gain/Loss</th>
+                        <th>Return %</th>
+                    </tr>
+                </thead>
+                <tbody id="performanceTableBody">
+                    <!-- Table rows will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Add Asset Modal -->
+    <div id="addAssetModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Add Asset to Portfolio</h2>
+                <button class="close-btn" onclick="closeModal('addAssetModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="addAssetForm" onsubmit="addAsset(event)">
+                <div class="form-group">
+                    <label class="form-label">Asset Name *</label>
+                    <input type="text" class="form-input" id="assetName" placeholder="e.g., Apple Inc." required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Symbol/Ticker *</label>
+                    <input type="text" class="form-input" id="assetSymbol" placeholder="e.g., AAPL" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Asset Type *</label>
+                    <select class="form-select" id="assetType" required>
+                        <option value="stock">📈 Stock</option>
+                        <option value="crypto">💰 Cryptocurrency</option>
+                        <option value="bond">📊 Bond</option>
+                        <option value="mutual_fund">🎯 Mutual Fund</option>
+                        <option value="etf">📦 ETF</option>
+                        <option value="real_estate">🏢 Real Estate</option>
+                        <option value="commodity">⛽ Commodity</option>
+                        <option value="cash">💵 Cash</option>
+                    </select>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Quantity *</label>
+                        <input type="number" class="form-input" id="assetQuantity" placeholder="0" step="0.0001" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Purchase Price *</label>
+                        <input type="number" class="form-input" id="assetCostPrice" placeholder="0.00" step="0.01" required>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Current Price *</label>
+                        <input type="number" class="form-input" id="assetCurrentPrice" placeholder="0.00" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Purchase Date *</label>
+                        <input type="date" class="form-input" id="assetPurchaseDate" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Notes (Optional)</label>
+                    <textarea class="form-input" id="assetNotes" placeholder="Add any notes about this asset..." style="min-height: 80px; resize: vertical;"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-check"></i> Add Asset
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Asset Details Modal -->
+    <div id="assetDetailsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="assetDetailsTitle">Asset Details</h2>
+                <button class="close-btn" onclick="closeModal('assetDetailsModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="assetDetailsContent">
+                <!-- Asset details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let portfolios = [];
+        let currentPortfolio = null;
+        let assets = [];
+        let chartPeriod = '1M';
+        let allocationChart = null;
+        let performanceChart = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadPortfolios();
+        });
+
+        // Load portfolios
+        async function loadPortfolios() {
+            try {
+                const response = await fetch('/api/investments/portfolios', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                if (response.ok) {
+                    portfolios = await response.json();
+                } else {
+                    portfolios = getDemoPortfolios();
+                }
+            } catch (error) {
+                console.error('Error loading portfolios:', error);
+                portfolios = getDemoPortfolios();
+            }
+            
+            renderPortfolioSelect();
+            if (portfolios.length > 0) {
+                selectPortfolio(portfolios[0]._id);
+            }
+        }
+
+        // Render portfolio select dropdown
+        function renderPortfolioSelect() {
+            const select = document.getElementById('portfolioSelect');
+            select.innerHTML = portfolios.map(p => `
+                <option value="${p._id}">${p.name}</option>
+            `).join('');
+        }
+
+        // Select portfolio
+        async function selectPortfolio(portfolioId = null) {
+            const select = document.getElementById('portfolioSelect');
+            const id = portfolioId || select.value;
+            
+            currentPortfolio = portfolios.find(p => p._id === id);
+            if (!currentPortfolio) return;
+
+            try {
+                const response = await fetch(`/api/investments/portfolios/${id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                if (response.ok) {
+                    currentPortfolio = await response.json();
+                } else {
+                    // Use demo assets
+                    currentPortfolio.assets = getDemoAssets().filter(a => a.portfolioId === id);
+                }
+            } catch (error) {
+                console.error('Error loading portfolio details:', error);
+                currentPortfolio.assets = getDemoAssets().filter(a => a.portfolioId === id);
+            }
+
+            assets = currentPortfolio.assets || [];
+            updateStats();
+            renderAssets();
+            renderPerformanceTable();
+            initCharts();
+        }
+
+        // Update statistics
+        function updateStats() {
+            const stats = calculatePortfolioStats();
+            
+            document.getElementById('totalValue').textContent = `$${stats.totalValue.toFixed(2)}`;
+            document.getElementById('investedAmount').textContent = `$${stats.investedAmount.toFixed(2)}`;
+            
+            const totalGainElement = document.getElementById('totalGain');
+            const gainTrendElement = document.getElementById('gainTrend');
+            totalGainElement.textContent = `$${stats.totalGain.toFixed(2)}`;
+            totalGainElement.classList.remove('positive', 'negative');
+            gainTrendElement.classList.remove('positive', 'negative');
+            
+            if (stats.totalGain >= 0) {
+                totalGainElement.classList.add('positive');
+                gainTrendElement.classList.add('positive');
+                gainTrendElement.textContent = `+${stats.gainPercent.toFixed(2)}%`;
+            } else {
+                totalGainElement.classList.add('negative');
+                gainTrendElement.classList.add('negative');
+                gainTrendElement.textContent = `${stats.gainPercent.toFixed(2)}%`;
+            }
+            
+            document.getElementById('returnPercent').textContent = `${stats.returnPercent.toFixed(2)}%`;
+            document.getElementById('assetCount').textContent = assets.length;
+        }
+
+        // Calculate portfolio statistics
+        function calculatePortfolioStats() {
+            let totalValue = 0;
+            let investedAmount = 0;
+            let totalGain = 0;
+
+            assets.forEach(asset => {
+                const currentValue = asset.quantity * asset.currentPrice;
+                const costValue = asset.quantity * asset.costPrice;
+                
+                totalValue += currentValue;
+                investedAmount += costValue;
+                totalGain += (currentValue - costValue);
+            });
+
+            const gainPercent = investedAmount > 0 ? (totalGain / investedAmount) * 100 : 0;
+            const returnPercent = gainPercent;
+
+            return {
+                totalValue,
+                investedAmount,
+                totalGain,
+                gainPercent,
+                returnPercent
+            };
+        }
+
+        // Render assets
+        function renderAssets() {
+            const container = document.getElementById('assetsContainer');
+            
+            if (assets.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <div class="empty-icon">📦</div>
+                        <h3 class="empty-title">No Assets Yet</h3>
+                        <p class="empty-description">Add your first investment asset to start building your portfolio</p>
+                        <button class="btn btn-primary" onclick="showAddAssetModal()">
+                            <i class="fas fa-plus"></i> Add Asset
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = assets.map(asset => {
+                const currentValue = asset.quantity * asset.currentPrice;
+                const costValue = asset.quantity * asset.costPrice;
+                const gain = currentValue - costValue;
+                const gainPercent = costValue > 0 ? (gain / costValue) * 100 : 0;
+                const allocation = calculatePortfolioStats().totalValue > 0 ? 
+                    (currentValue / calculatePortfolioStats().totalValue) * 100 : 0;
+
+                return `
+                    <div class="asset-card" onclick="showAssetDetails('${asset._id}')">
+                        <div class="asset-header">
+                            <div>
+                                <div class="asset-name">${escapeHtml(asset.name)}</div>
+                                <div class="asset-symbol">${escapeHtml(asset.symbol)}</div>
+                            </div>
+                            <button class="asset-menu" onclick="event.stopPropagation(); showAssetMenu('${asset._id}')">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="asset-details">
+                            <div class="detail-item">
+                                <div class="detail-label">Current Value</div>
+                                <div class="detail-value">$${currentValue.toFixed(2)}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Quantity</div>
+                                <div class="detail-value">${asset.quantity.toFixed(asset.type === 'crypto' ? 4 : 2)}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Cost Basis</div>
+                                <div class="detail-value">$${costValue.toFixed(2)}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Gain/Loss</div>
+                                <div class="detail-value ${gain >= 0 ? 'positive' : 'negative'}">
+                                    ${gain >= 0 ? '+' : ''}$${gain.toFixed(2)}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="asset-footer">
+                            <div class="asset-allocation">
+                                <div>${allocation.toFixed(2)}% of portfolio</div>
+                                <div class="asset-allocation-bar">
+                                    <div class="asset-allocation-fill" style="width: ${allocation}%;"></div>
+                                </div>
+                            </div>
+                            <span class="badge ${asset.type}">${asset.type.toUpperCase()}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Render performance table
+        function renderPerformanceTable() {
+            const tbody = document.getElementById('performanceTableBody');
+            
+            tbody.innerHTML = assets.map(asset => {
+                const currentValue = asset.quantity * asset.currentPrice;
+                const costValue = asset.quantity * asset.costPrice;
+                const gain = currentValue - costValue;
+                const gainPercent = costValue > 0 ? (gain / costValue) * 100 : 0;
+
+                return `
+                    <tr>
+                        <td>
+                            <strong>${escapeHtml(asset.name)}</strong><br>
+                            <span style="color: var(--text-secondary); font-size: 0.85rem;">${escapeHtml(asset.symbol)}</span>
+                        </td>
+                        <td><span class="badge ${asset.type}">${asset.type}</span></td>
+                        <td>${asset.quantity.toFixed(asset.type === 'crypto' ? 4 : 2)}</td>
+                        <td>$${asset.costPrice.toFixed(2)}</td>
+                        <td>$${asset.currentPrice.toFixed(2)}</td>
+                        <td><strong>$${currentValue.toFixed(2)}</strong></td>
+                        <td><span style="color: ${gain >= 0 ? 'var(--success)' : 'var(--error)'};"><strong>${gain >= 0 ? '+' : ''}$${gain.toFixed(2)}</strong></span></td>
+                        <td><span style="color: ${gainPercent >= 0 ? 'var(--success)' : 'var(--error)'};"><strong>${gainPercent >= 0 ? '+' : ''}${gainPercent.toFixed(2)}%</strong></span></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Initialize charts
+        function initCharts() {
+            // Allocation Chart
+            const allocationCtx = document.getElementById('allocationChart');
+            if (allocationChart) {
+                allocationChart.destroy();
+            }
+
+            const assetLabels = assets.map(a => a.name);
+            const assetValues = assets.map(a => a.quantity * a.currentPrice);
+            const colors = [
+                '#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', 
+                '#00f2fe', '#43e97b', '#38f9d7', '#fa709a', '#fee140'
+            ];
+
+            allocationChart = new Chart(allocationCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: assetLabels,
+                    datasets: [{
+                        data: assetValues,
+                        backgroundColor: colors.slice(0, assetLabels.length),
+                        borderColor: '#1a1a2e',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#b4b4b4',
+                                padding: 15,
+                                font: { size: 12 }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Performance Chart
+            const performanceCtx = document.getElementById('performanceChart');
+            if (performanceChart) {
+                performanceChart.destroy();
+            }
+
+            const chartData = generateChartData();
+            performanceChart = new Chart(performanceCtx, {
+                type: 'line',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        label: 'Portfolio Value',
+                        data: chartData.values,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#667eea',
+                        pointBorderColor: '#1a1a2e',
+                        pointBorderWidth: 2,
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#b4b4b4',
+                                font: { size: 12 }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: { color: '#b4b4b4' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        x: {
+                            ticks: { color: '#b4b4b4' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Generate chart data
+        function generateChartData() {
+            const labels = [];
+            const values = [];
+            const now = new Date();
+
+            let daysBack = 30; // 1M default
+            if (chartPeriod === '3M') daysBack = 90;
+            else if (chartPeriod === '1Y') daysBack = 365;
+            else if (chartPeriod === 'ALL') daysBack = 730;
+
+            for (let i = daysBack; i >= 0; i -= Math.max(1, Math.floor(daysBack / 12))) {
+                const date = new Date(now);
+                date.setDate(date.getDate() - i);
+                labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+                
+                // Simulate data with some variance
+                const baseValue = calculatePortfolioStats().totalValue;
+                const variance = (Math.random() - 0.5) * baseValue * 0.1;
+                values.push(baseValue + variance);
+            }
+
+            return { labels, values };
+        }
+
+        // Change chart period
+        function changeChartPeriod(period) {
+            chartPeriod = period;
+            
+            document.querySelectorAll('.chart-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-period="${period}"]`).classList.add('active');
+            
+            initCharts();
+        }
+
+        // Show add asset modal
+        function showAddAssetModal() {
+            document.getElementById('addAssetForm').reset();
+            showModal('addAssetModal');
+        }
+
+        // Add asset
+        async function addAsset(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('assetName').value;
+            const symbol = document.getElementById('assetSymbol').value;
+            const type = document.getElementById('assetType').value;
+            const quantity = parseFloat(document.getElementById('assetQuantity').value);
+            const costPrice = parseFloat(document.getElementById('assetCostPrice').value);
+            const currentPrice = parseFloat(document.getElementById('assetCurrentPrice').value);
+            const purchaseDate = document.getElementById('assetPurchaseDate').value;
+            const notes = document.getElementById('assetNotes').value;
+
+            try {
+                const response = await fetch(`/api/investments/portfolios/${currentPortfolio._id}/assets`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        name,
+                        symbol,
+                        type,
+                        quantity,
+                        costPrice,
+                        currentPrice,
+                        purchaseDate,
+                        notes
+                    })
+                });
+
+                if (response.ok) {
+                    closeModal('addAssetModal');
+                    await selectPortfolio(currentPortfolio._id);
+                    showSuccess('Asset added successfully!');
+                } else {
+                    const error = await response.json();
+                    showError(error.message || 'Failed to add asset');
+                }
+            } catch (error) {
+                console.error('Error adding asset:', error);
+                showError('Error adding asset');
+            }
+        }
+
+        // Show asset details
+        function showAssetDetails(assetId) {
+            const asset = assets.find(a => a._id === assetId);
+            if (!asset) return;
+
+            document.getElementById('assetDetailsTitle').textContent = `${asset.name} (${asset.symbol})`;
+            
+            const currentValue = asset.quantity * asset.currentPrice;
+            const costValue = asset.quantity * asset.costPrice;
+            const gain = currentValue - costValue;
+            const gainPercent = costValue > 0 ? (gain / costValue) * 100 : 0;
+
+            const content = document.getElementById('assetDetailsContent');
+            content.innerHTML = `
+                <div style="margin-bottom: 1.5rem;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                        <div>
+                            <div style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">Asset Type</div>
+                            <div style="font-weight: 600;"><span class="badge ${asset.type}">${asset.type.toUpperCase()}</span></div>
+                        </div>
+                        <div>
+                            <div style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">Purchase Date</div>
+                            <div style="font-weight: 600;">${new Date(asset.purchaseDate).toLocaleDateString()}</div>
+                        </div>
+                    </div>
+                    <hr style="border: none; border-top: 1px solid rgba(255, 255, 255, 0.1); margin: 1.5rem 0;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                        <div>
+                            <div style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">Quantity</div>
+                            <div style="font-size: 1.25rem; font-weight: 600;">${asset.quantity.toFixed(asset.type === 'crypto' ? 4 : 2)}</div>
+                        </div>
+                        <div>
+                            <div style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">Current Price</div>
+                            <div style="font-size: 1.25rem; font-weight: 600;">$${asset.currentPrice.toFixed(2)}</div>
+                        </div>
+                        <div>
+                            <div style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">Cost Basis</div>
+                            <div style="font-size: 1.25rem; font-weight: 600;">$${costValue.toFixed(2)}</div>
+                        </div>
+                        <div>
+                            <div style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">Current Value</div>
+                            <div style="font-size: 1.25rem; font-weight: 600; color: var(--accent-primary);">$${currentValue.toFixed(2)}</div>
+                        </div>
+                    </div>
+                    <hr style="border: none; border-top: 1px solid rgba(255, 255, 255, 0.1); margin: 1.5rem 0;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                        <div>
+                            <div style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">Gain/Loss</div>
+                            <div style="font-size: 1.5rem; font-weight: 700; color: ${gain >= 0 ? 'var(--success)' : 'var(--error)'};">
+                                ${gain >= 0 ? '+' : ''}$${gain.toFixed(2)}
+                            </div>
+                        </div>
+                        <div>
+                            <div style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">Return %</div>
+                            <div style="font-size: 1.5rem; font-weight: 700; color: ${gainPercent >= 0 ? 'var(--success)' : 'var(--error)'};">
+                                ${gainPercent >= 0 ? '+' : ''}${gainPercent.toFixed(2)}%
+                            </div>
+                        </div>
+                    </div>
+                    ${asset.notes ? `
+                        <hr style="border: none; border-top: 1px solid rgba(255, 255, 255, 0.1); margin: 1.5rem 0;">
+                        <div>
+                            <div style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">Notes</div>
+                            <div style="color: var(--text-primary);">${escapeHtml(asset.notes)}</div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            showModal('assetDetailsModal');
+        }
+
+        // Utility functions
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showSuccess(message) {
+            alert(message);
+        }
+
+        function showError(message) {
+            alert(message);
+        }
+
+        function showAssetMenu(assetId) {
+            console.log('Show menu for asset:', assetId);
+        }
+
+        // Demo data
+        function getDemoPortfolios() {
+            return [
+                {
+                    _id: 'portfolio-1',
+                    name: 'My Main Portfolio',
+                    description: 'Long-term investment portfolio',
+                    baseCurrency: 'USD',
+                    createdAt: new Date('2023-01-15')
+                },
+                {
+                    _id: 'portfolio-2',
+                    name: 'Crypto Holdings',
+                    description: 'Cryptocurrency investments',
+                    baseCurrency: 'USD',
+                    createdAt: new Date('2023-06-20')
+                },
+                {
+                    _id: 'portfolio-3',
+                    name: 'Emergency Fund',
+                    description: 'Safe investments',
+                    baseCurrency: 'USD',
+                    createdAt: new Date('2023-03-10')
+                }
+            ];
+        }
+
+        function getDemoAssets() {
+            return [
+                // Portfolio 1
+                { _id: 'asset-1', portfolioId: 'portfolio-1', name: 'Apple Inc.', symbol: 'AAPL', type: 'stock', quantity: 15, costPrice: 120.50, currentPrice: 185.25, purchaseDate: new Date('2023-01-15'), notes: 'Long-term hold' },
+                { _id: 'asset-2', portfolioId: 'portfolio-1', name: 'Microsoft Corporation', symbol: 'MSFT', type: 'stock', quantity: 10, costPrice: 225.00, currentPrice: 380.15, purchaseDate: new Date('2023-02-20'), notes: '' },
+                { _id: 'asset-3', portfolioId: 'portfolio-1', name: 'Vanguard S&P 500 ETF', symbol: 'VOO', type: 'etf', quantity: 25, costPrice: 380.00, currentPrice: 420.75, purchaseDate: new Date('2023-03-10'), notes: 'Index fund' },
+                { _id: 'asset-4', portfolioId: 'portfolio-1', name: 'iShares Core Bond ETF', symbol: 'AGG', type: 'bond', quantity: 50, costPrice: 95.00, currentPrice: 92.50, purchaseDate: new Date('2023-04-01'), notes: '' },
+                
+                // Portfolio 2
+                { _id: 'asset-5', portfolioId: 'portfolio-2', name: 'Bitcoin', symbol: 'BTC', type: 'crypto', quantity: 0.5, costPrice: 35000.00, currentPrice: 42500.00, purchaseDate: new Date('2023-06-01'), notes: '' },
+                { _id: 'asset-6', portfolioId: 'portfolio-2', name: 'Ethereum', symbol: 'ETH', type: 'crypto', quantity: 5.0, costPrice: 1800.00, currentPrice: 2200.50, purchaseDate: new Date('2023-06-15'), notes: '' },
+                
+                // Portfolio 3
+                { _id: 'asset-7', portfolioId: 'portfolio-3', name: 'Wells Fargo Bank Note', symbol: 'WFC', type: 'bond', quantity: 10, costPrice: 100.00, currentPrice: 101.50, purchaseDate: new Date('2023-03-10'), notes: 'Safe investment' },
+                { _id: 'asset-8', portfolioId: 'portfolio-3', name: 'Money Market Fund', symbol: 'VMFXX', type: 'mutual_fund', quantity: 100, costPrice: 1.00, currentPrice: 1.02, purchaseDate: new Date('2023-05-01'), notes: '' }
+            ];
+        }
+    </script>
+</body>
+</html>

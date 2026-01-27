@@ -1,0 +1,2112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#667eea">
+    <meta name="description" content="Group Expense Management - Create groups, split expenses, and manage shared costs">
+    <title>Group Expenses - ExpenseFlow</title>
+
+    <!-- Preconnect to external domains -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            
+            --bg-primary: #0f0f23;
+            --bg-secondary: #1a1a2e;
+            --bg-tertiary: #16213e;
+            --bg-glass: rgba(255, 255, 255, 0.1);
+            
+            --text-primary: #ffffff;
+            --text-secondary: #b4b4b4;
+            --text-accent: #64ffda;
+            
+            --accent-primary: #64ffda;
+            --accent-secondary: #ff6b9d;
+            --success: #00e676;
+            --error: #ff5722;
+            --warning: #ffc107;
+            
+            --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            --shadow-hover: 0 15px 35px rgba(0, 0, 0, 0.1);
+            --shadow-card: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Navigation Bar */
+        .nav-bar {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .nav-back {
+            color: var(--text-primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .nav-back:hover {
+            color: var(--accent-primary);
+        }
+
+        .nav-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-link {
+            color: var(--text-primary);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Page Header */
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin: 0;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--accent-primary);
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-icon.purple {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .stat-icon.pink {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .stat-icon.blue {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .stat-icon.green {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 1rem 1.5rem;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            white-space: nowrap;
+        }
+
+        .tab:hover {
+            color: var(--text-primary);
+        }
+
+        .tab.active {
+            color: var(--accent-primary);
+            border-bottom-color: var(--accent-primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Groups Grid */
+        .groups-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .group-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .group-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--accent-primary);
+        }
+
+        .group-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .group-info h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .group-info p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .group-menu {
+            position: relative;
+        }
+
+        .menu-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+
+        .menu-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        .group-members {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .member-avatars {
+            display: flex;
+            margin-right: 0.5rem;
+        }
+
+        .member-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--primary-gradient);
+            border: 2px solid var(--bg-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: -8px;
+        }
+
+        .member-avatar:first-child {
+            margin-left: 0;
+        }
+
+        .member-count {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .group-stats {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .group-stat {
+            text-align: center;
+        }
+
+        .group-stat-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .group-stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* Balance Cards */
+        .balance-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .balance-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .balance-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .balance-users {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .arrow-icon {
+            color: var(--text-secondary);
+        }
+
+        .balance-amount {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .balance-amount.positive {
+            color: var(--success);
+        }
+
+        .balance-amount.negative {
+            color: var(--error);
+        }
+
+        .balance-details {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .detail-item {
+            flex: 1;
+        }
+
+        .detail-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .detail-value {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .settle-btn {
+            padding: 0.5rem 1rem;
+            background: var(--success-gradient);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .settle-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.5rem;
+            padding: 0.5rem;
+            transition: all 0.3s;
+        }
+
+        .close-btn:hover {
+            color: var(--text-primary);
+            transform: rotate(90deg);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .member-input-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .member-input {
+            flex: 1;
+        }
+
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .members-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .member-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .member-item-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .member-item-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .member-item-details h4 {
+            font-size: 0.95rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .member-item-details p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .remove-btn {
+            background: none;
+            border: none;
+            color: var(--error);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+
+        .remove-btn:hover {
+            background: rgba(255, 87, 34, 0.1);
+        }
+
+        /* Expense List */
+        .expense-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .expense-item {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .expense-item:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .expense-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .expense-info h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .expense-info p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .expense-amount {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        .expense-splits {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .split-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .split-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .split-details {
+            flex: 1;
+        }
+
+        .split-name {
+            font-size: 0.85rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .split-amount {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--accent-primary);
+        }
+
+        .split-status {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .split-status.paid {
+            background: rgba(0, 230, 118, 0.2);
+            color: var(--success);
+        }
+
+        .split-status.pending {
+            background: rgba(255, 193, 7, 0.2);
+            color: var(--warning);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-title {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-description {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-content {
+                padding: 1rem;
+            }
+
+            .nav-actions {
+                display: none;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .groups-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header-actions {
+                width: 100%;
+            }
+
+            .btn {
+                flex: 1;
+            }
+
+            .modal-content {
+                padding: 1.5rem;
+            }
+
+            .expense-splits {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="nav-bar">
+        <div class="nav-content">
+            <a href="dashboard-clean.html" class="nav-back">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <div class="nav-title">
+                <i class="fas fa-users"></i> Group Expenses
+            </div>
+            <div class="nav-actions">
+                <a href="transactions.html" class="nav-link">Transactions</a>
+                <a href="analytics.html" class="nav-link">Analytics</a>
+                <a href="reports.html" class="nav-link">Reports</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="header-content">
+                <h1>👥 Group Expense Management</h1>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="showSettleAllModal()">
+                        <i class="fas fa-handshake"></i> Settle All
+                    </button>
+                    <button class="btn btn-primary" onclick="showCreateGroupModal()">
+                        <i class="fas fa-plus"></i> Create Group
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon purple">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+                <div class="stat-value" id="totalGroups">0</div>
+                <div class="stat-label">Total Groups</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon pink">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                </div>
+                <div class="stat-value" id="totalExpenses">$0</div>
+                <div class="stat-label">Total Group Expenses</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon blue">
+                        <i class="fas fa-arrow-up"></i>
+                    </div>
+                </div>
+                <div class="stat-value" id="youOwe">$0</div>
+                <div class="stat-label">You Owe</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon green">
+                        <i class="fas fa-arrow-down"></i>
+                    </div>
+                </div>
+                <div class="stat-value" id="owedToYou">$0</div>
+                <div class="stat-label">Owed to You</div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('my-groups')">
+                <i class="fas fa-users"></i> My Groups
+            </button>
+            <button class="tab" onclick="switchTab('balances')">
+                <i class="fas fa-balance-scale"></i> Balances
+            </button>
+            <button class="tab" onclick="switchTab('expenses')">
+                <i class="fas fa-receipt"></i> Expenses
+            </button>
+            <button class="tab" onclick="switchTab('settlements')">
+                <i class="fas fa-handshake"></i> Settlements
+            </button>
+        </div>
+
+        <!-- Tab Content: My Groups -->
+        <div id="my-groups" class="tab-content active">
+            <div id="groupsContainer">
+                <!-- Loading state -->
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading groups...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Content: Balances -->
+        <div id="balances" class="tab-content">
+            <div id="balancesContainer">
+                <!-- Loading state -->
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading balances...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Content: Expenses -->
+        <div id="expenses" class="tab-content">
+            <div id="expensesContainer">
+                <!-- Loading state -->
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading expenses...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Content: Settlements -->
+        <div id="settlements" class="tab-content">
+            <div id="settlementsContainer">
+                <!-- Loading state -->
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading settlements...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Group Modal -->
+    <div id="createGroupModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Create New Group</h2>
+                <button class="close-btn" onclick="closeModal('createGroupModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="createGroupForm" onsubmit="createGroup(event)">
+                <div class="form-group">
+                    <label class="form-label">Group Name *</label>
+                    <input type="text" class="form-input" id="groupName" placeholder="e.g., Weekend Trip, Roommates" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-textarea" id="groupDescription" placeholder="What is this group for?"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Add Members</label>
+                    <div class="member-input-group">
+                        <input type="email" class="form-input member-input" id="memberEmail" placeholder="Enter email address">
+                        <button type="button" class="btn btn-secondary btn-icon" onclick="addMember()">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    <div id="membersList" class="members-list"></div>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-check"></i> Create Group
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Expense Modal -->
+    <div id="addExpenseModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Add Group Expense</h2>
+                <button class="close-btn" onclick="closeModal('addExpenseModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="addExpenseForm" onsubmit="addGroupExpense(event)">
+                <input type="hidden" id="expenseGroupId">
+                
+                <div class="form-group">
+                    <label class="form-label">Expense Description *</label>
+                    <input type="text" class="form-input" id="expenseDescription" placeholder="e.g., Dinner, Hotel" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Amount *</label>
+                    <input type="number" class="form-input" id="expenseAmount" placeholder="0.00" step="0.01" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <select class="form-select" id="expenseCategory">
+                        <option value="food">🍔 Food & Dining</option>
+                        <option value="travel">✈️ Travel</option>
+                        <option value="accommodation">🏨 Accommodation</option>
+                        <option value="entertainment">🎮 Entertainment</option>
+                        <option value="shopping">🛍️ Shopping</option>
+                        <option value="utilities">⚡ Utilities</option>
+                        <option value="other">📦 Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Paid By *</label>
+                    <select class="form-select" id="expensePaidBy" required>
+                        <option value="">Select member</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Split Method *</label>
+                    <select class="form-select" id="splitMethod" onchange="updateSplitUI()" required>
+                        <option value="equal">Split Equally</option>
+                        <option value="percentage">Split by Percentage</option>
+                        <option value="amount">Split by Amount</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="splitParticipants">
+                    <!-- Dynamic split UI will be inserted here -->
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-plus"></i> Add Expense
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Group Details Modal -->
+    <div id="groupDetailsModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2 class="modal-title" id="groupDetailsTitle">Group Details</h2>
+                <button class="close-btn" onclick="closeModal('groupDetailsModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="groupDetailsContent">
+                <!-- Group details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Settle Balance Modal -->
+    <div id="settleModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Settle Balance</h2>
+                <button class="close-btn" onclick="closeModal('settleModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="settleForm" onsubmit="settleBalance(event)">
+                <input type="hidden" id="settleBalanceId">
+                
+                <div class="form-group">
+                    <label class="form-label">Amount to Settle</label>
+                    <input type="number" class="form-input" id="settleAmount" placeholder="0.00" step="0.01" required readonly>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Payment Method</label>
+                    <select class="form-select" id="settleMethod" required>
+                        <option value="cash">💵 Cash</option>
+                        <option value="bank_transfer">🏦 Bank Transfer</option>
+                        <option value="paypal">💳 PayPal</option>
+                        <option value="venmo">📱 Venmo</option>
+                        <option value="other">📦 Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Notes (Optional)</label>
+                    <textarea class="form-textarea" id="settleNotes" placeholder="Add any notes about this settlement"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-check"></i> Confirm Settlement
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let groups = [];
+        let balances = [];
+        let groupExpenses = [];
+        let settlements = [];
+        let currentUser = null;
+        let selectedGroup = null;
+        let members = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadCurrentUser();
+            await loadData();
+        });
+
+        // Load current user
+        async function loadCurrentUser() {
+            try {
+                const response = await fetch('/api/auth/me', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                if (response.ok) {
+                    currentUser = await response.json();
+                } else {
+                    // Mock user for demo purposes (no login required)
+                    currentUser = {
+                        _id: 'demo-user-1',
+                        name: 'Demo User',
+                        email: 'demo@example.com'
+                    };
+                }
+            } catch (error) {
+                console.error('Error loading user:', error);
+                // Mock user for demo purposes (no login required)
+                currentUser = {
+                    _id: 'demo-user-1',
+                    name: 'Demo User',
+                    email: 'demo@example.com'
+                };
+            }
+        }
+
+        // Load all data
+        async function loadData() {
+            await Promise.all([
+                loadGroups(),
+                loadBalances(),
+                loadGroupExpenses(),
+                loadSettlements()
+            ]);
+            updateStats();
+        }
+
+        // Load groups
+        async function loadGroups() {
+            try {
+                const response = await fetch('/api/groups', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                if (response.ok) {
+                    groups = await response.json();
+                } else {
+                    groups = getDemoGroups();
+                }
+            } catch (error) {
+                console.error('Error loading groups:', error);
+                groups = getDemoGroups();
+            }
+            renderGroups();
+        }
+
+        // Render groups
+        function renderGroups() {
+            const container = document.getElementById('groupsContainer');
+            
+            if (groups.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">👥</div>
+                        <h2 class="empty-title">No Groups Yet</h2>
+                        <p class="empty-description">Create your first group to start splitting expenses with friends and family.</p>
+                        <button class="btn btn-primary" onclick="showCreateGroupModal()">
+                            <i class="fas fa-plus"></i> Create Your First Group
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `<div class="groups-grid">${groups.map(group => `
+                <div class="group-card" onclick="showGroupDetails('${group._id}')">
+                    <div class="group-header">
+                        <div class="group-info">
+                            <h3>${escapeHtml(group.name)}</h3>
+                            <p>${escapeHtml(group.description || 'No description')}</p>
+                        </div>
+                        <div class="group-menu">
+                            <button class="menu-btn" onclick="event.stopPropagation(); showGroupMenu('${group._id}')">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="group-members">
+                        <div class="member-avatars">
+                            ${group.members.slice(0, 5).map(member => `
+                                <div class="member-avatar" title="${escapeHtml(member.user.name)}">
+                                    ${getInitials(member.user.name)}
+                                </div>
+                            `).join('')}
+                        </div>
+                        <span class="member-count">${group.members.length} member${group.members.length !== 1 ? 's' : ''}</span>
+                    </div>
+                    <div class="group-stats">
+                        <div class="group-stat">
+                            <div class="group-stat-value">${group.expenses?.length || 0}</div>
+                            <div class="group-stat-label">Expenses</div>
+                        </div>
+                        <div class="group-stat">
+                            <div class="group-stat-value">$${calculateGroupTotal(group).toFixed(2)}</div>
+                            <div class="group-stat-label">Total</div>
+                        </div>
+                        <div class="group-stat">
+                            <div class="group-stat-value">$${calculateYourShare(group).toFixed(2)}</div>
+                            <div class="group-stat-label">Your Share</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('')}</div>`;
+        }
+
+        // Load balances
+        async function loadBalances() {
+            try {
+                const response = await fetch('/api/groups/balances', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                if (response.ok) {
+                    balances = await response.json();
+                } else {
+                    balances = getDemoBalances();
+                }
+            } catch (error) {
+                console.error('Error loading balances:', error);
+                balances = getDemoBalances();
+            }
+            renderBalances();
+        }
+
+        // Render balances
+        function renderBalances() {
+            const container = document.getElementById('balancesContainer');
+            
+            if (balances.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">⚖️</div>
+                        <h2 class="empty-title">All Settled!</h2>
+                        <p class="empty-description">You don't have any pending balances to settle.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `<div class="balance-list">${balances.map(balance => `
+                <div class="balance-card">
+                    <div class="balance-header">
+                        <div class="balance-users">
+                            <div class="user-info">
+                                <div class="user-avatar">${getInitials(balance.from.name)}</div>
+                                <div>
+                                    <strong>${escapeHtml(balance.from.name)}</strong>
+                                    <p style="font-size: 0.85rem; color: var(--text-secondary);">${balance.from.email}</p>
+                                </div>
+                            </div>
+                            <div class="arrow-icon">
+                                <i class="fas fa-arrow-right"></i>
+                            </div>
+                            <div class="user-info">
+                                <div class="user-avatar">${getInitials(balance.to.name)}</div>
+                                <div>
+                                    <strong>${escapeHtml(balance.to.name)}</strong>
+                                    <p style="font-size: 0.85rem; color: var(--text-secondary);">${balance.to.email}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="balance-amount ${balance.from._id === currentUser._id ? 'negative' : 'positive'}">
+                            ${balance.from._id === currentUser._id ? '-' : '+'}$${Math.abs(balance.amount).toFixed(2)}
+                        </div>
+                    </div>
+                    <div class="balance-details">
+                        <div class="detail-item">
+                            <div class="detail-label">Group</div>
+                            <div class="detail-value">${escapeHtml(balance.group.name)}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Last Updated</div>
+                            <div class="detail-value">${formatDate(balance.updatedAt)}</div>
+                        </div>
+                        <div class="detail-item">
+                            ${balance.from._id === currentUser._id ? `
+                                <button class="settle-btn" onclick="showSettleModal('${balance._id}', ${balance.amount})">
+                                    <i class="fas fa-check"></i> Settle Up
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('')}</div>`;
+        }
+
+        // Load group expenses
+        async function loadGroupExpenses() {
+            try {
+                const response = await fetch('/api/groups/expenses', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                if (response.ok) {
+                    groupExpenses = await response.json();
+                } else {
+                    groupExpenses = getDemoExpenses();
+                }
+            } catch (error) {
+                console.error('Error loading expenses:', error);
+                groupExpenses = getDemoExpenses();
+            }
+            renderExpenses();
+        }
+
+        // Render expenses
+        function renderExpenses() {
+            const container = document.getElementById('expensesContainer');
+            
+            if (groupExpenses.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🧾</div>
+                        <h2 class="empty-title">No Expenses Yet</h2>
+                        <p class="empty-description">Add your first expense to start tracking group spending.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `<div class="expense-list">${groupExpenses.map(expense => `
+                <div class="expense-item">
+                    <div class="expense-header">
+                        <div class="expense-info">
+                            <h3>${escapeHtml(expense.description)}</h3>
+                            <p>
+                                ${escapeHtml(expense.group.name)} • 
+                                Paid by ${escapeHtml(expense.paidBy.name)} • 
+                                ${formatDate(expense.createdAt)}
+                            </p>
+                        </div>
+                        <div class="expense-amount">$${expense.amount.toFixed(2)}</div>
+                    </div>
+                    ${expense.splits && expense.splits.length > 0 ? `
+                        <div class="expense-splits">
+                            ${expense.splits.map(split => `
+                                <div class="split-item">
+                                    <div class="split-avatar">${getInitials(split.user.name)}</div>
+                                    <div class="split-details">
+                                        <div class="split-name">${escapeHtml(split.user.name)}</div>
+                                        <div class="split-amount">$${split.amount.toFixed(2)}</div>
+                                    </div>
+                                    <span class="split-status ${split.isPaid ? 'paid' : 'pending'}">
+                                        ${split.isPaid ? '✓ Paid' : '⏳ Pending'}
+                                    </span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('')}</div>`;
+        }
+
+        // Load settlements
+        async function loadSettlements() {
+            try {
+                const response = await fetch('/api/groups/settlements', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                if (response.ok) {
+                    settlements = await response.json();
+                } else {
+                    settlements = getDemoSettlements();
+                }
+            } catch (error) {
+                console.error('Error loading settlements:', error);
+                settlements = getDemoSettlements();
+            }
+            renderSettlements();
+        }
+
+        // Render settlements
+        function renderSettlements() {
+            const container = document.getElementById('settlementsContainer');
+            
+            if (settlements.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🤝</div>
+                        <h2 class="empty-title">No Settlements Yet</h2>
+                        <p class="empty-description">Your settlement history will appear here.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `<div class="balance-list">${settlements.map(settlement => `
+                <div class="balance-card">
+                    <div class="balance-header">
+                        <div class="balance-users">
+                            <div class="user-info">
+                                <div class="user-avatar">${getInitials(settlement.from.name)}</div>
+                                <strong>${escapeHtml(settlement.from.name)}</strong>
+                            </div>
+                            <div class="arrow-icon">
+                                <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                            </div>
+                            <div class="user-info">
+                                <div class="user-avatar">${getInitials(settlement.to.name)}</div>
+                                <strong>${escapeHtml(settlement.to.name)}</strong>
+                            </div>
+                        </div>
+                        <div class="balance-amount positive">$${settlement.amount.toFixed(2)}</div>
+                    </div>
+                    <div class="balance-details">
+                        <div class="detail-item">
+                            <div class="detail-label">Method</div>
+                            <div class="detail-value">${escapeHtml(settlement.method || 'N/A')}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Settled On</div>
+                            <div class="detail-value">${formatDate(settlement.settledAt)}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Group</div>
+                            <div class="detail-value">${escapeHtml(settlement.group.name)}</div>
+                        </div>
+                    </div>
+                    ${settlement.notes ? `
+                        <p style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255, 255, 255, 0.1); color: var(--text-secondary); font-size: 0.9rem;">
+                            <strong>Notes:</strong> ${escapeHtml(settlement.notes)}
+                        </p>
+                    ` : ''}
+                </div>
+            `).join('')}</div>`;
+        }
+
+        // Update statistics
+        function updateStats() {
+            document.getElementById('totalGroups').textContent = groups.length;
+            
+            const totalExpenses = groupExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+            document.getElementById('totalExpenses').textContent = `$${totalExpenses.toFixed(2)}`;
+            
+            const youOwe = balances
+                .filter(b => b.from._id === currentUser._id)
+                .reduce((sum, b) => sum + b.amount, 0);
+            document.getElementById('youOwe').textContent = `$${youOwe.toFixed(2)}`;
+            
+            const owedToYou = balances
+                .filter(b => b.to._id === currentUser._id)
+                .reduce((sum, b) => sum + b.amount, 0);
+            document.getElementById('owedToYou').textContent = `$${owedToYou.toFixed(2)}`;
+        }
+
+        // Switch tabs
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.closest('.tab').classList.add('active');
+            
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        // Show create group modal
+        function showCreateGroupModal() {
+            members = [];
+            document.getElementById('createGroupForm').reset();
+            document.getElementById('membersList').innerHTML = '';
+            showModal('createGroupModal');
+        }
+
+        // Add member to list
+        function addMember() {
+            const emailInput = document.getElementById('memberEmail');
+            const email = emailInput.value.trim();
+            
+            if (!email || !isValidEmail(email)) {
+                alert('Please enter a valid email address');
+                return;
+            }
+            
+            if (members.includes(email)) {
+                alert('This member has already been added');
+                return;
+            }
+            
+            members.push(email);
+            renderMembersList();
+            emailInput.value = '';
+        }
+
+        // Render members list
+        function renderMembersList() {
+            const container = document.getElementById('membersList');
+            container.innerHTML = members.map((email, index) => `
+                <div class="member-item">
+                    <div class="member-item-info">
+                        <div class="member-item-avatar">${email[0].toUpperCase()}</div>
+                        <div class="member-item-details">
+                            <h4>${escapeHtml(email)}</h4>
+                        </div>
+                    </div>
+                    <button type="button" class="remove-btn" onclick="removeMember(${index})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // Remove member
+        function removeMember(index) {
+            members.splice(index, 1);
+            renderMembersList();
+        }
+
+        // Create group
+        async function createGroup(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('groupName').value;
+            const description = document.getElementById('groupDescription').value;
+            
+            try {
+                const response = await fetch('/api/groups', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        name,
+                        description,
+                        memberEmails: members
+                    })
+                });
+                
+                if (response.ok) {
+                    closeModal('createGroupModal');
+                    await loadData();
+                    showSuccess('Group created successfully!');
+                } else {
+                    const error = await response.json();
+                    showError(error.message || 'Failed to create group');
+                }
+            } catch (error) {
+                console.error('Error creating group:', error);
+                showError('Error creating group');
+            }
+        }
+
+        // Show group details
+        async function showGroupDetails(groupId) {
+            selectedGroup = groups.find(g => g._id === groupId);
+            if (!selectedGroup) return;
+            
+            document.getElementById('groupDetailsTitle').textContent = selectedGroup.name;
+            
+            const content = document.getElementById('groupDetailsContent');
+            content.innerHTML = `
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="margin-bottom: 0.5rem;">Members</h3>
+                    <div class="members-list">
+                        ${selectedGroup.members.map(member => `
+                            <div class="member-item">
+                                <div class="member-item-info">
+                                    <div class="member-item-avatar">${getInitials(member.user.name)}</div>
+                                    <div class="member-item-details">
+                                        <h4>${escapeHtml(member.user.name)}</h4>
+                                        <p>${escapeHtml(member.user.email)} • ${member.role}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn btn-primary" onclick="showAddExpenseModal('${groupId}')" style="flex: 1;">
+                        <i class="fas fa-plus"></i> Add Expense
+                    </button>
+                    <button class="btn btn-secondary" onclick="inviteMember('${groupId}')" style="flex: 1;">
+                        <i class="fas fa-user-plus"></i> Invite Member
+                    </button>
+                </div>
+            `;
+            
+            showModal('groupDetailsModal');
+        }
+
+        // Show add expense modal
+        function showAddExpenseModal(groupId) {
+            closeModal('groupDetailsModal');
+            document.getElementById('expenseGroupId').value = groupId;
+            
+            const group = groups.find(g => g._id === groupId);
+            const paidBySelect = document.getElementById('expensePaidBy');
+            paidBySelect.innerHTML = '<option value="">Select member</option>' +
+                group.members.map(member => `
+                    <option value="${member.user._id}">${escapeHtml(member.user.name)}</option>
+                `).join('');
+            
+            showModal('addExpenseModal');
+            updateSplitUI();
+        }
+
+        // Update split UI
+        function updateSplitUI() {
+            const groupId = document.getElementById('expenseGroupId').value;
+            const group = groups.find(g => g._id === groupId);
+            const method = document.getElementById('splitMethod').value;
+            const container = document.getElementById('splitParticipants');
+            
+            if (!group) return;
+            
+            container.innerHTML = `
+                <label class="form-label">Select Participants</label>
+                ${group.members.map(member => `
+                    <div class="member-item" style="margin-bottom: 0.5rem;">
+                        <div class="member-item-info">
+                            <input type="checkbox" checked data-user-id="${member.user._id}" onchange="updateSplitCalculations()">
+                            <div class="member-item-avatar">${getInitials(member.user.name)}</div>
+                            <div class="member-item-details">
+                                <h4>${escapeHtml(member.user.name)}</h4>
+                            </div>
+                        </div>
+                        ${method === 'percentage' ? `
+                            <input type="number" class="form-input" style="width: 100px;" placeholder="%" min="0" max="100" data-split-input="${member.user._id}">
+                        ` : method === 'amount' ? `
+                            <input type="number" class="form-input" style="width: 120px;" placeholder="$0.00" step="0.01" min="0" data-split-input="${member.user._id}">
+                        ` : ''}
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        // Add group expense
+        async function addGroupExpense(event) {
+            event.preventDefault();
+            
+            const groupId = document.getElementById('expenseGroupId').value;
+            const description = document.getElementById('expenseDescription').value;
+            const amount = parseFloat(document.getElementById('expenseAmount').value);
+            const category = document.getElementById('expenseCategory').value;
+            const paidBy = document.getElementById('expensePaidBy').value;
+            const splitMethod = document.getElementById('splitMethod').value;
+            
+            // Get participants
+            const participants = [];
+            document.querySelectorAll('#splitParticipants input[type="checkbox"]:checked').forEach(checkbox => {
+                const userId = checkbox.dataset.userId;
+                const splitInput = document.querySelector(`[data-split-input="${userId}"]`);
+                
+                participants.push({
+                    userId,
+                    ...(splitMethod === 'percentage' && splitInput ? { percentage: parseFloat(splitInput.value) || 0 } : {}),
+                    ...(splitMethod === 'amount' && splitInput ? { amount: parseFloat(splitInput.value) || 0 } : {})
+                });
+            });
+            
+            try {
+                const response = await fetch(`/api/groups/${groupId}/expenses`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        description,
+                        amount,
+                        category,
+                        paidBy,
+                        splitMethod,
+                        participants
+                    })
+                });
+                
+                if (response.ok) {
+                    closeModal('addExpenseModal');
+                    await loadData();
+                    showSuccess('Expense added successfully!');
+                } else {
+                    const error = await response.json();
+                    showError(error.message || 'Failed to add expense');
+                }
+            } catch (error) {
+                console.error('Error adding expense:', error);
+                showError('Error adding expense');
+            }
+        }
+
+        // Show settle modal
+        function showSettleModal(balanceId, amount) {
+            document.getElementById('settleBalanceId').value = balanceId;
+            document.getElementById('settleAmount').value = amount.toFixed(2);
+            showModal('settleModal');
+        }
+
+        // Settle balance
+        async function settleBalance(event) {
+            event.preventDefault();
+            
+            const balanceId = document.getElementById('settleBalanceId').value;
+            const method = document.getElementById('settleMethod').value;
+            const notes = document.getElementById('settleNotes').value;
+            
+            try {
+                const response = await fetch(`/api/groups/balances/${balanceId}/settle`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ method, notes })
+                });
+                
+                if (response.ok) {
+                    closeModal('settleModal');
+                    await loadData();
+                    showSuccess('Balance settled successfully!');
+                } else {
+                    const error = await response.json();
+                    showError(error.message || 'Failed to settle balance');
+                }
+            } catch (error) {
+                console.error('Error settling balance:', error);
+                showError('Error settling balance');
+            }
+        }
+
+        // Utility functions
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function getInitials(name) {
+            return name
+                .split(' ')
+                .map(n => n[0])
+                .join('')
+                .toUpperCase()
+                .slice(0, 2);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function isValidEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 0) return 'Today';
+            if (diffDays === 1) return 'Yesterday';
+            if (diffDays < 7) return `${diffDays} days ago`;
+            
+            return date.toLocaleDateString();
+        }
+
+        function calculateGroupTotal(group) {
+            if (!group.expenses || !Array.isArray(group.expenses)) return 0;
+            return group.expenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
+        }
+
+        function calculateYourShare(group) {
+            // This is a simplified calculation - you'd need to implement proper split calculation
+            const total = calculateGroupTotal(group);
+            const memberCount = group.members?.length || 1;
+            return total / memberCount;
+        }
+
+        function showSuccess(message) {
+            alert(message); // Replace with a proper toast notification
+        }
+
+        function showError(message) {
+            alert(message); // Replace with a proper toast notification
+        }
+
+        function showGroupMenu(groupId) {
+            // Implement group menu options (edit, delete, leave)
+            console.log('Show menu for group:', groupId);
+        }
+
+        function showSettleAllModal() {
+            // Implement settle all balances
+            console.log('Settle all balances');
+        }
+
+        function inviteMember(groupId) {
+            const email = prompt('Enter member email address:');
+            if (email && isValidEmail(email)) {
+                // Implement invite member API call
+                console.log('Invite member:', email, 'to group:', groupId);
+            }
+        }
+
+        function updateSplitCalculations() {
+            // Implement split calculation updates
+            console.log('Update split calculations');
+        }
+
+        // Demo data functions
+        function getDemoGroups() {
+            return [
+                {
+                    _id: 'group-1',
+                    name: 'Weekend Trip',
+                    description: 'Trip to the mountains',
+                    createdBy: currentUser._id,
+                    members: [
+                        { user: { _id: currentUser._id, name: currentUser.name, email: currentUser.email }, role: 'admin', joinedAt: new Date('2026-01-20'), isActive: true },
+                        { user: { _id: 'user-2', name: 'Sarah Johnson', email: 'sarah@example.com' }, role: 'member', joinedAt: new Date('2026-01-20'), isActive: true },
+                        { user: { _id: 'user-3', name: 'Mike Chen', email: 'mike@example.com' }, role: 'member', joinedAt: new Date('2026-01-21'), isActive: true }
+                    ],
+                    expenses: [
+                        { amount: 150, _id: 'exp-1' },
+                        { amount: 200, _id: 'exp-2' },
+                        { amount: 85, _id: 'exp-3' }
+                    ],
+                    createdAt: new Date('2026-01-20')
+                },
+                {
+                    _id: 'group-2',
+                    name: 'Roommates',
+                    description: 'Shared apartment expenses',
+                    createdBy: 'user-2',
+                    members: [
+                        { user: { _id: currentUser._id, name: currentUser.name, email: currentUser.email }, role: 'member', joinedAt: new Date('2026-01-15'), isActive: true },
+                        { user: { _id: 'user-2', name: 'Sarah Johnson', email: 'sarah@example.com' }, role: 'admin', joinedAt: new Date('2026-01-15'), isActive: true },
+                        { user: { _id: 'user-4', name: 'Alex Kumar', email: 'alex@example.com' }, role: 'member', joinedAt: new Date('2026-01-15'), isActive: true },
+                        { user: { _id: 'user-5', name: 'Emma Davis', email: 'emma@example.com' }, role: 'member', joinedAt: new Date('2026-01-16'), isActive: true }
+                    ],
+                    expenses: [
+                        { amount: 800, _id: 'exp-4' },
+                        { amount: 120, _id: 'exp-5' },
+                        { amount: 95, _id: 'exp-6' }
+                    ],
+                    createdAt: new Date('2026-01-15')
+                },
+                {
+                    _id: 'group-3',
+                    name: 'Office Lunch Club',
+                    description: 'Weekly team lunches',
+                    createdBy: currentUser._id,
+                    members: [
+                        { user: { _id: currentUser._id, name: currentUser.name, email: currentUser.email }, role: 'admin', joinedAt: new Date('2026-01-10'), isActive: true },
+                        { user: { _id: 'user-3', name: 'Mike Chen', email: 'mike@example.com' }, role: 'member', joinedAt: new Date('2026-01-10'), isActive: true },
+                        { user: { _id: 'user-6', name: 'Lisa Wang', email: 'lisa@example.com' }, role: 'member', joinedAt: new Date('2026-01-11'), isActive: true }
+                    ],
+                    expenses: [
+                        { amount: 65, _id: 'exp-7' },
+                        { amount: 72, _id: 'exp-8' }
+                    ],
+                    createdAt: new Date('2026-01-10')
+                }
+            ];
+        }
+
+        function getDemoBalances() {
+            return [
+                {
+                    _id: 'balance-1',
+                    from: { _id: currentUser._id, name: currentUser.name, email: currentUser.email },
+                    to: { _id: 'user-2', name: 'Sarah Johnson', email: 'sarah@example.com' },
+                    amount: 145.50,
+                    group: { _id: 'group-1', name: 'Weekend Trip' },
+                    updatedAt: new Date('2026-01-25')
+                },
+                {
+                    _id: 'balance-2',
+                    from: { _id: 'user-3', name: 'Mike Chen', email: 'mike@example.com' },
+                    to: { _id: currentUser._id, name: currentUser.name, email: currentUser.email },
+                    amount: 42.75,
+                    group: { _id: 'group-3', name: 'Office Lunch Club' },
+                    updatedAt: new Date('2026-01-26')
+                },
+                {
+                    _id: 'balance-3',
+                    from: { _id: currentUser._id, name: currentUser.name, email: currentUser.email },
+                    to: { _id: 'user-4', name: 'Alex Kumar', email: 'alex@example.com' },
+                    amount: 253.75,
+                    group: { _id: 'group-2', name: 'Roommates' },
+                    updatedAt: new Date('2026-01-24')
+                }
+            ];
+        }
+
+        function getDemoExpenses() {
+            return [
+                {
+                    _id: 'exp-1',
+                    description: 'Hotel Booking',
+                    amount: 200,
+                    category: 'accommodation',
+                    paidBy: { _id: 'user-2', name: 'Sarah Johnson', email: 'sarah@example.com' },
+                    group: { _id: 'group-1', name: 'Weekend Trip' },
+                    createdAt: new Date('2026-01-22'),
+                    splits: [
+                        { user: { _id: currentUser._id, name: currentUser.name }, amount: 66.67, isPaid: false },
+                        { user: { _id: 'user-2', name: 'Sarah Johnson' }, amount: 66.67, isPaid: true },
+                        { user: { _id: 'user-3', name: 'Mike Chen' }, amount: 66.66, isPaid: false }
+                    ]
+                },
+                {
+                    _id: 'exp-2',
+                    description: 'Grocery Shopping',
+                    amount: 120,
+                    category: 'food',
+                    paidBy: { _id: currentUser._id, name: currentUser.name, email: currentUser.email },
+                    group: { _id: 'group-2', name: 'Roommates' },
+                    createdAt: new Date('2026-01-25'),
+                    splits: [
+                        { user: { _id: currentUser._id, name: currentUser.name }, amount: 30, isPaid: true },
+                        { user: { _id: 'user-2', name: 'Sarah Johnson' }, amount: 30, isPaid: true },
+                        { user: { _id: 'user-4', name: 'Alex Kumar' }, amount: 30, isPaid: false },
+                        { user: { _id: 'user-5', name: 'Emma Davis' }, amount: 30, isPaid: false }
+                    ]
+                },
+                {
+                    _id: 'exp-3',
+                    description: 'Team Lunch at Italian Restaurant',
+                    amount: 72,
+                    category: 'food',
+                    paidBy: { _id: 'user-3', name: 'Mike Chen', email: 'mike@example.com' },
+                    group: { _id: 'group-3', name: 'Office Lunch Club' },
+                    createdAt: new Date('2026-01-26'),
+                    splits: [
+                        { user: { _id: currentUser._id, name: currentUser.name }, amount: 24, isPaid: false },
+                        { user: { _id: 'user-3', name: 'Mike Chen' }, amount: 24, isPaid: true },
+                        { user: { _id: 'user-6', name: 'Lisa Wang' }, amount: 24, isPaid: true }
+                    ]
+                },
+                {
+                    _id: 'exp-4',
+                    description: 'Electricity Bill',
+                    amount: 95,
+                    category: 'utilities',
+                    paidBy: { _id: 'user-4', name: 'Alex Kumar', email: 'alex@example.com' },
+                    group: { _id: 'group-2', name: 'Roommates' },
+                    createdAt: new Date('2026-01-23'),
+                    splits: [
+                        { user: { _id: currentUser._id, name: currentUser.name }, amount: 23.75, isPaid: false },
+                        { user: { _id: 'user-2', name: 'Sarah Johnson' }, amount: 23.75, isPaid: true },
+                        { user: { _id: 'user-4', name: 'Alex Kumar' }, amount: 23.75, isPaid: true },
+                        { user: { _id: 'user-5', name: 'Emma Davis' }, amount: 23.75, isPaid: true }
+                    ]
+                },
+                {
+                    _id: 'exp-5',
+                    description: 'Gas and Tolls',
+                    amount: 85,
+                    category: 'travel',
+                    paidBy: { _id: currentUser._id, name: currentUser.name, email: currentUser.email },
+                    group: { _id: 'group-1', name: 'Weekend Trip' },
+                    createdAt: new Date('2026-01-21'),
+                    splits: [
+                        { user: { _id: currentUser._id, name: currentUser.name }, amount: 28.33, isPaid: true },
+                        { user: { _id: 'user-2', name: 'Sarah Johnson' }, amount: 28.33, isPaid: true },
+                        { user: { _id: 'user-3', name: 'Mike Chen' }, amount: 28.34, isPaid: false }
+                    ]
+                }
+            ];
+        }
+
+        function getDemoSettlements() {
+            return [
+                {
+                    _id: 'settlement-1',
+                    from: { _id: 'user-3', name: 'Mike Chen', email: 'mike@example.com' },
+                    to: { _id: currentUser._id, name: currentUser.name, email: currentUser.email },
+                    amount: 28.34,
+                    method: 'bank_transfer',
+                    notes: 'Weekend trip gas money',
+                    group: { _id: 'group-1', name: 'Weekend Trip' },
+                    settledAt: new Date('2026-01-24')
+                },
+                {
+                    _id: 'settlement-2',
+                    from: { _id: 'user-5', name: 'Emma Davis', email: 'emma@example.com' },
+                    to: { _id: currentUser._id, name: currentUser.name, email: currentUser.email },
+                    amount: 30,
+                    method: 'cash',
+                    notes: 'Grocery share',
+                    group: { _id: 'group-2', name: 'Roommates' },
+                    settledAt: new Date('2026-01-26')
+                },
+                {
+                    _id: 'settlement-3',
+                    from: { _id: currentUser._id, name: currentUser.name, email: currentUser.email },
+                    to: { _id: 'user-2', name: 'Sarah Johnson', email: 'sarah@example.com' },
+                    amount: 66.67,
+                    method: 'paypal',
+                    notes: 'Hotel booking split',
+                    group: { _id: 'group-1', name: 'Weekend Trip' },
+                    settledAt: new Date('2026-01-23')
+                }
+            ];
+        }
+    </script>
+</body>
+</html>
