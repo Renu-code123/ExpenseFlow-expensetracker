@@ -175,7 +175,9 @@ strengthen their frontend and project-structuring skills.
 | **Deployment** | Vercel (Frontend), Railway/Heroku (Backend) |
 | **PWA Support** | manifest.json, sw.js |
 
---- ## 📂 Folder Structure
+--- 
+
+## 📂 Folder Structure
 ExpenseFlow/
 │
 ├── public/ # Frontend static files
@@ -191,72 +193,72 @@ ExpenseFlow/
 │ └── finance-tips.html # Financial tips page
 │
 ├── models/ # MongoDB data models
-│ ├── User.js # User authentication model
-│ ├── Expense.js # Expense transaction model
-│ ├── Budget.js # Budget management model
-│ ├── Goal.js # Financial goals model
-│ ├── Receipt.js # Receipt storage model
-│ ├── Notification.js # Notification system model
-│ ├── CurrencyRate.js # Currency exchange rates
-│ ├── SyncQueue.js # Real-time sync queue
-│ ├── CategoryPattern.js # AI categorization patterns
-│ ├── AnalyticsCache.js # Analytics data cache
-│ ├── MerchantDatabase.js # Merchant information
-│ └── RecurringExpense.js # Recurring transactions
+│ ├── User.js
+│ ├── Expense.js
+│ ├── Budget.js
+│ ├── Goal.js
+│ ├── Receipt.js
+│ ├── Notification.js
+│ ├── CurrencyRate.js
+│ ├── SyncQueue.js
+│ ├── CategoryPattern.js
+│ ├── AnalyticsCache.js
+│ ├── MerchantDatabase.js
+│ └── RecurringExpense.js
 │
 ├── routes/ # API route handlers
-│ ├── auth.js # Authentication routes
-│ ├── expenses.js # Expense management routes
-│ ├── budgets.js # Budget management routes
-│ ├── goals.js # Goal tracking routes
-│ ├── receipts.js # Receipt upload routes
-│ ├── notifications.js # Notification routes
-│ ├── analytics.js # Analytics routes
-│ ├── currency.js # Currency conversion routes
-│ ├── export.js # Data export routes
-│ ├── groups.js # Group expense routes
-│ ├── splits.js # Expense splitting routes
-│ ├── recurring.js # Recurring expense routes
-│ └── sync.js # Real-time sync routes
+│ ├── auth.js
+│ ├── expenses.js
+│ ├── budgets.js
+│ ├── goals.js
+│ ├── receipts.js
+│ ├── notifications.js
+│ ├── analytics.js
+│ ├── currency.js
+│ ├── export.js
+│ ├── groups.js
+│ ├── splits.js
+│ ├── recurring.js
+│ └── sync.js
 │
 ├── middleware/ # Express middleware
-│ ├── auth.js # Authentication middleware
-│ ├── rateLimit.js # Rate limiting
-│ ├── rateLimiter.js # Advanced rate limiting
-│ ├── sanitization.js # Input sanitization
-│ ├── socketAuth.js # Socket authentication
-│ ├── uploadMiddleware.js # File upload handling
-│ ├── analyticsValidator.js # Analytics validation
-│ ├── categorizationValidator.js # Category validation
-│ ├── recurringValidator.js # Recurring expense validation
-│ └── securityMonitor.js # Security monitoring
+│ ├── auth.js
+│ ├── rateLimit.js
+│ ├── rateLimiter.js
+│ ├── sanitization.js
+│ ├── socketAuth.js
+│ ├── uploadMiddleware.js
+│ ├── analyticsValidator.js
+│ ├── categorizationValidator.js
+│ ├── recurringValidator.js
+│ └── securityMonitor.js
 │
 ├── services/ # Business logic services
-│ ├── analyticsService.js # Analytics processing
-│ ├── budgetService.js # Budget calculations
-│ ├── categorizationService.js # AI categorization
-│ ├── currencyService.js # Currency conversion
-│ ├── emailService.js # Email notifications
-│ ├── exportService.js # Data export
-│ ├── fileUploadService.js # File upload handling
-│ ├── notificationService.js # Notification management
-│ ├── recurringService.js # Recurring transactions
-│ ├── securityMonitor.js # Security monitoring
-│ └── cronJobs.js # Scheduled tasks
+│ ├── analyticsService.js
+│ ├── budgetService.js
+│ ├── categorizationService.js
+│ ├── currencyService.js
+│ ├── emailService.js
+│ ├── exportService.js
+│ ├── fileUploadService.js
+│ ├── notificationService.js
+│ ├── recurringService.js
+│ ├── securityMonitor.js
+│ └── cronJobs.js
 │
-├── server.js # Main server entry point
-├── package.json # Node.js dependencies
-├── .env.example # Environment variables template
-├── .gitignore # Git ignore rules
-├── README.md # Project documentation
-├── BACKEND.md # Backend documentation
-├── DATABASE.md # Database documentation
-├── TODO.md # Development tasks
-├── CONTRIBUTING.md # Contribution guidelines
-├── CODE_OF_CONDUCT.md # Code of conduct
-└── LICENSE # MIT License
----
+├── server.js
+├── package.json
+├── .env.example
+├── .gitignore
+├── README.md
+├── BACKEND.md
+├── DATABASE.md
+├── TODO.md
+├── CONTRIBUTING.md
+├── CODE_OF_CONDUCT.md
+└── LICENSE
 
+---
 ## 🚀 How to Run Locally
 
 Follow these simple steps to set up and view the project on your local machine 👇  
