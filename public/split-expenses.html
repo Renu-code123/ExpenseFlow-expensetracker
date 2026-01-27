@@ -1,0 +1,1763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#667eea">
+    <meta name="description" content="Split Expenses - Easily split bills and track payments">
+    <title>Split Expenses - ExpenseFlow</title>
+
+    <!-- Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            
+            --bg-primary: #0f0f23;
+            --bg-secondary: #1a1a2e;
+            --bg-tertiary: #16213e;
+            --bg-glass: rgba(255, 255, 255, 0.1);
+            
+            --text-primary: #ffffff;
+            --text-secondary: #b4b4b4;
+            --text-accent: #64ffda;
+            
+            --accent-primary: #64ffda;
+            --accent-secondary: #ff6b9d;
+            --success: #00e676;
+            --error: #ff5722;
+            --warning: #ffc107;
+            
+            --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            --shadow-hover: 0 15px 35px rgba(0, 0, 0, 0.1);
+            --shadow-card: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Navigation Bar */
+        .nav-bar {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .nav-back {
+            color: var(--text-primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .nav-back:hover {
+            color: var(--accent-primary);
+        }
+
+        .nav-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-link {
+            color: var(--text-primary);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Page Header */
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin: 0;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-success {
+            background: var(--success-gradient);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--accent-primary);
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-icon.purple {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .stat-icon.pink {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .stat-icon.blue {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .stat-icon.green {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .stat-value.negative {
+            color: var(--error);
+        }
+
+        .stat-value.positive {
+            color: var(--success);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Main Content Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Section Card */
+        .section-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Split Items */
+        .split-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .split-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 1.25rem;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .split-item:hover {
+            border-color: var(--accent-primary);
+            transform: translateX(5px);
+        }
+
+        .split-item-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+
+        .split-item-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .split-amount {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        .split-item-details {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .split-participants {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .participant-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--primary-gradient);
+            border: 2px solid var(--bg-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: -8px;
+        }
+
+        .participant-avatar:first-child {
+            margin-left: 0;
+        }
+
+        .more-participants {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* Balance Cards */
+        .balance-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .balance-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .balance-users {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .arrow-icon {
+            color: var(--text-secondary);
+        }
+
+        .balance-amount {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .balance-amount.positive {
+            color: var(--success);
+        }
+
+        .balance-amount.negative {
+            color: var(--error);
+        }
+
+        .balance-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-top: 0.5rem;
+        }
+
+        .balance-status.pending {
+            background: rgba(255, 193, 7, 0.2);
+            color: var(--warning);
+        }
+
+        .balance-status.paid {
+            background: rgba(0, 230, 118, 0.2);
+            color: var(--success);
+        }
+
+        /* Quick Split Calculator */
+        .calculator-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .calculator-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .calculator-header h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .calculator-header p {
+            color: var(--text-secondary);
+        }
+
+        .calculator-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .form-input,
+        .form-select {
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .calculator-result {
+            background: var(--primary-gradient);
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .result-label {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.9;
+        }
+
+        .result-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 700px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.5rem;
+            padding: 0.5rem;
+            transition: all 0.3s;
+        }
+
+        .close-btn:hover {
+            color: var(--text-primary);
+            transform: rotate(90deg);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        /* Split Method Tabs */
+        .split-method-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.5rem;
+            border-radius: 10px;
+        }
+
+        .split-tab {
+            flex: 1;
+            padding: 0.75rem;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .split-tab:hover {
+            color: var(--text-primary);
+        }
+
+        .split-tab.active {
+            background: var(--primary-gradient);
+            color: white;
+        }
+
+        /* Participant Selection */
+        .participants-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .participant-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+        }
+
+        .participant-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .participant-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .participant-details {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .participant-avatar-small {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .participant-name {
+            font-weight: 500;
+        }
+
+        .participant-input {
+            width: 120px;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: var(--text-primary);
+            text-align: right;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-title {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-description {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-content {
+                padding: 1rem;
+            }
+
+            .nav-actions {
+                display: none;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .header-actions {
+                width: 100%;
+            }
+
+            .btn {
+                flex: 1;
+            }
+
+            .modal-content {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="nav-bar">
+        <div class="nav-content">
+            <a href="dashboard-clean.html" class="nav-back">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <div class="nav-title">
+                <i class="fas fa-receipt"></i> Split Expenses
+            </div>
+            <div class="nav-actions">
+                <a href="groups.html" class="nav-link">Groups</a>
+                <a href="transactions.html" class="nav-link">Transactions</a>
+                <a href="analytics.html" class="nav-link">Analytics</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="header-content">
+                <h1>💰 Split Expenses</h1>
+                <div class="header-actions">
+                    <button class="btn btn-success" onclick="showSettleAllModal()">
+                        <i class="fas fa-check-circle"></i> Settle All
+                    </button>
+                    <button class="btn btn-primary" onclick="showAddSplitModal()">
+                        <i class="fas fa-plus"></i> Add Split
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon purple">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                </div>
+                <div class="stat-value" id="totalSplits">0</div>
+                <div class="stat-label">Active Splits</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon pink">
+                        <i class="fas fa-arrow-up"></i>
+                    </div>
+                </div>
+                <div class="stat-value negative" id="youOwe">$0.00</div>
+                <div class="stat-label">You Owe</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon blue">
+                        <i class="fas fa-arrow-down"></i>
+                    </div>
+                </div>
+                <div class="stat-value positive" id="owedToYou">$0.00</div>
+                <div class="stat-label">Owed to You</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon green">
+                        <i class="fas fa-balance-scale"></i>
+                    </div>
+                </div>
+                <div class="stat-value" id="netBalance">$0.00</div>
+                <div class="stat-label">Net Balance</div>
+            </div>
+        </div>
+
+        <!-- Quick Split Calculator -->
+        <div class="calculator-card">
+            <div class="calculator-header">
+                <h2>🧮 Quick Split Calculator</h2>
+                <p>Calculate how much each person owes instantly</p>
+            </div>
+            <div class="calculator-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Total Amount</label>
+                        <input type="number" id="calcAmount" class="form-input" placeholder="0.00" step="0.01" oninput="calculateSplit()">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Number of People</label>
+                        <input type="number" id="calcPeople" class="form-input" placeholder="2" min="2" oninput="calculateSplit()">
+                    </div>
+                </div>
+                <div class="calculator-result" id="calcResult" style="display: none;">
+                    <div class="result-label">Each person pays</div>
+                    <div class="result-value" id="calcResultValue">$0.00</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="main-grid">
+            <!-- Recent Splits -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-list"></i> Recent Splits
+                    </h2>
+                    <button class="btn btn-secondary" onclick="loadSplits()">
+                        <i class="fas fa-sync"></i>
+                    </button>
+                </div>
+                <div id="splitsContainer" class="split-list">
+                    <!-- Splits will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Outstanding Balances -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-exclamation-circle"></i> Outstanding Balances
+                    </h2>
+                </div>
+                <div id="balancesContainer">
+                    <!-- Balances will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Settlement History -->
+        <div class="section-card">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-history"></i> Settlement History
+                </h2>
+            </div>
+            <div id="settlementsContainer">
+                <!-- Settlement history will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Split Modal -->
+    <div id="addSplitModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Add Split Expense</h2>
+                <button class="close-btn" onclick="closeModal('addSplitModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="addSplitForm" onsubmit="addSplit(event)">
+                <div class="form-group">
+                    <label class="form-label">Expense Description *</label>
+                    <input type="text" class="form-input" id="splitDescription" placeholder="e.g., Dinner at Restaurant" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Total Amount *</label>
+                        <input type="number" class="form-input" id="splitAmount" placeholder="0.00" step="0.01" required oninput="updateSplitPreview()">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Category</label>
+                        <select class="form-select" id="splitCategory">
+                            <option value="food">🍔 Food & Dining</option>
+                            <option value="travel">✈️ Travel</option>
+                            <option value="accommodation">🏨 Accommodation</option>
+                            <option value="entertainment">🎮 Entertainment</option>
+                            <option value="shopping">🛍️ Shopping</option>
+                            <option value="utilities">⚡ Utilities</option>
+                            <option value="other">📦 Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Paid By *</label>
+                    <select class="form-select" id="splitPaidBy" required>
+                        <!-- Will be populated with users -->
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Split Method</label>
+                    <div class="split-method-tabs">
+                        <button type="button" class="split-tab active" data-method="equal" onclick="changeSplitMethod('equal')">
+                            Equal
+                        </button>
+                        <button type="button" class="split-tab" data-method="percentage" onclick="changeSplitMethod('percentage')">
+                            Percentage
+                        </button>
+                        <button type="button" class="split-tab" data-method="amount" onclick="changeSplitMethod('amount')">
+                            Amount
+                        </button>
+                        <button type="button" class="split-tab" data-method="shares" onclick="changeSplitMethod('shares')">
+                            Shares
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Select Participants</label>
+                    <div id="participantsContainer" class="participants-section">
+                        <!-- Participants will be loaded here -->
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Notes (Optional)</label>
+                    <textarea class="form-textarea" id="splitNotes" placeholder="Add any additional notes..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-check"></i> Create Split
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Split Details Modal -->
+    <div id="splitDetailsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="splitDetailsTitle">Split Details</h2>
+                <button class="close-btn" onclick="closeModal('splitDetailsModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="splitDetailsContent">
+                <!-- Split details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Settle Payment Modal -->
+    <div id="settleModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Settle Payment</h2>
+                <button class="close-btn" onclick="closeModal('settleModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="settleForm" onsubmit="settlePayment(event)">
+                <input type="hidden" id="settleBalanceId">
+                
+                <div class="form-group">
+                    <label class="form-label">Amount to Settle</label>
+                    <input type="number" class="form-input" id="settleAmount" placeholder="0.00" step="0.01" required readonly>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Payment Method</label>
+                    <select class="form-select" id="settleMethod" required>
+                        <option value="cash">💵 Cash</option>
+                        <option value="bank_transfer">🏦 Bank Transfer</option>
+                        <option value="paypal">💳 PayPal</option>
+                        <option value="venmo">📱 Venmo</option>
+                        <option value="zelle">💸 Zelle</option>
+                        <option value="other">📦 Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Notes (Optional)</label>
+                    <textarea class="form-textarea" id="settleNotes" placeholder="Add any notes about this payment"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-success" style="width: 100%;">
+                        <i class="fas fa-check-circle"></i> Confirm Payment
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let splits = [];
+        let balances = [];
+        let settlements = [];
+        let currentUser = null;
+        let currentSplitMethod = 'equal';
+        let availableUsers = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadCurrentUser();
+            await loadData();
+            loadAvailableUsers();
+        });
+
+        // Load current user
+        async function loadCurrentUser() {
+            try {
+                const response = await fetch('/api/auth/me', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                if (response.ok) {
+                    currentUser = await response.json();
+                } else {
+                    // Demo user
+                    currentUser = {
+                        _id: 'user-1',
+                        name: 'Demo User',
+                        email: 'demo@example.com'
+                    };
+                }
+            } catch (error) {
+                console.error('Error loading user:', error);
+                // Demo user
+                currentUser = {
+                    _id: 'user-1',
+                    name: 'Demo User',
+                    email: 'demo@example.com'
+                };
+            }
+        }
+
+        // Load all data
+        async function loadData() {
+            await Promise.all([
+                loadSplits(),
+                loadBalances(),
+                loadSettlements()
+            ]);
+            updateStats();
+        }
+
+        // Load splits
+        async function loadSplits() {
+            try {
+                const response = await fetch('/api/splits', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                if (response.ok) {
+                    splits = await response.json();
+                } else {
+                    splits = getDemoSplits();
+                }
+            } catch (error) {
+                console.error('Error loading splits:', error);
+                splits = getDemoSplits();
+            }
+            renderSplits();
+        }
+
+        // Render splits
+        function renderSplits() {
+            const container = document.getElementById('splitsContainer');
+            
+            if (splits.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📝</div>
+                        <h3 class="empty-title">No Splits Yet</h3>
+                        <p class="empty-description">Create your first split expense to get started</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = splits.map(split => `
+                <div class="split-item" onclick="showSplitDetails('${split._id}')">
+                    <div class="split-item-header">
+                        <div class="split-item-title">${escapeHtml(split.description)}</div>
+                        <div class="split-amount">$${split.totalAmount.toFixed(2)}</div>
+                    </div>
+                    <div class="split-item-details">
+                        <span><i class="fas fa-user"></i> Paid by ${escapeHtml(split.paidBy.name)}</span>
+                        <span><i class="fas fa-calendar"></i> ${formatDate(split.createdAt)}</span>
+                        <span><i class="fas fa-tag"></i> ${split.splitMethod}</span>
+                    </div>
+                    <div class="split-participants">
+                        ${split.participants.slice(0, 4).map(p => `
+                            <div class="participant-avatar" title="${escapeHtml(p.user.name)}">
+                                ${getInitials(p.user.name)}
+                            </div>
+                        `).join('')}
+                        ${split.participants.length > 4 ? `
+                            <span class="more-participants">+${split.participants.length - 4} more</span>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Load balances
+        async function loadBalances() {
+            try {
+                const response = await fetch('/api/splits/balances', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                if (response.ok) {
+                    balances = await response.json();
+                } else {
+                    balances = getDemoBalances();
+                }
+            } catch (error) {
+                console.error('Error loading balances:', error);
+                balances = getDemoBalances();
+            }
+            renderBalances();
+        }
+
+        // Render balances
+        function renderBalances() {
+            const container = document.getElementById('balancesContainer');
+            
+            if (balances.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">✅</div>
+                        <h3 class="empty-title">All Settled!</h3>
+                        <p class="empty-description">You don't have any outstanding balances</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = balances.map(balance => `
+                <div class="balance-card">
+                    <div class="balance-header">
+                        <div class="balance-users">
+                            <div class="user-info">
+                                <div class="user-avatar">${getInitials(balance.from.name)}</div>
+                                <strong>${escapeHtml(balance.from.name)}</strong>
+                            </div>
+                            <div class="arrow-icon">
+                                <i class="fas fa-arrow-right"></i>
+                            </div>
+                            <div class="user-info">
+                                <div class="user-avatar">${getInitials(balance.to.name)}</div>
+                                <strong>${escapeHtml(balance.to.name)}</strong>
+                            </div>
+                        </div>
+                        <div class="balance-amount ${balance.from._id === currentUser._id ? 'negative' : 'positive'}">
+                            ${balance.from._id === currentUser._id ? '-' : '+'}$${Math.abs(balance.amount).toFixed(2)}
+                        </div>
+                    </div>
+                    <span class="balance-status ${balance.status}">${balance.status}</span>
+                    ${balance.from._id === currentUser._id ? `
+                        <button class="btn btn-success" style="width: 100%; margin-top: 1rem;" onclick="event.stopPropagation(); showSettleModal('${balance._id}', ${balance.amount})">
+                            <i class="fas fa-check"></i> Settle Now
+                        </button>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        // Load settlements
+        async function loadSettlements() {
+            try {
+                const response = await fetch('/api/splits/settlements', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                if (response.ok) {
+                    settlements = await response.json();
+                } else {
+                    settlements = getDemoSettlements();
+                }
+            } catch (error) {
+                console.error('Error loading settlements:', error);
+                settlements = getDemoSettlements();
+            }
+            renderSettlements();
+        }
+
+        // Render settlements
+        function renderSettlements() {
+            const container = document.getElementById('settlementsContainer');
+            
+            if (settlements.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">💸</div>
+                        <h3 class="empty-title">No Settlements Yet</h3>
+                        <p class="empty-description">Your payment history will appear here</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = settlements.map(settlement => `
+                <div class="balance-card">
+                    <div class="balance-header">
+                        <div class="balance-users">
+                            <div class="user-info">
+                                <div class="user-avatar">${getInitials(settlement.from.name)}</div>
+                                <strong>${escapeHtml(settlement.from.name)}</strong>
+                            </div>
+                            <div class="arrow-icon">
+                                <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                            </div>
+                            <div class="user-info">
+                                <div class="user-avatar">${getInitials(settlement.to.name)}</div>
+                                <strong>${escapeHtml(settlement.to.name)}</strong>
+                            </div>
+                        </div>
+                        <div class="balance-amount positive">$${settlement.amount.toFixed(2)}</div>
+                    </div>
+                    <div class="split-item-details" style="margin-top: 1rem;">
+                        <span><i class="fas fa-credit-card"></i> ${settlement.method}</span>
+                        <span><i class="fas fa-calendar"></i> ${formatDate(settlement.settledAt)}</span>
+                    </div>
+                    ${settlement.notes ? `
+                        <p style="margin-top: 0.75rem; color: var(--text-secondary); font-size: 0.9rem;">
+                            ${escapeHtml(settlement.notes)}
+                        </p>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        // Update statistics
+        function updateStats() {
+            document.getElementById('totalSplits').textContent = splits.length;
+            
+            const youOwe = balances
+                .filter(b => b.from._id === currentUser._id)
+                .reduce((sum, b) => sum + b.amount, 0);
+            document.getElementById('youOwe').textContent = `$${youOwe.toFixed(2)}`;
+            
+            const owedToYou = balances
+                .filter(b => b.to._id === currentUser._id)
+                .reduce((sum, b) => sum + b.amount, 0);
+            document.getElementById('owedToYou').textContent = `$${owedToYou.toFixed(2)}`;
+            
+            const netBalance = owedToYou - youOwe;
+            const netElement = document.getElementById('netBalance');
+            netElement.textContent = `$${Math.abs(netBalance).toFixed(2)}`;
+            netElement.classList.remove('positive', 'negative');
+            if (netBalance > 0) {
+                netElement.classList.add('positive');
+            } else if (netBalance < 0) {
+                netElement.classList.add('negative');
+            }
+        }
+
+        // Calculate split
+        function calculateSplit() {
+            const amount = parseFloat(document.getElementById('calcAmount').value) || 0;
+            const people = parseInt(document.getElementById('calcPeople').value) || 0;
+            
+            if (amount > 0 && people > 1) {
+                const perPerson = amount / people;
+                document.getElementById('calcResultValue').textContent = `$${perPerson.toFixed(2)}`;
+                document.getElementById('calcResult').style.display = 'block';
+            } else {
+                document.getElementById('calcResult').style.display = 'none';
+            }
+        }
+
+        // Load available users
+        function loadAvailableUsers() {
+            // Demo users
+            availableUsers = [
+                { _id: 'user-1', name: 'Demo User', email: 'demo@example.com' },
+                { _id: 'user-2', name: 'Sarah Johnson', email: 'sarah@example.com' },
+                { _id: 'user-3', name: 'Mike Chen', email: 'mike@example.com' },
+                { _id: 'user-4', name: 'Alex Kumar', email: 'alex@example.com' },
+                { _id: 'user-5', name: 'Emma Davis', email: 'emma@example.com' },
+                { _id: 'user-6', name: 'Lisa Wang', email: 'lisa@example.com' }
+            ];
+        }
+
+        // Show add split modal
+        function showAddSplitModal() {
+            // Populate paid by dropdown
+            const paidBySelect = document.getElementById('splitPaidBy');
+            paidBySelect.innerHTML = availableUsers.map(user => `
+                <option value="${user._id}" ${user._id === currentUser._id ? 'selected' : ''}>
+                    ${escapeHtml(user.name)}
+                </option>
+            `).join('');
+            
+            // Populate participants
+            renderParticipants();
+            
+            showModal('addSplitModal');
+        }
+
+        // Render participants
+        function renderParticipants() {
+            const container = document.getElementById('participantsContainer');
+            const method = currentSplitMethod;
+            
+            container.innerHTML = availableUsers.map(user => `
+                <div class="participant-item">
+                    <div class="participant-left">
+                        <input type="checkbox" class="participant-checkbox" data-user-id="${user._id}" ${user._id === currentUser._id ? 'checked' : ''} onchange="updateSplitPreview()">
+                        <div class="participant-details">
+                            <div class="participant-avatar-small">${getInitials(user.name)}</div>
+                            <div>
+                                <div class="participant-name">${escapeHtml(user.name)}</div>
+                            </div>
+                        </div>
+                    </div>
+                    ${method !== 'equal' ? `
+                        <input type="number" class="participant-input" placeholder="${method === 'percentage' ? '%' : method === 'amount' ? '$' : 'shares'}" step="${method === 'amount' ? '0.01' : '1'}" data-input-id="${user._id}" oninput="updateSplitPreview()">
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        // Change split method
+        function changeSplitMethod(method) {
+            currentSplitMethod = method;
+            
+            // Update tab active state
+            document.querySelectorAll('.split-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`[data-method="${method}"]`).classList.add('active');
+            
+            renderParticipants();
+        }
+
+        // Update split preview
+        function updateSplitPreview() {
+            // This would show a preview of how the split will be calculated
+            console.log('Split preview updated');
+        }
+
+        // Add split
+        async function addSplit(event) {
+            event.preventDefault();
+            
+            const description = document.getElementById('splitDescription').value;
+            const amount = parseFloat(document.getElementById('splitAmount').value);
+            const category = document.getElementById('splitCategory').value;
+            const paidBy = document.getElementById('splitPaidBy').value;
+            const notes = document.getElementById('splitNotes').value;
+            
+            // Get selected participants
+            const participants = [];
+            document.querySelectorAll('.participant-checkbox:checked').forEach(checkbox => {
+                const userId = checkbox.dataset.userId;
+                const inputEl = document.querySelector(`[data-input-id="${userId}"]`);
+                
+                participants.push({
+                    userId,
+                    ...(currentSplitMethod === 'percentage' && inputEl ? { percentage: parseFloat(inputEl.value) || 0 } : {}),
+                    ...(currentSplitMethod === 'amount' && inputEl ? { amount: parseFloat(inputEl.value) || 0 } : {}),
+                    ...(currentSplitMethod === 'shares' && inputEl ? { shares: parseInt(inputEl.value) || 1 } : {})
+                });
+            });
+            
+            try {
+                const response = await fetch('/api/splits', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        description,
+                        totalAmount: amount,
+                        category,
+                        paidBy,
+                        splitMethod: currentSplitMethod,
+                        participants,
+                        notes
+                    })
+                });
+                
+                if (response.ok) {
+                    closeModal('addSplitModal');
+                    await loadData();
+                    showSuccess('Split created successfully!');
+                } else {
+                    const error = await response.json();
+                    showError(error.message || 'Failed to create split');
+                }
+            } catch (error) {
+                console.error('Error creating split:', error);
+                showError('Error creating split');
+            }
+        }
+
+        // Show split details
+        function showSplitDetails(splitId) {
+            const split = splits.find(s => s._id === splitId);
+            if (!split) return;
+            
+            document.getElementById('splitDetailsTitle').textContent = split.description;
+            
+            const content = document.getElementById('splitDetailsContent');
+            content.innerHTML = `
+                <div style="margin-bottom: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                        <span style="color: var(--text-secondary);">Total Amount</span>
+                        <strong style="font-size: 1.5rem; color: var(--accent-primary);">$${split.totalAmount.toFixed(2)}</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                        <span style="color: var(--text-secondary);">Paid By</span>
+                        <strong>${escapeHtml(split.paidBy.name)}</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--text-secondary);">Split Method</span>
+                        <strong>${split.splitMethod}</strong>
+                    </div>
+                </div>
+                <h3 style="margin-bottom: 1rem;">Participants</h3>
+                <div class="participants-section">
+                    ${split.participants.map(p => `
+                        <div class="participant-item">
+                            <div class="participant-details">
+                                <div class="participant-avatar-small">${getInitials(p.user.name)}</div>
+                                <div>
+                                    <div class="participant-name">${escapeHtml(p.user.name)}</div>
+                                    <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                                        Owes $${p.amount.toFixed(2)}
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="balance-status ${p.isPaid ? 'paid' : 'pending'}">
+                                ${p.isPaid ? '✓ Paid' : '⏳ Pending'}
+                            </span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            showModal('splitDetailsModal');
+        }
+
+        // Show settle modal
+        function showSettleModal(balanceId, amount) {
+            document.getElementById('settleBalanceId').value = balanceId;
+            document.getElementById('settleAmount').value = amount.toFixed(2);
+            showModal('settleModal');
+        }
+
+        // Settle payment
+        async function settlePayment(event) {
+            event.preventDefault();
+            
+            const balanceId = document.getElementById('settleBalanceId').value;
+            const method = document.getElementById('settleMethod').value;
+            const notes = document.getElementById('settleNotes').value;
+            
+            try {
+                const response = await fetch(`/api/splits/balances/${balanceId}/settle`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ method, notes })
+                });
+                
+                if (response.ok) {
+                    closeModal('settleModal');
+                    await loadData();
+                    showSuccess('Payment settled successfully!');
+                } else {
+                    const error = await response.json();
+                    showError(error.message || 'Failed to settle payment');
+                }
+            } catch (error) {
+                console.error('Error settling payment:', error);
+                showError('Error settling payment');
+            }
+        }
+
+        // Utility functions
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function getInitials(name) {
+            return name
+                .split(' ')
+                .map(n => n[0])
+                .join('')
+                .toUpperCase()
+                .slice(0, 2);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 0) return 'Today';
+            if (diffDays === 1) return 'Yesterday';
+            if (diffDays < 7) return `${diffDays} days ago`;
+            
+            return date.toLocaleDateString();
+        }
+
+        function showSuccess(message) {
+            alert(message); // Replace with toast notification
+        }
+
+        function showError(message) {
+            alert(message); // Replace with toast notification
+        }
+
+        function showSettleAllModal() {
+            console.log('Settle all balances');
+        }
+
+        // Demo data functions
+        function getDemoSplits() {
+            return [
+                {
+                    _id: 'split-1',
+                    description: 'Team Dinner at Italian Restaurant',
+                    totalAmount: 156.50,
+                    category: 'food',
+                    paidBy: { _id: 'user-1', name: 'Demo User', email: 'demo@example.com' },
+                    splitMethod: 'equal',
+                    createdAt: new Date('2026-01-26'),
+                    participants: [
+                        { user: { _id: 'user-1', name: 'Demo User' }, amount: 31.30, isPaid: true },
+                        { user: { _id: 'user-2', name: 'Sarah Johnson' }, amount: 31.30, isPaid: true },
+                        { user: { _id: 'user-3', name: 'Mike Chen' }, amount: 31.30, isPaid: false },
+                        { user: { _id: 'user-4', name: 'Alex Kumar' }, amount: 31.30, isPaid: false },
+                        { user: { _id: 'user-5', name: 'Emma Davis' }, amount: 31.30, isPaid: true }
+                    ]
+                },
+                {
+                    _id: 'split-2',
+                    description: 'Uber to Airport',
+                    totalAmount: 45.00,
+                    category: 'travel',
+                    paidBy: { _id: 'user-2', name: 'Sarah Johnson', email: 'sarah@example.com' },
+                    splitMethod: 'equal',
+                    createdAt: new Date('2026-01-25'),
+                    participants: [
+                        { user: { _id: 'user-1', name: 'Demo User' }, amount: 15.00, isPaid: false },
+                        { user: { _id: 'user-2', name: 'Sarah Johnson' }, amount: 15.00, isPaid: true },
+                        { user: { _id: 'user-3', name: 'Mike Chen' }, amount: 15.00, isPaid: true }
+                    ]
+                },
+                {
+                    _id: 'split-3',
+                    description: 'Grocery Shopping',
+                    totalAmount: 128.75,
+                    category: 'shopping',
+                    paidBy: { _id: 'user-4', name: 'Alex Kumar', email: 'alex@example.com' },
+                    splitMethod: 'amount',
+                    createdAt: new Date('2026-01-24'),
+                    participants: [
+                        { user: { _id: 'user-1', name: 'Demo User' }, amount: 42.50, isPaid: false },
+                        { user: { _id: 'user-4', name: 'Alex Kumar' }, amount: 43.25, isPaid: true },
+                        { user: { _id: 'user-5', name: 'Emma Davis' }, amount: 43.00, isPaid: true }
+                    ]
+                },
+                {
+                    _id: 'split-4',
+                    description: 'Concert Tickets',
+                    totalAmount: 240.00,
+                    category: 'entertainment',
+                    paidBy: { _id: 'user-1', name: 'Demo User', email: 'demo@example.com' },
+                    splitMethod: 'equal',
+                    createdAt: new Date('2026-01-23'),
+                    participants: [
+                        { user: { _id: 'user-1', name: 'Demo User' }, amount: 60.00, isPaid: true },
+                        { user: { _id: 'user-2', name: 'Sarah Johnson' }, amount: 60.00, isPaid: false },
+                        { user: { _id: 'user-3', name: 'Mike Chen' }, amount: 60.00, isPaid: true },
+                        { user: { _id: 'user-6', name: 'Lisa Wang' }, amount: 60.00, isPaid: false }
+                    ]
+                }
+            ];
+        }
+
+        function getDemoBalances() {
+            return [
+                {
+                    _id: 'balance-1',
+                    from: { _id: 'user-3', name: 'Mike Chen', email: 'mike@example.com' },
+                    to: { _id: 'user-1', name: 'Demo User', email: 'demo@example.com' },
+                    amount: 31.30,
+                    status: 'pending'
+                },
+                {
+                    _id: 'balance-2',
+                    from: { _id: 'user-4', name: 'Alex Kumar', email: 'alex@example.com' },
+                    to: { _id: 'user-1', name: 'Demo User', email: 'demo@example.com' },
+                    amount: 31.30,
+                    status: 'pending'
+                },
+                {
+                    _id: 'balance-3',
+                    from: { _id: 'user-1', name: 'Demo User', email: 'demo@example.com' },
+                    to: { _id: 'user-2', name: 'Sarah Johnson', email: 'sarah@example.com' },
+                    amount: 15.00,
+                    status: 'pending'
+                },
+                {
+                    _id: 'balance-4',
+                    from: { _id: 'user-1', name: 'Demo User', email: 'demo@example.com' },
+                    to: { _id: 'user-4', name: 'Alex Kumar', email: 'alex@example.com' },
+                    amount: 42.50,
+                    status: 'pending'
+                },
+                {
+                    _id: 'balance-5',
+                    from: { _id: 'user-2', name: 'Sarah Johnson', email: 'sarah@example.com' },
+                    to: { _id: 'user-1', name: 'Demo User', email: 'demo@example.com' },
+                    amount: 60.00,
+                    status: 'pending'
+                },
+                {
+                    _id: 'balance-6',
+                    from: { _id: 'user-6', name: 'Lisa Wang', email: 'lisa@example.com' },
+                    to: { _id: 'user-1', name: 'Demo User', email: 'demo@example.com' },
+                    amount: 60.00,
+                    status: 'pending'
+                }
+            ];
+        }
+
+        function getDemoSettlements() {
+            return [
+                {
+                    _id: 'settlement-1',
+                    from: { _id: 'user-2', name: 'Sarah Johnson', email: 'sarah@example.com' },
+                    to: { _id: 'user-1', name: 'Demo User', email: 'demo@example.com' },
+                    amount: 31.30,
+                    method: 'bank_transfer',
+                    notes: 'Team dinner payment',
+                    settledAt: new Date('2026-01-26')
+                },
+                {
+                    _id: 'settlement-2',
+                    from: { _id: 'user-3', name: 'Mike Chen', email: 'mike@example.com' },
+                    to: { _id: 'user-2', name: 'Sarah Johnson', email: 'sarah@example.com' },
+                    amount: 15.00,
+                    method: 'venmo',
+                    notes: 'Airport ride',
+                    settledAt: new Date('2026-01-25')
+                },
+                {
+                    _id: 'settlement-3',
+                    from: { _id: 'user-5', name: 'Emma Davis', email: 'emma@example.com' },
+                    to: { _id: 'user-4', name: 'Alex Kumar', email: 'alex@example.com' },
+                    amount: 43.00,
+                    method: 'cash',
+                    notes: 'Grocery share',
+                    settledAt: new Date('2026-01-24')
+                },
+                {
+                    _id: 'settlement-4',
+                    from: { _id: 'user-3', name: 'Mike Chen', email: 'mike@example.com' },
+                    to: { _id: 'user-1', name: 'Demo User', email: 'demo@example.com' },
+                    amount: 60.00,
+                    method: 'paypal',
+                    notes: 'Concert ticket',
+                    settledAt: new Date('2026-01-23')
+                }
+            ];
+        }
+    </script>
+</body>
+</html>
