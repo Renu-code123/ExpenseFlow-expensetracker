@@ -640,7 +640,7 @@ body {
 
 /* Features Showcase Section */
 .features-showcase {
-  padding: 6rem 0;
+  padding: 0 0;
   background: rgba(255, 255, 255, 0.02);
 }
 
@@ -1799,6 +1799,8 @@ body {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   padding: 3rem 0 1rem;
   margin-top: 4rem;
+  animation: fadeInUp 1s ease-out 1.2s both;
+  
 }
 
 .footer-container {
@@ -1860,6 +1862,14 @@ body {
 
 .footer-links a:hover {
   color: var(--accent-primary);
+}
+.footer-bottom {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
 }
 
 .social-links {
@@ -7125,5 +7135,138 @@ input:checked + .toggle-slider::before {
     left: 1rem;
     right: 1rem;
     max-width: none;
+  }
+}
+
+/* ============================
+   ADD TRANSACTION SECTION
+   ============================ */
+
+.form-section {
+  margin-top: 3rem;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(18px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+}
+
+.form-section h3 {
+  margin-bottom: 1.5rem;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.form-section h3::before {
+  content: "+";
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary-gradient);
+  border-radius: 50%;
+  color: #fff;
+  font-weight: bold;
+}
+
+/* ============================
+   FORM LAYOUT
+   ============================ */
+
+.transaction-form {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr auto;
+  gap: 1rem;
+  align-items: center;
+}
+
+/* Inputs & Select */
+.transaction-form input,
+.transaction-form select {
+  padding: 0.9rem 1rem;
+  background: rgba(15, 15, 35, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.transaction-form input::placeholder {
+  color: var(--text-secondary);
+}
+
+.transaction-form input:focus,
+.transaction-form select:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(100, 255, 218, 0.15);
+}
+
+/* Select arrow fix for dark theme */
+.transaction-form select {
+  appearance: none;
+  background-image: 
+    linear-gradient(45deg, transparent 50%, var(--text-secondary) 50%),
+    linear-gradient(135deg, var(--text-secondary) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) calc(50% - 4px),
+    calc(100% - 12px) calc(50% - 4px);
+  background-size: 6px 6px;
+  background-repeat: no-repeat;
+}
+
+/* ============================
+   SUBMIT BUTTON
+   ============================ */
+
+.transaction-form button {
+  padding: 0.9rem 1.6rem;
+  background: var(--primary-gradient);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.transaction-form button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(100, 255, 218, 0.35);
+}
+
+.transaction-form button:active {
+  transform: translateY(0);
+}
+
+/* ============================
+   RESPONSIVE
+   ============================ */
+
+@media (max-width: 900px) {
+  .transaction-form {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .transaction-form button {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 500px) {
+  .transaction-form {
+    grid-template-columns: 1fr;
+  }
+
+  .form-section {
+    padding: 1.5rem;
   }
 }

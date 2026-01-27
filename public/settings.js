@@ -186,10 +186,12 @@ class NotificationSettingsController {
                     <label for="webhookUrl">Webhook URL</label>
                     <input type="url" id="webhookUrl" placeholder="https://your-server.com/webhook" class="form-control">
                   </div>
-                  <div class="form-group">
-                    <label for="webhookSecret">Secret Key (for signature verification)</label>
-                    <input type="password" id="webhookSecret" placeholder="Optional secret for HMAC signature" class="form-control">
-                  </div>
+                  <form>
+                    <div class="form-group">
+                      <label for="webhookSecret">Secret Key (for signature verification)</label>
+                      <input type="password" id="webhookSecret" placeholder="Optional secret for HMAC signature" class="form-control">
+                    </div>
+                  </form>
                   <p class="settings-help-text">Select which events to send to your webhook:</p>
                   <div class="notification-types" id="webhookTypes"></div>
                 </div>
