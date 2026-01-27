@@ -1,21 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { auth } = require('../middleware/auth');
+// Handle both export styles: module.exports = auth OR module.exports = { auth }
+const authModule = require('../middleware/auth');
+const auth = authModule.auth || authModule;
 const investmentService = require('../services/investmentService');
-const {
-  validateCreatePortfolio,
-  validateUpdatePortfolio,
-  validateBuyTransaction,
-  validateSellTransaction,
-  validateDividend,
-  validateTransfer,
-  validateAddToWatchlist,
-  validateSearchAssets,
-  validatePortfolioHistory,
-  validateTransactionHistory,
-  validatePriceHistory,
-  validateManualPriceUpdate
-} = require('../middleware/investmentValidator');
+const validators = require('../middleware/investmentValidator');
 
 const Portfolio = require('../models/Portfolio');
 const Asset = require('../models/Asset');
@@ -25,7 +14,7 @@ const PriceHistory = require('../models/PriceHistory');
 // ============ PORTFOLIO ROUTES ============
 
 // Create portfolio
-router.post('/portfolios', auth, validateCreatePortfolio, async (req, res) => {
+router.post('/portfolios', auth, validators.validateCreatePortfolio, async (req, res) => {
   try {
     const portfolio = await investmentService.createPortfolio(req.user._id, req.validated);
     res.status(201).json({ success: true, data: portfolio });
@@ -36,7 +25,7 @@ router.post('/portfolios', auth, validateCreatePortfolio, async (req, res) => {
 });
 
 // Get user portfolios
-router.get('/portfolios', auth, async (req, res) => {
+router.get('/portfolios', auth, validators.validateGetPortfolios, async (req, res) => {
   try {
     const portfolios = await investmentService.getUserPortfolios(req.user._id);
     res.json({ success: true, data: portfolios });
@@ -62,7 +51,7 @@ router.get('/portfolios/:portfolioId', auth, async (req, res) => {
 });
 
 // Update portfolio
-router.put('/portfolios/:portfolioId', auth, validateUpdatePortfolio, async (req, res) => {
+router.put('/portfolios/:portfolioId', auth, validators.validateUpdatePortfolio, async (req, res) => {
   try {
     const portfolio = await Portfolio.findOneAndUpdate(
       { _id: req.params.portfolioId, user: req.user._id },
@@ -118,7 +107,7 @@ router.get('/portfolios/:portfolioId/performance', auth, async (req, res) => {
 });
 
 // Get portfolio history
-router.get('/portfolios/:portfolioId/history', auth, validatePortfolioHistory, async (req, res) => {
+router.get('/portfolios/:portfolioId/history', auth, validators.validatePortfolioHistory, async (req, res) => {
   try {
     const history = await investmentService.getPortfolioHistory(
       req.params.portfolioId,
@@ -133,7 +122,7 @@ router.get('/portfolios/:portfolioId/history', auth, validatePortfolioHistory, a
 });
 
 // Take portfolio snapshot
-router.post('/portfolios/:portfolioId/snapshot', auth, async (req, res) => {
+router.post('/portfolios/:portfolioId/snapshot', auth, validators.validateSnapshot, async (req, res) => {
   try {
     const portfolio = await Portfolio.findOne({
       _id: req.params.portfolioId,
@@ -153,7 +142,7 @@ router.post('/portfolios/:portfolioId/snapshot', auth, async (req, res) => {
 });
 
 // Get rebalancing suggestions
-router.get('/portfolios/:portfolioId/rebalance', auth, async (req, res) => {
+router.get('/portfolios/:portfolioId/rebalance', auth, validators.validateRebalance, async (req, res) => {
   try {
     const portfolio = await Portfolio.findOne({
       _id: req.params.portfolioId,
@@ -175,7 +164,7 @@ router.get('/portfolios/:portfolioId/rebalance', auth, async (req, res) => {
 // ============ TRANSACTION ROUTES ============
 
 // Buy asset
-router.post('/transactions/buy', auth, validateBuyTransaction, async (req, res) => {
+router.post('/transactions/buy', auth, validators.validateBuyTransaction, async (req, res) => {
   try {
     const result = await investmentService.buyAsset(
       req.user._id,
@@ -190,7 +179,7 @@ router.post('/transactions/buy', auth, validateBuyTransaction, async (req, res) 
 });
 
 // Sell asset
-router.post('/transactions/sell', auth, validateSellTransaction, async (req, res) => {
+router.post('/transactions/sell', auth, validators.validateSellTransaction, async (req, res) => {
   try {
     const result = await investmentService.sellAsset(
       req.user._id,
@@ -205,7 +194,7 @@ router.post('/transactions/sell', auth, validateSellTransaction, async (req, res
 });
 
 // Record dividend
-router.post('/transactions/dividend', auth, validateDividend, async (req, res) => {
+router.post('/transactions/dividend', auth, validators.validateDividend, async (req, res) => {
   try {
     const result = await investmentService.recordDividend(
       req.user._id,
@@ -220,7 +209,7 @@ router.post('/transactions/dividend', auth, validateDividend, async (req, res) =
 });
 
 // Transfer asset between portfolios
-router.post('/transactions/transfer', auth, validateTransfer, async (req, res) => {
+router.post('/transactions/transfer', auth, validators.validateTransfer, async (req, res) => {
   try {
     const { fromPortfolioId, toPortfolioId, symbol, quantity, costBasis, purchaseDate, notes } = req.validated;
     
@@ -252,12 +241,10 @@ router.post('/transactions/transfer', auth, validateTransfer, async (req, res) =
         user: req.user._id,
         type: 'transfer_out',
         quantity,
-        pricePerUnit: costBasis / quantity,
+        costBasis,
+        purchaseDate,
         notes
       }).save();
-      
-      const fromPortfolio = await Portfolio.findById(fromPortfolioId);
-      await fromPortfolio.removeHolding(asset._id, quantity, costBasis / quantity);
     }
     
     // Create transfer in transaction
@@ -268,12 +255,10 @@ router.post('/transactions/transfer', auth, validateTransfer, async (req, res) =
         user: req.user._id,
         type: 'transfer_in',
         quantity,
-        pricePerUnit: costBasis / quantity,
+        costBasis,
+        purchaseDate,
         notes
       }).save();
-      
-      const toPortfolio = await Portfolio.findById(toPortfolioId);
-      await toPortfolio.addHolding(asset._id, quantity, costBasis / quantity, purchaseDate);
     }
     
     res.status(201).json({ success: true, message: 'Transfer completed' });
@@ -284,40 +269,34 @@ router.post('/transactions/transfer', auth, validateTransfer, async (req, res) =
 });
 
 // Get transaction history
-router.get('/transactions', auth, validateTransactionHistory, async (req, res) => {
+router.get('/transactions', auth, validators.validateTransactionHistory, async (req, res) => {
   try {
-    const { portfolioId, assetId, type, startDate, endDate, page, limit } = req.validated;
+    const { portfolioId, assetId, type, page, limit } = req.validated;
     
-    const query = { user: req.user._id };
-    if (portfolioId) query.portfolio = portfolioId;
-    if (assetId) query.asset = assetId;
-    if (type) query.type = type;
-    if (startDate || endDate) {
-      query.date = {};
-      if (startDate) query.date.$gte = new Date(startDate);
-      if (endDate) query.date.$lte = new Date(endDate);
-    }
+    const filter = { user: req.user._id };
+    if (portfolioId) filter.portfolio = portfolioId;
+    if (assetId) filter.asset = assetId;
+    if (type) filter.type = type;
     
-    const skip = (page - 1) * limit;
+    const transactions = await AssetTransaction.find(filter)
+      .populate('asset', 'symbol name type')
+      .populate('portfolio', 'name')
+      .sort({ date: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
     
-    const [transactions, total] = await Promise.all([
-      AssetTransaction.find(query)
-        .populate('asset', 'symbol name type')
-        .populate('portfolio', 'name')
-        .sort({ date: -1 })
-        .skip(skip)
-        .limit(limit),
-      AssetTransaction.countDocuments(query)
-    ]);
+    const total = await AssetTransaction.countDocuments(filter);
     
     res.json({
       success: true,
-      data: transactions,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit)
+      data: {
+        transactions,
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit)
+        }
       }
     });
   } catch (error) {
@@ -326,15 +305,34 @@ router.get('/transactions', auth, validateTransactionHistory, async (req, res) =
   }
 });
 
-// Get realized gains report
+// Delete transaction
+router.delete('/transactions/:transactionId', auth, async (req, res) => {
+  try {
+    const transaction = await AssetTransaction.findOneAndDelete({
+      _id: req.params.transactionId,
+      user: req.user._id
+    });
+    
+    if (!transaction) {
+      return res.status(404).json({ success: false, error: 'Transaction not found' });
+    }
+    
+    res.json({ success: true, message: 'Transaction deleted' });
+  } catch (error) {
+    console.error('Error deleting transaction:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Get realized gains/losses
 router.get('/transactions/gains', auth, async (req, res) => {
   try {
     const { year, portfolioId } = req.query;
     const startDate = year ? new Date(`${year}-01-01`) : undefined;
     const endDate = year ? new Date(`${year}-12-31`) : undefined;
     
-    const gains = await AssetTransaction.getRealizedGains(
-      portfolioId,
+    const gains = await AssetTransaction.calculateRealizedGains(
+      portfolioId || null,
       req.user._id,
       startDate,
       endDate
@@ -371,7 +369,7 @@ router.get('/transactions/dividends', auth, async (req, res) => {
 // ============ ASSET ROUTES ============
 
 // Search assets
-router.get('/assets/search', auth, validateSearchAssets, async (req, res) => {
+router.get('/assets/search', auth, validators.validateSearchAssets, async (req, res) => {
   try {
     const { query, type, limit } = req.validated;
     const assets = await investmentService.searchAssets(query, type);
@@ -428,7 +426,7 @@ router.get('/assets/:assetId', auth, async (req, res) => {
 });
 
 // Get asset price history
-router.get('/assets/:assetId/history', auth, validatePriceHistory, async (req, res) => {
+router.get('/assets/:assetId/history', auth, validators.validatePriceHistory, async (req, res) => {
   try {
     const { interval, days, startDate, endDate } = req.validated;
     
@@ -447,7 +445,7 @@ router.get('/assets/:assetId/history', auth, validatePriceHistory, async (req, r
 });
 
 // Update asset price manually
-router.post('/assets/price/manual', auth, validateManualPriceUpdate, async (req, res) => {
+router.post('/assets/price/manual', auth, validators.validateManualPriceUpdate, async (req, res) => {
   try {
     const { assetId, price } = req.validated;
     
@@ -501,7 +499,7 @@ router.get('/watchlist', auth, async (req, res) => {
 });
 
 // Add to watchlist
-router.post('/watchlist', auth, validateAddToWatchlist, async (req, res) => {
+router.post('/watchlist', auth, validators.validateAddToWatchlist, async (req, res) => {
   try {
     const { symbol, type } = req.validated;
     const asset = await investmentService.addToWatchlist(req.user._id, symbol, type);

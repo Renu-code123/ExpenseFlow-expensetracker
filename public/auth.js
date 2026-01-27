@@ -1,36 +1,4 @@
-function getPasswordErrors(password) {
-    const errors = [];
-
-    if (password.length < 8) {
-        errors.push("at least 8 characters");
-    }
-    if (!/[A-Z]/.test(password)) {
-        errors.push("one uppercase letter");
-    }
-    if (!/[a-z]/.test(password)) {
-        errors.push("one lowercase letter");
-    }
-    if (!/[0-9]/.test(password)) {
-        errors.push("one number");
-    }
-    if (!/[^A-Za-z0-9]/.test(password)) {
-        errors.push("one special character");
-    }
-
-    return errors;
-}
-
-function showToast(message) {
-    const toast = document.getElementById("toast");
-    if (!toast) return;
-
-    toast.textContent = message;
-    toast.classList.add("show", "error");
-
-    setTimeout(() => {
-        toast.classList.remove("show", "error");
-    }, 3000);
-}
+// ===================== LOGIN =====================
 
 const loginForm = document.getElementById("loginForm");
 
@@ -42,77 +10,43 @@ if (loginForm) {
         const password = document.getElementById("loginPassword").value.trim();
 
         try {
-            const res = await fetch("/api/auth/login", {
+            const res = await fetch("http://localhost:3000/api/auth/login", {
                 method: "POST",
                 headers: {
-                    "content-type": "application/json",
+                    "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({
+                    email,
+                    password
+                })
             });
 
             const data = await res.json();
+
             if (!res.ok) {
-                alert(data.message || "Login failed");
+                alert(data.error || data.message || "Login failed");
+
                 return;
             }
-            // save token to local storage
-            localStorage.setItem("token", data.token);
+
+            // ✅ SAVE AUTH DATA
+            localStorage.setItem("authToken", data.token);
             localStorage.setItem("user", JSON.stringify(data.user));
-            // redirect to index
-            window.location.href = "/index.html";
+
+            // ✅ REDIRECT
+            window.location.href = "dashboard.html";
+
         } catch (err) {
-            console.error("Error during login:", err);
-            alert("server error during login");
+            console.error("Login error:", err);
+            alert("Server error during login");
         }
     });
 }
 
-const passwordInput = document.getElementById("password");
-const registerBtn = document.getElementById("registerBtn");
-const passwordHint = document.getElementById("passwordHint");
 
-const rules = {
-    length: document.getElementById("rule-length"),
-    upper: document.getElementById("rule-upper"),
-    lower: document.getElementById("rule-lower"),
-    number: document.getElementById("rule-number"),
-    special: document.getElementById("rule-special"),
-};
 
-const updatePasswordUI = () => {
-    const password = passwordInput.value;
+// ===================== REGISTER =====================
 
-    const checks = {
-        length: password.length >= 8,
-        upper: /[A-Z]/.test(password),
-        lower: /[a-z]/.test(password),
-        number: /[0-9]/.test(password),
-        special: /[^A-Za-z0-9]/.test(password),
-    };
-
-    let isValid = true;
-
-    Object.keys(checks).forEach((key) => {
-        if (!rules[key]) return;
-
-        if (checks[key]) {
-            rules[key].classList.add("valid");
-        } else {
-            rules[key].classList.remove("valid");
-            isValid = false;
-        }
-    });
-
-    passwordHint.style.display = isValid ? "none" : "block";
-    registerBtn.disabled = !isValid;
-};
-
-if (passwordInput && registerBtn) {
-    passwordInput.addEventListener("input", updatePasswordUI);
-    updatePasswordUI(); // run once on page load
-}
-
-// register user function
 const registerForm = document.getElementById("registerForm");
 
 if (registerForm) {
@@ -123,22 +57,34 @@ if (registerForm) {
         const email = document.getElementById("email").value.trim();
         const password = document.getElementById("password").value.trim();
 
-        const passwordErrors = getPasswordErrors(password);
+        function isStrongPassword(password) {
+            return (
+                password.length >= 8 &&
+                /[A-Z]/.test(password) &&
+                /[a-z]/.test(password) &&
+                /[0-9]/.test(password) &&
+                /[^A-Za-z0-9]/.test(password)
+            );
+        }
 
-        if (passwordErrors.length > 0) {
-            showToast(
-                "Password must contain: " + passwordErrors.join(", ")
+        if (!isStrongPassword(password)) {
+            alert(
+                "Password must contain uppercase, lowercase, number & special character."
             );
             return;
         }
 
         try {
-            const res = await fetch("/api/auth/register", {
+            const res = await fetch("http://localhost:3000/api/auth/register", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
+                    "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ name, email, password }),
+                body: JSON.stringify({
+                    name,
+                    email,
+                    password
+                })
             });
 
             const data = await res.json();
@@ -148,27 +94,27 @@ if (registerForm) {
                 return;
             }
 
-            localStorage.setItem("token", data.token);
+            // ✅ SAVE TOKEN
+            localStorage.setItem("authToken", data.token);
             localStorage.setItem("user", JSON.stringify(data.user));
 
-            window.location.href = "/index.html";
+            // ✅ REDIRECT
+            window.location.href = "dashboard.html";
+
         } catch (err) {
-            console.error(err);
+            console.error("Registration error:", err);
             alert("Server error during registration");
         }
     });
 }
 
-// logout function
+
+
+// ===================== LOGOUT =====================
+
 function logout() {
-    // Clear auth data
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("user");
 
-    // Optional: clear everything
-    // localStorage.clear();
-
-    // Redirect to login
-    window.location.href = '/login.html';
+    window.location.href = "index.html";
 }
-

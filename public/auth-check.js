@@ -7,7 +7,8 @@
     return;
   }
 
-  const token = localStorage.getItem('token');
+  // ✅ MUST MATCH auth.js
+  const token = localStorage.getItem('authToken');
   const userStr = localStorage.getItem('user');
 
   if (!token || !userStr) {
@@ -27,6 +28,6 @@
     window.location.href = '/login.html';
   }
 })();
-
+            return;
 
 
