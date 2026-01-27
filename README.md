@@ -176,22 +176,7 @@ strengthen their frontend and project-structuring skills.
 | **PWA Support** | manifest.json, sw.js |
 
 ---
-
-## 📂 Folder Structure
-
-```tree
-ExpenseFlow/
-│
-├── index.html            # Main HTML layout
-├── styles.css            # UI styling
-├── script.js             # Core app logic
-├── chatbot.js            # Chatbot functionality
-├── manifest.json         # PWA configuration
-├── sw.js                 # Service worker
-├── assets/               # Images and icons
-├── LICENSE               # MIT License
-└── README.md             # Documentation
-```
+--- ## 📂 Folder Structure
 ExpenseFlow/
 │
 ├── public/                          # Frontend static files
@@ -267,11 +252,11 @@ ExpenseFlow/
 ├── README.md                        # Project documentation
 ├── BACKEND.md                       # Backend documentation
 ├── DATABASE.md                      # Database documentation
+├── TODO.md                          # Development tasks
 ├── CONTRIBUTING.md                  # Contribution guidelines
-├── CODE_OF_CONDUCT.md               # Code of conduct
+├── Code_of_conduct.md               # Code of conduct
 └── LICENSE                          # MIT License
-
-
+---
 
 ## 🚀 How to Run Locally
 
