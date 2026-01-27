@@ -87,6 +87,36 @@ class CronJobs {
       await this.sendTaxDocumentReminders();
     });
 
+    // Process bill reminders - Daily at 9 AM
+    cron.schedule('0 9 * * *', async () => {
+      console.log('[CronJobs] Processing bill reminders...');
+      await this.processBillReminders();
+    });
+
+    // Check overdue bills - Daily at midnight
+    cron.schedule('0 0 * * *', async () => {
+      console.log('[CronJobs] Checking overdue bills...');
+      await this.checkOverdueBills();
+    });
+
+    // Process auto-pay bills - Daily at 6 AM
+    cron.schedule('0 6 * * *', async () => {
+      console.log('[CronJobs] Processing auto-pay bills...');
+      await this.processAutoPayBills();
+    });
+
+    // Sync calendar events - Daily at 6 AM
+    cron.schedule('0 6 * * *', async () => {
+      console.log('[CronJobs] Syncing calendar events...');
+      await this.syncCalendarEvents();
+    });
+
+    // Process pending reminders - Every hour
+    cron.schedule('0 * * * *', async () => {
+      console.log('[CronJobs] Processing pending reminders...');
+      await this.processPendingReminders();
+    });
+
     console.log('Cron jobs initialized successfully');
   }
 
@@ -436,6 +466,90 @@ class CronJobs {
       console.log(`Sent tax document reminders to ${users.length} users`);
     } catch (error) {
       console.error('Tax document reminder error:', error);
+    }
+  }
+
+  static async processBillReminders() {
+    try {
+      const BillService = require('./billService');
+      const result = await BillService.sendBillReminders();
+      console.log(`[CronJobs] Bill reminders processed: ${result.success.length} sent, ${result.failed.length} failed`);
+    } catch (error) {
+      console.error('[CronJobs] Bill reminders error:', error);
+    }
+  }
+
+  static async checkOverdueBills() {
+    try {
+      const Bill = require('../models/Bill');
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      // Update bills that are now overdue
+      const result = await Bill.updateMany(
+        {
+          status: 'active',
+          next_due_date: { $lt: today }
+        },
+        {
+          status: 'overdue'
+        }
+      );
+      
+      console.log(`[CronJobs] Updated ${result.modifiedCount} bills to overdue status`);
+      
+      // Create overdue reminders
+      const overdueBills = await Bill.find({ status: 'overdue' }).populate('user', 'email name');
+      const ReminderSchedule = require('../models/ReminderSchedule');
+      
+      for (const bill of overdueBills) {
+        await ReminderSchedule.createOverdueReminder(bill);
+      }
+      
+      console.log(`[CronJobs] Created overdue reminders for ${overdueBills.length} bills`);
+    } catch (error) {
+      console.error('[CronJobs] Check overdue bills error:', error);
+    }
+  }
+
+  static async processAutoPayBills() {
+    try {
+      const BillService = require('./billService');
+      const result = await BillService.processAutoPay();
+      console.log(`[CronJobs] Auto-pay processed: ${result.success.length} successful, ${result.failed.length} failed`);
+    } catch (error) {
+      console.error('[CronJobs] Auto-pay processing error:', error);
+    }
+  }
+
+  static async syncCalendarEvents() {
+    try {
+      const User = require('../models/User');
+      const CalendarEvent = require('../models/CalendarEvent');
+      
+      const users = await User.find({});
+      
+      for (const user of users) {
+        try {
+          await CalendarEvent.syncBillEvents(user._id);
+        } catch (userError) {
+          console.error(`[CronJobs] Calendar sync error for user ${user._id}:`, userError);
+        }
+      }
+      
+      console.log(`[CronJobs] Calendar synced for ${users.length} users`);
+    } catch (error) {
+      console.error('[CronJobs] Calendar sync error:', error);
+    }
+  }
+
+  static async processPendingReminders() {
+    try {
+      const ReminderService = require('./billReminderService');
+      const result = await ReminderService.processPendingReminders();
+      console.log(`[CronJobs] Reminders processed: ${result.success.length} sent, ${result.failed.length} failed`);
+    } catch (error) {
+      console.error('[CronJobs] Pending reminders error:', error);
     }
   }
 }
