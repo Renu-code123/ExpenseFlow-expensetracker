@@ -3,19 +3,18 @@ const Budget = require('../models/Budget');
 const AnalyticsCache = require('../models/AnalyticsCache');
 const mongoose = require('mongoose');
 const CACHE_KEYS = {
-    SPENDING_TRENDS: CACHE_KEYS.SPENDING_TRENDS
-    ,
-    CATEGORY_BREAKDOWN: CACHE_KEYS.CATEGORY_BREAKDOWN,
-    MONTHLY_COMPARISON: CACHE_KEYS.MONTHLY_COMPARISON,
-    INSIGHTS: CACHE_KEYS.INSIGHTS,
-    PREDICTIONS: CACHE_KEYS.PREDICTIONS
+    SPENDING_TRENDS: 'SPENDING_TRENDS',
+    CATEGORY_BREAKDOWN: 'CATEGORY_BREAKDOWN',
+    MONTHLY_COMPARISON: 'MONTHLY_COMPARISON',
+    INSIGHTS: 'INSIGHTS',
+    PREDICTIONS: 'PREDICTIONS'
 };
 
 const CACHE_TTL = {
-    SHORT: CACHE_TTL.SHORT,     // minutes
-    MEDIUM: CACHE_TTL.MEDIUM,
-    LONG: CACHE_TTL.LONG,
-    XLONG: CACHE_TTL.XLONG
+    SHORT: 5,     // minutes
+    MEDIUM: 30,
+    LONG: 60,
+    XLONG: 120
 };
 
 class AnalyticsService {

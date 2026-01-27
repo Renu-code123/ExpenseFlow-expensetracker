@@ -67,15 +67,7 @@
       align-items: center;
     }
 
-    .nav-logo {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: #64ffda;
-      text-decoration: none;
-    }
+  <title>ExpenseFlow - Smart Money Management</title>
 
     .nav-logo i {
       font-size: 1.8rem;
@@ -96,13 +88,21 @@
       border-radius: 8px;
     }
 
-    .nav-link:hover {
-      color: #64ffda;
-      background: rgba(100, 255, 218, 0.1);
+  <!-- Cursor Trail Styles -->
+  <style>
+    .cursor-trail-container {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
     }
-
-    .nav-link.active {
-      color: #64ffda;
+    .trail-dot {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #64ffda, #00b4d8);
+      transform: translate(-50%, -50%);
     }
 
     .nav-cta {
@@ -254,918 +254,110 @@
   let lastMouseY = coords.y;
   let velocity = { x: 0, y: 0 };
 
-  window.addEventListener('mousemove', e => {
-    coords.x = e.clientX;
-    coords.y = e.clientY;
-
-    // Calculate velocity for smooth movement
-    velocity.x = e.clientX - lastMouseX;
-    velocity.y = e.clientY - lastMouseY;
-    lastMouseX = e.clientX;
-    lastMouseY = e.clientY;
-
-    isMoving = true;
-
-    // Reset movement timeout
-    clearTimeout(window.movementTimeout);
-    window.movementTimeout = setTimeout(() => {
-      isMoving = false;
-    }, 50);
-  });
-
-  // Click effect
-  window.addEventListener('mousedown', () => {
-    trailCircles.forEach(circle => {
-      circle.element.classList.add('cursor-clicking');
-    });
-  });
-
-  window.addEventListener('mouseup', () => {
-    trailCircles.forEach(circle => {
-      circle.element.classList.remove('cursor-clicking');
-    });
-  });
-
-  // Hover effect for interactive elements
-  window.addEventListener('mouseover', e => {
-    const interactive = e.target.closest('a, button, input, select, textarea, [role="button"]');
-    trailCircles.forEach(circle => {
-      circle.element.classList.toggle('cursor-hovering', !!interactive);
-    });
-  });
-
-  // Smooth animation function
-  function animateTrail() {
-    let targetX = coords.x;
-    let targetY = coords.y;
-
-    // Add velocity offset to first circle for more natural feel
-    const velocityOffset = 0.5;
-    const offsetX = velocity.x * velocityOffset;
-    const offsetY = velocity.y * velocityOffset;
-
-    trailCircles.forEach((circle, index) => {
-      // First circle follows cursor exactly
-      if (index === 0) {
-        circle.x = targetX + offsetX;
-        circle.y = targetY + offsetY;
-      } 
-      // Other circles follow with smooth delay
-      else {
-        const prevCircle = trailCircles[index - 1];
-
-        // Smooth interpolation factor (changes based on movement speed)
-        const speed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
-        const lerpFactor = isMoving ? 
-          Math.min(0.3 + (speed * 0.01), 0.5) :  // Faster movement = tighter trail
-          0.1; // Slow movement = more spread
-
-        circle.x += (prevCircle.x - circle.x) * lerpFactor;
-        circle.y += (prevCircle.y - circle.y) * lerpFactor;
-      }
-
-      // Apply position with easing
-      circle.element.style.left = circle.x + 'px';
-      circle.element.style.top = circle.y + 'px';
-
-      // Dynamic opacity based on speed and position
-      if (index > 0) {
-        const speed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
-        const baseOpacity = 0.9 - (index / COUNT) * 0.8;
-        const speedMultiplier = Math.min(1 + speed * 0.02, 1.5);
-        circle.element.style.opacity = (baseOpacity * speedMultiplier).toString();
-      }
-
-      // Update target for next circle
-      targetX = circle.x;
-      targetY = circle.y;
-    });
-
-    requestAnimationFrame(animateTrail);
-  }
-
-  // Handle window resize
-  window.addEventListener('resize', () => {
-    // Adjust if cursor goes out of bounds
-    if (coords.x > window.innerWidth) coords.x = window.innerWidth;
-    if (coords.y > window.innerHeight) coords.y = window.innerHeight;
-  });
-
-  // Handle mouse leave/enter
-  window.addEventListener('mouseleave', () => {
-    trailCircles.forEach(circle => {
-      circle.element.style.opacity = '0';
-    });
-  });
-
-  window.addEventListener('mouseenter', () => {
-    trailCircles.forEach((circle, index) => {
-      const opacity = 0.9 - (index / COUNT) * 0.8;
-      circle.element.style.opacity = opacity.toString();
-    });
-  });
-
-  // Start animation
-  animateTrail();
-})();
-</script>
-
-  <!-- Header -->
-  <header class="header">
-    <nav class="navbar">
-      <div class="nav-container">
-        <div class="nav-logo">
-          <i class="fas fa-wallet"></i>
-          <span>ExpenseFlow</span>
-        </div>
-        <div class="nav-menu" id="nav-menu">
-          <a href="#dashboard" class="nav-link active">Dashboard</a>
-          <a href="#analytics" class="nav-link">Analytics</a>
-          <a href="#goals" class="nav-link">Goals</a>
-          <a href="#settings" class="nav-link">Settings</a>
-          <a href="Monthlysummary.html" class="nav-link">Monthly/Yearly Summary</a>
-          <a href="./contributor.html" class="nav-link">Contributors</a>
-        </div>
-        <div class="nav-toggle" id="nav-toggle">
-          <span class="bar"></span>
-          <span class="bar"></span>
-          <span class="bar"></span>
-        </div>
-        <div class="user-profile">
-          <div id="workspace-selector" class="workspace-selector"></div>
-          <select id="language-switcher" class="language-select" aria-label="Language">
-            <option value="en">EN</option>
-            <option value="es">ES</option>
-            <option value="fr">FR</option>
-          </select>
-          <button class="currency-btn" onclick="openCurrencyModal()" title="Currency Settings">
-            <i class="fas fa-coins"></i>
-            <span id="current-currency">INR</span>
-          </button>
-          <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face"
-            alt="User" class="profile-img">
-          <span class="username" id="navUsername"></span>
-          <div id="redirect">
-            <a href="#" id="logoutLink" onclick="logout()">Logout</a>
-          </div>
-        </div>
-      </div>
-    </nav>
-  </header>
-
-  <!-- Main Content -->
-  <main class="main-content">
-    <!-- Full Hero Section -->
-    <div class="hero-section-full">
-      <div class="hero-background-animation">
-        <div class="floating-shape shape-1"></div>
-        <div class="floating-shape shape-2"></div>
-        <div class="floating-shape shape-3"></div>
-      </div>
-      <div class="hero-content-wrapper">
-        <div class="hero-badge">
-          <i class="fas fa-star"></i>
-          <span data-i18n="hero.badge">Trusted by 10,000+ users worldwide</span>
-        </div>
-        <h1 class="hero-title i18n-multiline" data-i18n="hero.title">Smart Money Management
-          Made Simple</h1>
-        <p class="hero-subtitle i18n-multiline" data-i18n="hero.subtitle">Take control of your finances with our
-          intelligent expense tracker.
-          Track, analyze, and optimize your spending habits effortlessly.</p>
-        <div class="hero-cta">
-          <button class="cta-primary" onclick="document.getElementById('form').scrollIntoView({ behavior: 'smooth' })">
-            <i class="fas fa-rocket"></i> <span data-i18n="hero.cta.start">Start Tracking Now</span>
-          </button>
-          <button class="cta-secondary"
-            onclick="document.getElementById('features-section').scrollIntoView({ behavior: 'smooth' })">
-            <i class="fas fa-info-circle"></i> <span data-i18n="hero.cta.learn">Learn More</span>
-          </button>
-        </div>
-        <div class="hero-features">
-          <div class="feature-pill">
-            <i class="fas fa-robot"></i>
-            <span>AI-Powered</span>
-          </div>
-          <div class="feature-pill">
-            <i class="fas fa-lock"></i>
-            <span>Secure & Private</span>
-          </div>
-          <div class="feature-pill">
-            <i class="fas fa-mobile-alt"></i>
-            <span>Works Offline</span>
-          </div>
-          <div class="feature-pill">
-            <i class="fas fa-globe"></i>
-            <span>Multi-Currency</span>
-          </div>
-        </div>
-        <div class="scroll-indicator">
-          <i class="fas fa-chevron-down"></i>
-          <span>Scroll to explore</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Features Section -->
-    <section id="features-section" class="features-showcase">
-      <div class="container">
-        <div class="section-header-center">
-          <h2 class="section-title" data-i18n="feature.heading">Powerful Features for Smart Finance</h2>
-          <p class="section-subtitle" data-i18n="feature.subheading">Everything you need to manage your money effectively</p>
-        </div>
-        <div class="features-grid">
-          <div class="feature-card">
-            <div class="feature-icon">
-              <i class="fas fa-brain"></i>
-            </div>
-            <h3>AI Categorization</h3>
-            <p>Automatically categorize your expenses with intelligent machine learning algorithms</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">
-              <i class="fas fa-chart-pie"></i>
-            </div>
-            <h3>Visual Analytics</h3>
-            <p>Beautiful charts and insights to understand your spending patterns at a glance</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">
-              <i class="fas fa-sync-alt"></i>
-            </div>
-            <h3>Recurring Expenses</h3>
-            <p>Track subscriptions and recurring bills automatically with smart reminders</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">
-              <i class="fas fa-file-export"></i>
-            </div>
-            <h3>Export & Reports</h3>
-            <p>Generate detailed reports in CSV or PDF format for tax season</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">
-              <i class="fas fa-bullseye"></i>
-            </div>
-            <h3>Budget Goals</h3>
-            <p>Set financial goals and track your progress with intuitive dashboards</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">
-              <i class="fas fa-shield-alt"></i>
-            </div>
-            <h3>Secure & Private</h3>
-            <p>Bank-level encryption keeps your financial data safe and private</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- How It Works Section -->
-    <section class="how-it-works">
-      <div class="container">
-        <div class="section-header-center">
-          <h2 class="section-title">How It Works</h2>
-          <p class="section-subtitle">Get started in three simple steps</p>
-        </div>
-        <div class="steps-grid">
-          <div class="step-card">
-            <div class="step-number">1</div>
-            <div class="step-icon">
-              <i class="fas fa-plus-circle"></i>
-            </div>
-            <h3>Add Expenses</h3>
-            <p>Quickly log your daily expenses with our simple form. AI suggests categories automatically.</p>
-          </div>
-          <div class="step-card">
-            <div class="step-number">2</div>
-            <div class="step-icon">
-              <i class="fas fa-chart-line"></i>
-            </div>
-            <h3>Track & Analyze</h3>
-            <p>Watch your spending patterns emerge through beautiful visualizations and insights.</p>
-          </div>
-          <div class="step-card">
-            <div class="step-number">3</div>
-            <div class="step-icon">
-              <i class="fas fa-piggy-bank"></i>
-            </div>
-            <h3>Save More</h3>
-            <p>Make informed decisions based on data and achieve your financial goals faster.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="dashboard" class="container">
-      <!-- Quick Stats Overview -->
-      <div class="quick-stats">
-        <div class="stat-card">
-          <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-            <i class="fas fa-wallet"></i>
-          </div>
-          <div class="stat-content">
-            <p class="stat-label" data-i18n="stats.balance">Total Balance</p>
-            <h3 class="stat-value" id="quick-balance">₹0.00</h3>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-            <i class="fas fa-arrow-up"></i>
-          </div>
-          <div class="stat-content">
-            <p class="stat-label" data-i18n="stats.income">This Month Income</p>
-            <h3 class="stat-value income" id="quick-income">₹0.00</h3>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
-            <i class="fas fa-arrow-down"></i>
-          </div>
-          <div class="stat-content">
-            <p class="stat-label" data-i18n="stats.expense">This Month Expenses</p>
-            <h3 class="stat-value expense" id="quick-expense">₹0.00</h3>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-            <i class="fas fa-piggy-bank"></i>
-          </div>
-          <div class="stat-content">
-            <p class="stat-label" data-i18n="stats.savings">Savings Rate</p>
-            <h3 class="stat-value" id="quick-savings">0%</h3>
-          </div>
-        </div>
-      </div>
-
-    .shape-3 {
-      width: 350px;
-      height: 350px;
-      background: linear-gradient(135deg, #f093fb, #f5576c);
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      animation-delay: 10s;
-    }
-
-    @keyframes float {
-      0%, 100% { transform: translate(0, 0) rotate(0deg); }
-      25% { transform: translate(50px, -50px) rotate(90deg); }
-      50% { transform: translate(0, -100px) rotate(180deg); }
-      75% { transform: translate(-50px, -50px) rotate(270deg); }
-    }
-
-    .hero-content {
-      max-width: 800px;
-      text-align: center;
-      position: relative;
-      z-index: 1;
-    }
-
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: rgba(100, 255, 218, 0.1);
-      border: 1px solid rgba(100, 255, 218, 0.3);
-      padding: 0.5rem 1rem;
-      border-radius: 50px;
-      font-size: 0.9rem;
-      color: #64ffda;
-      margin-bottom: 2rem;
-      animation: fadeInUp 0.8s ease;
-    }
-      <!-- Data Management Section -->
-      <div class="data-management-section">
-        <h3><i class="fas fa-database"></i> <span data-i18n="data.title">Data Management</span></h3>
-        <div class="data-actions">
-          <div class="export-section">
-            <h4 data-i18n="data.export">Export Data</h4>
-            <div class="export-buttons">
-              <button class="export-btn" id="export-csv">
-                <i class="fas fa-file-csv"></i> <span data-i18n="data.export.csv">Quick CSV</span>
-              </button>
-              <button class="export-btn pdf-btn" id="export-pdf">
-                <i class="fas fa-file-pdf"></i> <span data-i18n="data.export.pdf">Quick PDF</span>
-              </button>
-              <button class="export-btn advanced-btn" id="open-export-modal">
-                <i class="fas fa-cog"></i> <span data-i18n="data.export.advanced">Advanced Export</span>
-              </button>
-              <button class="export-btn report-btn" id="open-report-generator" onclick="openReportGenerator()">
-                <i class="fas fa-chart-line"></i> <span>Professional Report</span>
-              </button>
-            </div>
-          </div>
-          <div class="import-section">
-            <h4 data-i18n="data.import">Import Data</h4>
-            <div class="import-controls">
-              <input type="file" id="import-file" accept=".csv,.json" class="file-input">
-              <label for="import-file" class="file-label">
-                <i class="fas fa-upload"></i> <span data-i18n="data.import.choose">Choose File</span>
-              </label>
-              <button class="import-btn" id="import-data" disabled>
-                <i class="fas fa-download"></i> <span data-i18n="data.import.run">Import Data</span>
-              </button>
-            </div>
-            <div class="import-options">
-              <label class="checkbox-label">
-                <input type="checkbox" id="merge-data" checked>
-                <span class="checkmark"></span>
-                <span data-i18n="data.import.merge">Merge with existing data</span>
-              </label>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    .hero-title {
-      font-size: 4rem;
-      font-weight: 800;
-      line-height: 1.2;
-      margin-bottom: 1.5rem;
-      background: linear-gradient(135deg, #64ffda 0%, #667eea 50%, #764ba2 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      animation: fadeInUp 0.8s ease 0.2s both;
-    }
-
-    .hero-subtitle {
-      font-size: 1.25rem;
-      line-height: 1.6;
-      color: #b0b0b0;
-      margin-bottom: 3rem;
-      animation: fadeInUp 0.8s ease 0.4s both;
-    }
-
-    .hero-buttons {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      flex-wrap: wrap;
-      animation: fadeInUp 0.8s ease 0.6s both;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 1rem 2rem;
-      border-radius: 12px;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 1.1rem;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      border: none;
-      cursor: pointer;
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 10px 30px rgba(100, 255, 218, 0.4);
-    }
-
-    .btn-secondary {
-      background: transparent;
-      color: #64ffda;
-      padding: 1rem 2rem;
-      border-radius: 12px;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 1.1rem;
-      border: 2px solid #64ffda;
-      transition: all 0.3s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .btn-secondary:hover {
-      background: rgba(100, 255, 218, 0.1);
-      transform: translateY(-3px);
-    }
-
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    /* Features Section */
-    .features-section {
-      padding: 6rem 2rem;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    .section-title {
-      text-align: center;
-      font-size: 2.5rem;
-      font-weight: 700;
-      margin-bottom: 1rem;
-      color: #64ffda;
-    }
-
-    .section-subtitle {
-      text-align: center;
-      font-size: 1.1rem;
-      color: #b0b0b0;
-      margin-bottom: 4rem;
-      max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 2rem;
-    }
-
-    .feature-card {
-      background: rgba(26, 26, 62, 0.6);
-      border: 1px solid rgba(100, 255, 218, 0.2);
-      border-radius: 16px;
-      padding: 2rem;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .feature-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 30px rgba(100, 255, 218, 0.2);
-      border-color: rgba(100, 255, 218, 0.4);
-    }
-
-    .feature-icon {
-      width: 60px;
-      height: 60px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.8rem;
-      color: white;
-      margin-bottom: 1.5rem;
-    }
-
-    .feature-title {
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
-      color: #e0e0e0;
-    }
-
-    .feature-description {
-      color: #b0b0b0;
-      line-height: 1.6;
-    }
-
-    /* Footer */
-    .footer {
-      background: rgba(15, 15, 35, 0.95);
-      border-top: 1px solid rgba(100, 255, 218, 0.1);
-      padding: 3rem 2rem 1.5rem;
-      margin-top: 4rem;
-    }
-
-    .footer-content {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 2rem;
-      margin-bottom: 2rem;
-    }
-
-    .footer-section h3 {
-      color: #64ffda;
-      margin-bottom: 1rem;
-      font-size: 1.2rem;
-    }
-
-    .footer-section p,
-    .footer-section a {
-      color: #b0b0b0;
-      text-decoration: none;
-      line-height: 2;
-      display: block;
-    }
-
-    .footer-section a:hover {
-      color: #64ffda;
-    }
-
-    .footer-bottom {
-      text-align: center;
-      padding-top: 2rem;
-      border-top: 1px solid rgba(100, 255, 218, 0.1);
-      color: #b0b0b0;
-    }
-
-    /* Mobile Toggle */
-    .nav-toggle {
-      display: none;
-      flex-direction: column;
-      gap: 5px;
-      cursor: pointer;
-      padding: 0.5rem;
-    }
-
-    .nav-toggle span {
-      width: 25px;
-      height: 3px;
-      background: #64ffda;
-      border-radius: 3px;
-      transition: all 0.3s ease;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-      .nav-toggle {
-        display: flex;
-      }
-
-      .nav-menu {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        background: rgba(15, 15, 35, 0.98);
-        flex-direction: column;
-        padding: 1rem;
-        gap: 0;
-        display: none;
-        border-bottom: 1px solid rgba(100, 255, 218, 0.1);
-      }
-
-      .nav-menu.active {
-        display: flex;
-      }
-
-      .nav-link {
-        width: 100%;
-        text-align: center;
-        padding: 1rem;
-      }
-
-      .hero-title {
-        font-size: 2.5rem;
-      }
-
-      .hero-subtitle {
-        font-size: 1rem;
-      }
-
-      .hero-buttons {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .section-title {
-        font-size: 2rem;
-      }
-
-      .features-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-  </style>
-</head>
-
-<body>
-  <!-- Header -->
-  <header class="header">
-    <nav class="nav-container">
-      <a href="index.html" class="nav-logo">
+<!-- HEADER -->
+<header class="header">
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-logo">
         <i class="fas fa-wallet"></i>
         <span>ExpenseFlow</span>
-      </a>
-      <div class="nav-menu" id="navMenu">
-        <a href="index.html" class="nav-link active">Home</a>
-        <a href="dashboard.html" class="nav-link">Dashboard</a>
-        <a href="#features" class="nav-link">Features</a>
-        <a href="#about" class="nav-link">About</a>
-        <a href="dashboard.html" class="nav-cta">Get Started</a>
       </div>
-      <div class="nav-toggle" id="navToggle">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-    </nav>
-  </header>
 
-  <!-- Hero Section -->
-  <section class="hero-section">
-    <div class="hero-background">
-      <div class="floating-shape shape-1"></div>
-      <div class="floating-shape shape-2"></div>
-      <div class="floating-shape shape-3"></div>
-    </div>
-    <div class="hero-content">
-      <div class="hero-badge">
-        <i class="fas fa-star"></i>
-        <span>Trusted by 10,000+ users worldwide</span>
+      <div class="nav-menu" id="nav-menu">
+        <a href="#dashboard" class="nav-link active">Dashboard</a>
+        <a href="#analytics" class="nav-link">Analytics</a>
+        <a href="#goals" class="nav-link">Goals</a>
+        <a href="#settings" class="nav-link">Settings</a>
+        <a href="Monthlysummary.html" class="nav-link">Summary</a>
+        <a href="contributor.html" class="nav-link">Contributors</a>
       </div>
-      <h1 class="hero-title">Smart Money Management Made Simple</h1>
+
+      <div class="nav-toggle" id="nav-toggle">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<!-- MAIN -->
+<main class="main-content">
+
+  <!-- HERO -->
+  <section class="hero-section-full">
+    <div class="hero-content-wrapper">
+      <h1 class="hero-title">Smart Money Management<br />Made Simple</h1>
       <p class="hero-subtitle">
-        Take control of your finances with our intelligent expense tracker. 
         Track, analyze, and optimize your spending habits effortlessly.
       </p>
-      <div class="hero-buttons">
-        <a href="dashboard.html" class="btn-primary">
-          <i class="fas fa-rocket"></i>
-          Start Tracking Now
-        </a>
-        <a href="#features" class="btn-secondary">
-          <i class="fas fa-play-circle"></i>
-          Learn More
-        </a>
+      <div class="hero-cta">
+        <button class="cta-primary" onclick="document.getElementById('form').scrollIntoView({behavior:'smooth'})">
+          Start Tracking
+        </button>
       </div>
     </div>
   </section>
 
-  <!-- Features Section -->
-  <section class="features-section" id="features">
-    <h2 class="section-title">Powerful Features</h2>
-    <p class="section-subtitle">
-      Everything you need to manage your money effectively in one place
-    </p>
-    <div class="features-grid">
-      <div class="feature-card">
-        <div class="feature-icon">
-          <i class="fas fa-chart-line"></i>
-        </div>
-        <h3 class="feature-title">Real-time Analytics</h3>
-        <p class="feature-description">
-          Get instant insights into your spending patterns with beautiful charts and detailed analytics.
-        </p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">
-          <i class="fas fa-tags"></i>
-        </div>
-        <h3 class="feature-title">Smart Categories</h3>
-        <p class="feature-description">
-          Automatically categorize your expenses and track spending across different areas of your life.
-        </p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">
-          <i class="fas fa-bullseye"></i>
-        </div>
-        <h3 class="feature-title">Budget Goals</h3>
-        <p class="feature-description">
-          Set monthly budgets and track your progress towards financial goals with ease.
-        </p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">
-          <i class="fas fa-mobile-alt"></i>
-        </div>
-        <h3 class="feature-title">Mobile Friendly</h3>
-        <p class="feature-description">
-          Access your finances anywhere with our responsive design and PWA support.
-        </p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">
-          <i class="fas fa-lock"></i>
-        </div>
-        <h3 class="feature-title">Secure & Private</h3>
-        <p class="feature-description">
-          Your financial data is encrypted and secure. We prioritize your privacy above all.
-        </p>
-      </form>
-    </div>
-  </div>
+  <!-- DASHBOARD -->
+  <section id="dashboard" class="container">
+    <h2>Your Dashboard</h2>
 
-  <!-- API and Feature Scripts -->
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="auth-integration.js"></script>
-  <script src="api-integration.js"></script>
-  <script src="workspace-feature.js"></script>
-  <script src="budget-goals.js"></script>
-  <script src="receipt-upload.js"></script>
-  <script src="receipt-ocr.js"></script>
-  <script src="analytics-dashboard.js"></script>
-  <script src="realtime-sync.js"></script>
-  <script src="report-generator.js"></script>
-
-  <!-- PWA Installation Prompt -->
-  <div id="install-prompt" class="install-prompt" style="display: none;">
-    <div class="install-prompt-content">
-      <div class="install-prompt-header">
-        <i class="fas fa-download"></i>
-        <h3 data-i18n="install.title">Install ExpenseFlow</h3>
+    <div class="quick-stats">
+      <div class="stat-card">
+        <p>Total Balance</p>
+        <h3 id="quick-balance">₹0.00</h3>
       </div>
-      <div class="feature-card">
-        <div class="feature-icon">
-          <i class="fas fa-file-export"></i>
-        </div>
-        <h3 class="feature-title">Export Reports</h3>
-        <p class="feature-description">
-          Generate detailed reports and export your data for tax purposes or personal records.
-        </p>
+      <div class="stat-card">
+        <p>Income</p>
+        <h3 id="quick-income">₹0.00</h3>
+      </div>
+      <div class="stat-card">
+        <p>Expense</p>
+        <h3 id="quick-expense">₹0.00</h3>
       </div>
     </div>
   </section>
 
-  <!-- Footer -->
-  <footer class="footer" id="about">
-    <div class="footer-content">
-      <div class="footer-section">
-        <h3><i class="fas fa-wallet"></i> ExpenseFlow</h3>
-        <p>
-          Smart money management made simple. Take control of your finances today.
-        </p>
-      </div>
-      <div class="footer-section">
-        <h3>Quick Links</h3>
-        <a href="index.html">Home</a>
-        <a href="dashboard.html">Dashboard</a>
-        <a href="#features">Features</a>
-        <a href="./contributor.html">Contributors</a>
-      </div>
-      <div class="footer-section">
-        <h3>Resources</h3>
-        <a href="Monthlysummary.html">Monthly Summary</a>
-        <a href="#">Documentation</a>
-        <a href="#">Support</a>
-        <a href="#">Privacy Policy</a>
-      </div>
-      <div class="footer-section">
-        <h3>Connect</h3>
-        <a href="#"><i class="fab fa-github"></i> GitHub</a>
-        <a href="#"><i class="fab fa-twitter"></i> Twitter</a>
-        <a href="#"><i class="fab fa-linkedin"></i> LinkedIn</a>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <p>&copy; 2025 ExpenseFlow. All rights reserved.</p>
-    </div>
-  </footer>
-  </div>
-<script src="auth-check.js"></script>
-<script src="auth.js"></script>
+  <!-- ADD TRANSACTION -->
+  <section class="form-section">
+    <h3>Add Transaction</h3>
+
+    <form id="form">
+      <input id="text" type="text" placeholder="Description" required />
+      <input id="amount" type="number" placeholder="Amount" required />
+      <select id="type" required>
+        <option value="">Select Type</option>
+        <option value="income">Income</option>
+        <option value="expense">Expense</option>
+      </select>
+      <button type="submit">Add</button>
+    </form>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <p>© 2026 ExpenseFlow. All rights reserved.</p>
+</footer>
+
+<!-- SCRIPTS (LOAD ONCE) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="trackerscript.js"></script>
 <script src="analytics-dashboard.js"></script>
+<script src="auth.js"></script>
 <script src="settings.js"></script>
-<script src="report-generator.js"></script>
 
-
-</body>
-
-</html>
+<!-- Cursor Trail Script -->
 <script>
-  // Recurring Modal Control
-  function openRecurringModal() {
-    const modal = document.getElementById('recurring-modal');
-    if (modal) {
-      modal.style.display = 'flex';
-      modal.classList.add('active');
-      document.getElementById('recurring-modal-title').textContent = 'Add Recurring Expense';
-      document.getElementById('recurring-form').reset();
-    }
+document.addEventListener("DOMContentLoaded", () => {
+  const container = document.getElementById("cursor-trail");
+  for (let i = 0; i < 8; i++) {
+    const dot = document.createElement("div");
+    dot.className = "trail-dot";
+    container.appendChild(dot);
   }
+});
+</script>
 
-  <script>
-    // Mobile Navigation Toggle
-    const navToggle = document.getElementById('navToggle');
-    const navMenu = document.getElementById('navMenu');
-
-    navToggle.addEventListener('click', () => {
-      navMenu.classList.toggle('active');
-    });
-
-    // Close menu when clicking a link
-    document.querySelectorAll('.nav-link').forEach(link => {
-      link.addEventListener('click', () => {
-        navMenu.classList.remove('active');
-      });
-    });
-
-    // Smooth scrolling for anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-      anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-          target.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-          });
-        }
-      });
-    });
-  </script>
 </body>
-
 </html>
