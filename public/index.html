@@ -105,15 +105,6 @@
       color: #64ffda;
     }
 
-    .nav-cta {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 0.75rem 1.5rem;
-      border-radius: 12px;
-      text-decoration: none;
-      font-weight: 600;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
 
     .nav-cta:hover {
       transform: translateY(-2px);
@@ -163,10 +154,10 @@
       right: -150px;
       animation-delay: 5s;
     }
-<body>
+
 
         <!-- Smooth Cursor Trail -->
-<style>
+
   .cursor-trail-container {
     position: fixed;
     inset: 0;
@@ -520,461 +511,19 @@
       </div>
     </section>
 
-    <!-- How It Works Section -->
-    <section class="how-it-works">
-      <div class="container">
-        <div class="section-header-center">
-          <h2 class="section-title">How It Works</h2>
-          <p class="section-subtitle">Get started in three simple steps</p>
-        </div>
-        <div class="steps-grid">
-          <div class="step-card">
-            <div class="step-number">1</div>
-            <div class="step-icon">
-              <i class="fas fa-plus-circle"></i>
-            </div>
-            <h3>Add Expenses</h3>
-            <p>Quickly log your daily expenses with our simple form. AI suggests categories automatically.</p>
-          </div>
-          <div class="step-card">
-            <div class="step-number">2</div>
-            <div class="step-icon">
-              <i class="fas fa-chart-line"></i>
-            </div>
-            <h3>Track & Analyze</h3>
-            <p>Watch your spending patterns emerge through beautiful visualizations and insights.</p>
-          </div>
-          <div class="step-card">
-            <div class="step-number">3</div>
-            <div class="step-icon">
-              <i class="fas fa-piggy-bank"></i>
-            </div>
-            <h3>Save More</h3>
-            <p>Make informed decisions based on data and achieve your financial goals faster.</p>
-          </div>
-        </div>
-      </div>
-    </section>
+  
 
-    <section id="dashboard" class="container">
-      <!-- Quick Stats Overview -->
-      <div class="quick-stats">
-        <div class="stat-card">
-          <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-            <i class="fas fa-wallet"></i>
-          </div>
-          <div class="stat-content">
-            <p class="stat-label" data-i18n="stats.balance">Total Balance</p>
-            <h3 class="stat-value" id="quick-balance">₹0.00</h3>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-            <i class="fas fa-arrow-up"></i>
-          </div>
-          <div class="stat-content">
-            <p class="stat-label" data-i18n="stats.income">This Month Income</p>
-            <h3 class="stat-value income" id="quick-income">₹0.00</h3>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
-            <i class="fas fa-arrow-down"></i>
-          </div>
-          <div class="stat-content">
-            <p class="stat-label" data-i18n="stats.expense">This Month Expenses</p>
-            <h3 class="stat-value expense" id="quick-expense">₹0.00</h3>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-            <i class="fas fa-piggy-bank"></i>
-          </div>
-          <div class="stat-content">
-            <p class="stat-label" data-i18n="stats.savings">Savings Rate</p>
-            <h3 class="stat-value" id="quick-savings">0%</h3>
-          </div>
-        </div>
-      </div>
+     
+ 
+</header>
 
-    .shape-3 {
-      width: 350px;
-      height: 350px;
-      background: linear-gradient(135deg, #f093fb, #f5576c);
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      animation-delay: 10s;
-    }
+<!-- MAIN -->
+<main class="main-content">
 
-    @keyframes float {
-      0%, 100% { transform: translate(0, 0) rotate(0deg); }
-      25% { transform: translate(50px, -50px) rotate(90deg); }
-      50% { transform: translate(0, -100px) rotate(180deg); }
-      75% { transform: translate(-50px, -50px) rotate(270deg); }
-    }
-
-    .hero-content {
-      max-width: 800px;
-      text-align: center;
-      position: relative;
-      z-index: 1;
-    }
-
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: rgba(100, 255, 218, 0.1);
-      border: 1px solid rgba(100, 255, 218, 0.3);
-      padding: 0.5rem 1rem;
-      border-radius: 50px;
-      font-size: 0.9rem;
-      color: #64ffda;
-      margin-bottom: 2rem;
-      animation: fadeInUp 0.8s ease;
-    }
-      <!-- Data Management Section -->
-      <div class="data-management-section">
-        <h3><i class="fas fa-database"></i> <span data-i18n="data.title">Data Management</span></h3>
-        <div class="data-actions">
-          <div class="export-section">
-            <h4 data-i18n="data.export">Export Data</h4>
-            <div class="export-buttons">
-              <button class="export-btn" id="export-csv">
-                <i class="fas fa-file-csv"></i> <span data-i18n="data.export.csv">Quick CSV</span>
-              </button>
-              <button class="export-btn pdf-btn" id="export-pdf">
-                <i class="fas fa-file-pdf"></i> <span data-i18n="data.export.pdf">Quick PDF</span>
-              </button>
-              <button class="export-btn advanced-btn" id="open-export-modal">
-                <i class="fas fa-cog"></i> <span data-i18n="data.export.advanced">Advanced Export</span>
-              </button>
-              <button class="export-btn report-btn" id="open-report-generator" onclick="openReportGenerator()">
-                <i class="fas fa-chart-line"></i> <span>Professional Report</span>
-              </button>
-            </div>
-          </div>
-          <div class="import-section">
-            <h4 data-i18n="data.import">Import Data</h4>
-            <div class="import-controls">
-              <input type="file" id="import-file" accept=".csv,.json" class="file-input">
-              <label for="import-file" class="file-label">
-                <i class="fas fa-upload"></i> <span data-i18n="data.import.choose">Choose File</span>
-              </label>
-              <button class="import-btn" id="import-data" disabled>
-                <i class="fas fa-download"></i> <span data-i18n="data.import.run">Import Data</span>
-              </button>
-            </div>
-            <div class="import-options">
-              <label class="checkbox-label">
-                <input type="checkbox" id="merge-data" checked>
-                <span class="checkmark"></span>
-                <span data-i18n="data.import.merge">Merge with existing data</span>
-              </label>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    .hero-title {
-      font-size: 4rem;
-      font-weight: 800;
-      line-height: 1.2;
-      margin-bottom: 1.5rem;
-      background: linear-gradient(135deg, #64ffda 0%, #667eea 50%, #764ba2 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      animation: fadeInUp 0.8s ease 0.2s both;
-    }
-
-    .hero-subtitle {
-      font-size: 1.25rem;
-      line-height: 1.6;
-      color: #b0b0b0;
-      margin-bottom: 3rem;
-      animation: fadeInUp 0.8s ease 0.4s both;
-    }
-
-    .hero-buttons {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      flex-wrap: wrap;
-      animation: fadeInUp 0.8s ease 0.6s both;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 1rem 2rem;
-      border-radius: 12px;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 1.1rem;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      border: none;
-      cursor: pointer;
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 10px 30px rgba(100, 255, 218, 0.4);
-    }
-
-    .btn-secondary {
-      background: transparent;
-      color: #64ffda;
-      padding: 1rem 2rem;
-      border-radius: 12px;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 1.1rem;
-      border: 2px solid #64ffda;
-      transition: all 0.3s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .btn-secondary:hover {
-      background: rgba(100, 255, 218, 0.1);
-      transform: translateY(-3px);
-    }
-
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    /* Features Section */
-    .features-section {
-      padding: 6rem 2rem;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    .section-title {
-      text-align: center;
-      font-size: 2.5rem;
-      font-weight: 700;
-      margin-bottom: 1rem;
-      color: #64ffda;
-    }
-
-    .section-subtitle {
-      text-align: center;
-      font-size: 1.1rem;
-      color: #b0b0b0;
-      margin-bottom: 4rem;
-      max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 2rem;
-    }
-
-    .feature-card {
-      background: rgba(26, 26, 62, 0.6);
-      border: 1px solid rgba(100, 255, 218, 0.2);
-      border-radius: 16px;
-      padding: 2rem;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .feature-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 30px rgba(100, 255, 218, 0.2);
-      border-color: rgba(100, 255, 218, 0.4);
-    }
-
-    .feature-icon {
-      width: 60px;
-      height: 60px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.8rem;
-      color: white;
-      margin-bottom: 1.5rem;
-    }
-
-    .feature-title {
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
-      color: #e0e0e0;
-    }
-
-    .feature-description {
-      color: #b0b0b0;
-      line-height: 1.6;
-    }
-
-    /* Footer */
-    .footer {
-      background: rgba(15, 15, 35, 0.95);
-      border-top: 1px solid rgba(100, 255, 218, 0.1);
-      padding: 3rem 2rem 1.5rem;
-      margin-top: 4rem;
-    }
-
-    .footer-content {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 2rem;
-      margin-bottom: 2rem;
-    }
-
-    .footer-section h3 {
-      color: #64ffda;
-      margin-bottom: 1rem;
-      font-size: 1.2rem;
-    }
-
-    .footer-section p,
-    .footer-section a {
-      color: #b0b0b0;
-      text-decoration: none;
-      line-height: 2;
-      display: block;
-    }
-
-    .footer-section a:hover {
-      color: #64ffda;
-    }
-
-    .footer-bottom {
-      text-align: center;
-      padding-top: 2rem;
-      border-top: 1px solid rgba(100, 255, 218, 0.1);
-      color: #b0b0b0;
-    }
-
-    /* Mobile Toggle */
-    .nav-toggle {
-      display: none;
-      flex-direction: column;
-      gap: 5px;
-      cursor: pointer;
-      padding: 0.5rem;
-    }
-
-    .nav-toggle span {
-      width: 25px;
-      height: 3px;
-      background: #64ffda;
-      border-radius: 3px;
-      transition: all 0.3s ease;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-      .nav-toggle {
-        display: flex;
-      }
-
-      .nav-menu {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        background: rgba(15, 15, 35, 0.98);
-        flex-direction: column;
-        padding: 1rem;
-        gap: 0;
-        display: none;
-        border-bottom: 1px solid rgba(100, 255, 218, 0.1);
-      }
-
-      .nav-menu.active {
-        display: flex;
-      }
-
-      .nav-link {
-        width: 100%;
-        text-align: center;
-        padding: 1rem;
-      }
-
-      .hero-title {
-        font-size: 2.5rem;
-      }
-
-      .hero-subtitle {
-        font-size: 1rem;
-      }
-
-      .hero-buttons {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .section-title {
-        font-size: 2rem;
-      }
-
-      .features-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-  </style>
-</head>
-
-<body>
-  <!-- Header -->
-  <header class="header">
-    <nav class="nav-container">
-      <a href="index.html" class="nav-logo">
-        <i class="fas fa-wallet"></i>
-        <span>ExpenseFlow</span>
-      </a>
-      <div class="nav-menu" id="navMenu">
-        <a href="index.html" class="nav-link active">Home</a>
-        <a href="dashboard.html" class="nav-link">Dashboard</a>
-        <a href="#features" class="nav-link">Features</a>
-        <a href="#about" class="nav-link">About</a>
-        <a href="dashboard.html" class="nav-cta">Get Started</a>
-      </div>
-      <div class="nav-toggle" id="navToggle">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-    </nav>
-  </header>
-
-  <!-- Hero Section -->
-  <section class="hero-section">
-    <div class="hero-background">
-      <div class="floating-shape shape-1"></div>
-      <div class="floating-shape shape-2"></div>
-      <div class="floating-shape shape-3"></div>
-    </div>
-    <div class="hero-content">
-      <div class="hero-badge">
-        <i class="fas fa-star"></i>
-        <span>Trusted by 10,000+ users worldwide</span>
-      </div>
-      <h1 class="hero-title">Smart Money Management Made Simple</h1>
+  <!-- HERO -->
+  <section class="hero-section-full">
+    <div class="hero-content-wrapper">
+      <h1 class="hero-title">Smart Money Management<br />Made Simple</h1>
       <p class="hero-subtitle">
         Take control of your finances with our intelligent expense tracker. 
         Track, analyze, and optimize your spending habits effortlessly.
@@ -1078,43 +627,92 @@
     </div>
   </section>
 
-  <!-- Footer -->
-  <footer class="footer" id="about">
-    <div class="footer-content">
-      <div class="footer-section">
-        <h3><i class="fas fa-wallet"></i> ExpenseFlow</h3>
-        <p>
-          Smart money management made simple. Take control of your finances today.
-        </p>
+  <!-- ADD TRANSACTION -->
+  <section class="form-section">
+    <h3>Add Transaction</h3>
+
+    <form id="form" class="transaction-form">
+      <input id="text" type="text" placeholder="Description" required />
+      <input id="amount" type="number" placeholder="Amount" required />
+      <select id="type" required>
+        <option value="">Select Type</option>
+        <option value="income">Income</option>
+        <option value="expense">Expense</option>
+      </select>
+      <button type="submit">Add</button>
+    </form>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-container">
+
+    <!-- Brand -->
+    <div class="footer-section">
+      <div class="footer-logo">
+        <i class="fas fa-wallet"></i>
+        <span>ExpenseFlow</span>
       </div>
-      <div class="footer-section">
-        <h3>Quick Links</h3>
-        <a href="index.html">Home</a>
-        <a href="dashboard.html">Dashboard</a>
-        <a href="#features">Features</a>
-        <a href="./contributor.html">Contributors</a>
-      </div>
-      <div class="footer-section">
-        <h3>Resources</h3>
-        <a href="Monthlysummary.html">Monthly Summary</a>
-        <a href="#">Documentation</a>
-        <a href="#">Support</a>
-        <a href="#">Privacy Policy</a>
-      </div>
-      <div class="footer-section">
-        <h3>Connect</h3>
-        <a href="#"><i class="fab fa-github"></i> GitHub</a>
-        <a href="#"><i class="fab fa-twitter"></i> Twitter</a>
-        <a href="#"><i class="fab fa-linkedin"></i> LinkedIn</a>
+      <p>
+        Smart money management made simple.
+        Track, analyze, and optimize your finances with confidence.
+      </p>
+
+      <div class="social-links">
+        <a href="#" class="social-link" aria-label="Github">
+          <i class="fab fa-github"></i>
+        </a>
+        <a href="#" class="social-link" aria-label="LinkedIn">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+        <a href="#" class="social-link" aria-label="Twitter">
+          <i class="fab fa-x-twitter"></i>
+        </a>
       </div>
     </div>
-    <div class="footer-bottom">
-      <p>&copy; 2025 ExpenseFlow. All rights reserved.</p>
+
+    <!-- Product -->
+    <div class="footer-section">
+      <h4>Product</h4>
+      <ul class="footer-links">
+        <li><a href="#">Dashboard</a></li>
+        <li><a href="#">Analytics</a></li>
+        <li><a href="#">Budget Goals</a></li>
+        <li><a href="#">Reports</a></li>
+      </ul>
     </div>
-  </footer>
+
+    <!-- Company -->
+    <div class="footer-section">
+      <h4>Company</h4>
+      <ul class="footer-links">
+        <li><a href="#">About Us</a></li>
+        <li><a href="#">Contributors</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">Terms of Service</a></li>
+      </ul>
+    </div>
+
+    <!-- Support -->
+    <div class="footer-section">
+      <h4>Support</h4>
+      <ul class="footer-links">
+        <li><a href="#">Help Center</a></li>
+        <li><a href="#">Contact</a></li>
+        <li><a href="#">Report Bug</a></li>
+      </ul>
+    </div>
+
   </div>
-<script src="auth-check.js"></script>
-<script src="auth.js"></script>
+
+  <!-- Bottom bar -->
+  <div class="footer-bottom">
+    <p>© 2026 ExpenseFlow. All rights reserved.</p>
+  </div>
+</footer>
+
 <script src="trackerscript.js"></script>
 <script src="analytics-dashboard.js"></script>
 <script src="settings.js"></script>
@@ -1136,7 +734,7 @@
     }
   }
 
-  <script>
+
     // Mobile Navigation Toggle
     const navToggle = document.getElementById('navToggle');
     const navMenu = document.getElementById('navMenu');
