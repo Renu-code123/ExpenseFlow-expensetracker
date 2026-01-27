@@ -21,7 +21,7 @@ jobs:
 
             const welcomeMessage =
               "## 🎉 Thanks for the PR, @" + prAuthor + "!\n\n" +
-              "We really appreciate you taking the time to contribute to **OpenPlayground**! 💙\n\n" +
+              "We really appreciate you taking the time to contribute to **ExpenseFlow**! 💙\n\n" +
               "---\n\n" +
               "### ⭐ Love this project?\n" +
               "**Please give us a star!** It helps the project grow and reach more developers! 🌟\n\n" +

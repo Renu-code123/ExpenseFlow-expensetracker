@@ -2,10 +2,13 @@ const cron = require('node-cron');
 const User = require('../models/User');
 const Expense = require('../models/Expense');
 const BankConnection = require('../models/BankConnection');
+const Account = require('../models/Account');
+const BalanceHistory = require('../models/BalanceHistory');
+const NetWorthSnapshot = require('../models/NetWorthSnapshot');
 const emailService = require('../services/emailService');
 const currencyService = require('../services/currencyService');
-const investmentService = require('../services/investmentService');
-const Portfolio = require('../models/Portfolio');
+const InvoiceService = require('../services/invoiceService');
+const ReminderService = require('../services/reminderService');
 
 class CronJobs {
   static init() {
@@ -20,23 +23,23 @@ class CronJobs {
       console.log('[CronJobs] Sending recurring expense reminders...');
       await this.sendRecurringReminders();
     });
-
-    // Send subscription renewal reminders - Daily at 9:30 AM
-    cron.schedule('30 9 * * *', async () => {
-      console.log('[CronJobs] Sending subscription renewal reminders...');
-      await this.sendSubscriptionReminders();
+    
+    // Generate recurring invoices - Daily at 6 AM
+    cron.schedule('0 6 * * *', async () => {
+      console.log('[CronJobs] Generating recurring invoices...');
+      await this.generateRecurringInvoices();
     });
-
-    // Send trial ending reminders - Daily at 10 AM
+    
+    // Send payment reminders - Daily at 10 AM
     cron.schedule('0 10 * * *', async () => {
-      console.log('[CronJobs] Sending trial ending reminders...');
-      await this.sendTrialReminders();
+      console.log('[CronJobs] Sending payment reminders...');
+      await this.sendPaymentReminders();
     });
-
-    // Process daily gamification updates - Daily at midnight
+    
+    // Apply late fees - Daily at 12 AM (midnight)
     cron.schedule('0 0 * * *', async () => {
-      console.log('[CronJobs] Processing daily gamification updates...');
-      await this.processDailyGamification();
+      console.log('[CronJobs] Applying late fees to overdue invoices...');
+      await this.applyLateFees();
     });
 
     // Weekly report - Every Sunday at 9 AM
@@ -51,12 +54,6 @@ class CronJobs {
       await this.sendMonthlyReports();
     });
 
-    // Reset monthly gamification points - 1st day of month at midnight
-    cron.schedule('0 0 1 * *', async () => {
-      console.log('[CronJobs] Resetting monthly gamification points...');
-      await this.resetMonthlyGamification();
-    });
-
     // Budget alerts - Daily at 8 PM
     cron.schedule('0 20 * * *', async () => {
       console.log('[CronJobs] Checking budget alerts...');
@@ -65,113 +62,305 @@ class CronJobs {
 
     // Update exchange rates - Every 6 hours
     cron.schedule('0 */6 * * *', async () => {
-      console.log('Updating exchange rates...');
+      console.log('[CronJobs] Updating exchange rates...');
       await this.updateExchangeRates();
     });
 
-    // Update investment prices - Every hour during market hours (9 AM - 5 PM EST)
-    cron.schedule('0 9-17 * * 1-5', async () => {
-      console.log('[CronJobs] Updating investment asset prices...');
-      await this.updateInvestmentPrices();
+    // Create daily balance snapshots - Daily at 11:55 PM
+    cron.schedule('55 23 * * *', async () => {
+      console.log('[CronJobs] Creating daily balance snapshots...');
+      await this.createDailyBalanceSnapshots();
     });
 
-    // Update crypto prices - Every 15 minutes (24/7)
-    cron.schedule('*/15 * * * *', async () => {
-      console.log('[CronJobs] Updating crypto prices...');
-      await this.updateCryptoPrices();
+    // Calculate net worth snapshots - Daily at 11:59 PM
+    cron.schedule('59 23 * * *', async () => {
+      console.log('[CronJobs] Creating net worth snapshots...');
+      await this.createNetWorthSnapshots();
     });
 
-    // Take daily portfolio snapshots - Daily at 6 PM EST
-    cron.schedule('0 18 * * 1-5', async () => {
-      console.log('[CronJobs] Taking portfolio snapshots...');
-      await this.takePortfolioSnapshots();
+    // Historical revaluation (update past snapshots with current rates) - Weekly on Sunday at 3 AM
+    cron.schedule('0 3 * * 0', async () => {
+      console.log('[CronJobs] Running historical revaluation...');
+      await this.runHistoricalRevaluation();
+    });
+
+    // Quarterly tax estimate reminders - 1st of each quarter month at 9 AM
+    cron.schedule('0 9 1 1,4,7,10 *', async () => {
+      console.log('[CronJobs] Sending quarterly tax estimate reminders...');
+      await this.sendQuarterlyTaxReminders();
+    });
+
+    // Year-end tax planning - December 1st at 9 AM
+    cron.schedule('0 9 1 12 *', async () => {
+      console.log('[CronJobs] Sending year-end tax planning reminders...');
+      await this.sendYearEndTaxPlanningReminders();
+    });
+
+    // Tax document generation reminder - March 1st at 9 AM
+    cron.schedule('0 9 1 3 *', async () => {
+      console.log('[CronJobs] Sending tax document preparation reminders...');
+      await this.sendTaxDocumentReminders();
     });
 
     console.log('Cron jobs initialized successfully');
   }
 
   static async processRecurringExpenses() {
-    try {
-      await recurringService.processRecurringExpenses();
-    } catch (error) {
-      console.error('[CronJobs] Recurring expenses error:', error);
-    }
+    console.log('Processing recurring expenses (Placeholder)');
+    // Implementation would go here
   }
 
   static async sendRecurringReminders() {
+    console.log('Sending recurring reminders (Placeholder)');
+    // Implementation would go here
+  }
+  
+  static async generateRecurringInvoices() {
     try {
-      await recurringService.sendUpcomingReminders();
+      console.log('[CronJobs] Generating recurring invoices...');
+      const result = await InvoiceService.generateRecurringInvoices();
+      console.log(`[CronJobs] Generated ${result.count} recurring invoices`);
     } catch (error) {
-      console.error('[CronJobs] Recurring reminders error:', error);
+      console.error('[CronJobs] Error generating recurring invoices:', error);
     }
   }
-
-  static async sendSubscriptionReminders() {
+  
+  static async sendPaymentReminders() {
     try {
-      await subscriptionService.sendRenewalReminders();
+      console.log('[CronJobs] Sending payment reminders...');
+      const result = await ReminderService.processAllReminders();
+      console.log(`[CronJobs] Sent ${result.success.length} reminders, ${result.failed.length} failed`);
     } catch (error) {
-      console.error('[CronJobs] Subscription reminders error:', error);
+      console.error('[CronJobs] Error sending payment reminders:', error);
     }
   }
-
-  static async sendTrialReminders() {
+  
+  static async applyLateFees() {
     try {
-      await subscriptionService.sendTrialReminders();
-    } catch (error) {
-      console.error('[CronJobs] Trial reminders error:', error);
-    }
-  }
-
-  static async processDailyGamification() {
-    try {
-      await gamificationService.processDailyChallenges();
-    } catch (error) {
-      console.error('[CronJobs] Gamification processing error:', error);
-    }
-  }
-
-  static async resetMonthlyGamification() {
-    try {
-      const UserGamification = require('../models/UserGamification');
-      await UserGamification.updateMany(
-        {},
-        { 
-          'points.currentMonth': 0,
-          'points.lastMonthReset': new Date()
+      console.log('[CronJobs] Applying late fees...');
+      const User = require('../models/User');
+      const users = await User.find({});
+      
+      let totalApplied = 0;
+      for (const user of users) {
+        try {
+          const result = await InvoiceService.applyLateFees(user._id);
+          totalApplied += result.count;
+        } catch (error) {
+          console.error(`[CronJobs] Error applying late fees for user ${user._id}:`, error);
         }
-      );
-      console.log('[CronJobs] Monthly gamification points reset');
+      }
+      
+      console.log(`[CronJobs] Applied late fees to ${totalApplied} invoices`);
     } catch (error) {
-      console.error('[CronJobs] Monthly reset error:', error);
+      console.error('[CronJobs] Error applying late fees:', error);
     }
   }
-
-  static async seedGamificationData() {
+  
+  static async generateRecurringInvoices() {
     try {
-      await gamificationService.seedAchievements();
-      await gamificationService.createSystemChallenges();
+      console.log('[CronJobs] Generating recurring invoices...');
+      const result = await InvoiceService.generateRecurringInvoices();
+      console.log(`[CronJobs] Generated ${result.count} recurring invoices`);
     } catch (error) {
-      console.error('[CronJobs] Gamification seed error:', error);
+      console.error('[CronJobs] Error generating recurring invoices:', error);
+    }
+  }
+  
+  static async sendPaymentReminders() {
+    try {
+      console.log('[CronJobs] Sending payment reminders...');
+      const result = await ReminderService.processAllReminders();
+      console.log(`[CronJobs] Sent ${result.success.length} reminders, ${result.failed.length} failed`);
+    } catch (error) {
+      console.error('[CronJobs] Error sending payment reminders:', error);
+    }
+  }
+  
+  static async applyLateFees() {
+    try {
+      console.log('[CronJobs] Applying late fees...');
+      const User = require('../models/User');
+      const users = await User.find({});
+      
+      let totalApplied = 0;
+      for (const user of users) {
+        try {
+          const result = await InvoiceService.applyLateFees(user._id);
+          totalApplied += result.count;
+        } catch (error) {
+          console.error(`[CronJobs] Error applying late fees for user ${user._id}:`, error);
+        }
+      }
+      
+      console.log(`[CronJobs] Applied late fees to ${totalApplied} invoices`);
+    } catch (error) {
+      console.error('[CronJobs] Error applying late fees:', error);
     }
   }
 
   static async updateExchangeRates() {
     try {
-      // Update rates for major base currencies
-      const baseCurrencies = ['USD', 'EUR', 'GBP', 'INR'];
+      // Fetch all rates (fiat + crypto)
+      const result = await currencyService.fetchAllRates();
+      
+      if (result.fiat) {
+        console.log('[CronJobs] Fiat exchange rates updated successfully');
+      }
+      
+      if (result.crypto) {
+        console.log('[CronJobs] Crypto prices updated successfully');
+      }
 
-      for (const currency of baseCurrencies) {
+      console.log('[CronJobs] Exchange rates update completed');
+    } catch (error) {
+      console.error('[CronJobs] Exchange rates update error:', error);
+    }
+  }
+
+  /**
+   * Create daily balance snapshots for all accounts
+   * Issue #337: Multi-Account Liquidity Management
+   */
+  static async createDailyBalanceSnapshots() {
+    try {
+      const accounts = await Account.find({ isActive: true });
+      let successCount = 0;
+      let errorCount = 0;
+
+      for (const account of accounts) {
         try {
-          await currencyService.updateExchangeRates(currency);
-          console.log(`Updated exchange rates for ${currency}`);
+          await BalanceHistory.createDailySnapshot(account);
+          successCount++;
         } catch (error) {
-          console.error(`Failed to update rates for ${currency}:`, error.message);
+          console.error(`[CronJobs] Failed to create snapshot for account ${account._id}:`, error.message);
+          errorCount++;
         }
       }
 
-      console.log('Exchange rates update completed');
+      console.log(`[CronJobs] Daily balance snapshots: ${successCount} successful, ${errorCount} failed`);
     } catch (error) {
-      console.error('Exchange rates update error:', error);
+      console.error('[CronJobs] Daily balance snapshots error:', error);
+    }
+  }
+
+  /**
+   * Create net worth snapshots for all users
+   * Issue #337: Historical Revaluation Engine
+   */
+  static async createNetWorthSnapshots() {
+    try {
+      // Get all users with active accounts
+      const usersWithAccounts = await Account.distinct('userId', { isActive: true });
+      let successCount = 0;
+      let errorCount = 0;
+
+      // Ensure we have latest exchange rates
+      await currencyService.fetchAllRates().catch(() => {});
+      const rates = await currencyService.getAllRates('USD');
+
+      for (const userId of usersWithAccounts) {
+        try {
+          // Get user's accounts
+          const accounts = await Account.find({
+            userId,
+            isActive: true,
+            includeInNetWorth: true
+          });
+
+          if (accounts.length === 0) continue;
+
+          // Determine user's preferred base currency (default USD)
+          const user = await User.findById(userId);
+          const baseCurrency = user?.preferences?.currency || 'USD';
+
+          // Create snapshot
+          await NetWorthSnapshot.createSnapshot(userId, accounts, rates.rates, baseCurrency);
+          successCount++;
+        } catch (error) {
+          console.error(`[CronJobs] Failed to create net worth snapshot for user ${userId}:`, error.message);
+          errorCount++;
+        }
+      }
+
+      console.log(`[CronJobs] Net worth snapshots: ${successCount} successful, ${errorCount} failed`);
+    } catch (error) {
+      console.error('[CronJobs] Net worth snapshots error:', error);
+    }
+  }
+
+  /**
+   * Historical Revaluation - Update past snapshots with exchange rate changes
+   * Issue #337: Historical Revaluation Engine
+   */
+  static async runHistoricalRevaluation() {
+    try {
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+      // Get current rates
+      await currencyService.fetchAllRates().catch(() => {});
+      const currentRates = await currencyService.getAllRates('USD');
+
+      // Find snapshots from the past week that might need revaluation
+      const snapshots = await NetWorthSnapshot.find({
+        date: { $gte: oneWeekAgo },
+        'dataQuality.missingRates.0': { $exists: true } // Has missing rates
+      });
+
+      let updatedCount = 0;
+
+      for (const snapshot of snapshots) {
+        const missingRates = snapshot.dataQuality?.missingRates || [];
+        let hasUpdates = false;
+
+        for (const currency of missingRates) {
+          if (currentRates.rates[currency]) {
+            snapshot.exchangeRates.set(currency, currentRates.rates[currency]);
+            hasUpdates = true;
+          }
+        }
+
+        if (hasUpdates) {
+          // Recalculate totals with new rates
+          let totalAssets = 0;
+          let totalLiabilities = 0;
+
+          for (const account of snapshot.accounts) {
+            const rate = account.currency === snapshot.baseCurrency ? 1 :
+              (snapshot.exchangeRates.get(account.currency) || currentRates.rates[account.currency] || 1);
+            
+            const balanceInBase = account.balance * rate;
+            const effectiveBalance = ['credit_card', 'loan'].includes(account.type)
+              ? -Math.abs(balanceInBase)
+              : balanceInBase;
+
+            account.balanceInBaseCurrency = effectiveBalance;
+            account.exchangeRate = rate;
+
+            if (effectiveBalance >= 0) {
+              totalAssets += effectiveBalance;
+            } else {
+              totalLiabilities += Math.abs(effectiveBalance);
+            }
+          }
+
+          snapshot.totalAssets = totalAssets;
+          snapshot.totalLiabilities = totalLiabilities;
+          snapshot.totalNetWorth = totalAssets - totalLiabilities;
+          snapshot.dataQuality.missingRates = missingRates.filter(
+            c => !currentRates.rates[c]
+          );
+          snapshot.snapshotSource = 'revaluation';
+
+          await snapshot.save();
+          updatedCount++;
+        }
+      }
+
+      console.log(`[CronJobs] Historical revaluation: ${updatedCount} snapshots updated`);
+    } catch (error) {
+      console.error('[CronJobs] Historical revaluation error:', error);
     }
   }
 
@@ -326,88 +515,6 @@ class CronJobs {
       }
     } catch (error) {
       console.error('Budget alert error:', error);
-    }
-  }
-
-  // Update stock/ETF prices
-  static async updateInvestmentPrices() {
-    try {
-      const Asset = require('../models/Asset');
-      const assets = await Asset.find({ 
-        isActive: true, 
-        type: { $in: ['stock', 'etf', 'mutual_fund'] }
-      });
-
-      let updated = 0;
-      let failed = 0;
-
-      for (const asset of assets) {
-        try {
-          // Rate limiting for Alpha Vantage (5 calls/min on free tier)
-          await new Promise(resolve => setTimeout(resolve, 12000));
-          await investmentService.updateAssetPrice(asset._id);
-          updated++;
-        } catch (error) {
-          console.error(`Failed to update ${asset.symbol}:`, error.message);
-          failed++;
-        }
-      }
-
-      console.log(`[CronJobs] Investment prices updated: ${updated} success, ${failed} failed`);
-    } catch (error) {
-      console.error('[CronJobs] Investment price update error:', error);
-    }
-  }
-
-  // Update crypto prices (more frequent, CoinGecko has higher rate limits)
-  static async updateCryptoPrices() {
-    try {
-      const Asset = require('../models/Asset');
-      const cryptoAssets = await Asset.find({ 
-        isActive: true, 
-        type: 'crypto' 
-      });
-
-      let updated = 0;
-      let failed = 0;
-
-      for (const asset of cryptoAssets) {
-        try {
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          await investmentService.updateAssetPrice(asset._id);
-          updated++;
-        } catch (error) {
-          console.error(`Failed to update crypto ${asset.symbol}:`, error.message);
-          failed++;
-        }
-      }
-
-      console.log(`[CronJobs] Crypto prices updated: ${updated} success, ${failed} failed`);
-    } catch (error) {
-      console.error('[CronJobs] Crypto price update error:', error);
-    }
-  }
-
-  // Take daily portfolio snapshots for historical tracking
-  static async takePortfolioSnapshots() {
-    try {
-      const portfolios = await Portfolio.find({})
-        .populate('holdings.asset');
-
-      let snapshotsTaken = 0;
-
-      for (const portfolio of portfolios) {
-        try {
-          await portfolio.takeSnapshot();
-          snapshotsTaken++;
-        } catch (error) {
-          console.error(`Failed to snapshot portfolio ${portfolio._id}:`, error.message);
-        }
-      }
-
-      console.log(`[CronJobs] Portfolio snapshots taken: ${snapshotsTaken}`);
-    } catch (error) {
-      console.error('[CronJobs] Portfolio snapshot error:', error);
     }
   }
 }
