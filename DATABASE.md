@@ -21,6 +21,7 @@ This document provides comprehensive information about the ExpenseFlow MongoDB d
 
 ## 🗃️ Database Overview
 
+
 ExpenseFlow uses **MongoDB** as its primary database with **Mongoose ODM** for schema definition and data validation. The database is designed to handle:
 
 - User authentication and profiles
@@ -32,6 +33,8 @@ ExpenseFlow uses **MongoDB** as its primary database with **Mongoose ODM** for s
 - Real-time synchronization
 - Currency conversion
 - AI-powered categorization
+
+For security, compliance, monitoring, and audit details, see [SETUP_AND_SECURITY.md](SETUP_AND_SECURITY.md).
 
 ### Key Design Principles
 
