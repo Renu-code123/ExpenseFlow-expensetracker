@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"  favicon="favicon.ico">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -278,17 +278,7 @@
     });
   });
 
-  window.addEventListener('mouseenter', () => {
-    trailCircles.forEach((circle, index) => {
-      const opacity = 0.9 - (index / COUNT) * 0.8;
-      circle.element.style.opacity = opacity.toString();
-    });
-  });
 
-  // Start animation
-  animateTrail();
-})();
-</script>
 
   <!-- Header -->
   <header class="header">
@@ -447,6 +437,13 @@
         <a href="Monthlysummary.html" class="nav-link">Summary</a>
         <a href="contributor.html" class="nav-link">Contributors</a>
       </div>
+
+      <div class="nav-toggle" id="nav-toggle">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </nav>
+</header>
 
       <!-- Balance Card -->
       <div class="balance-card">
@@ -1478,19 +1475,156 @@
     </div>
   </div>
 
-  
-  </footer>
+  <!-- ADD TRANSACTION -->
+  <section class="form-section">
+    <h3>Add Transaction</h3>
 
-  <!-- Update Available Notification -->
-  <div id="update-notification" class="update-notification" style="display: none;">
-    <div class="update-content">
-      <i class="fas fa-sync-alt"></i>
-      <span>A new version is available!</span>
-      <button id="update-button" class="update-btn">Update Now</button>
+    <form id="form" class="transaction-form">
+      <input id="text" type="text" placeholder="Description" required />
+      <input id="amount" type="number" placeholder="Amount" required />
+      <select id="type" required>
+        <option value="">Select Type</option>
+        <option value="income">Income</option>
+        <option value="expense">Expense</option>
+      </select>
+      <button type="submit">Add</button>
+    </form>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-container">
+
+    <!-- Brand -->
+    <div class="footer-section">
+      <div class="footer-logo">
+        <i class="fas fa-wallet"></i>
+        <span>ExpenseFlow</span>
+      </div>
+      <p>
+        Smart money management made simple.
+        Track, analyze, and optimize your finances with confidence.
+      </p>
+
+      <div class="social-links">
+        <a href="#" class="social-link" aria-label="Github">
+          <i class="fab fa-github"></i>
+        </a>
+        <a href="#" class="social-link" aria-label="LinkedIn">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+        <a href="#" class="social-link" aria-label="Twitter">
+          <i class="fab fa-x-twitter"></i>
+        </a>
+      </div>
     </div>
+
+    <!-- Product -->
+    <div class="footer-section">
+      <h4>Product</h4>
+      <ul class="footer-links">
+        <li><a href="#">Dashboard</a></li>
+        <li><a href="#">Analytics</a></li>
+        <li><a href="#">Budget Goals</a></li>
+        <li><a href="#">Reports</a></li>
+      </ul>
+    </div>
+
+    <!-- Company -->
+    <div class="footer-section">
+      <h4>Company</h4>
+      <ul class="footer-links">
+        <li><a href="#">About Us</a></li>
+        <li><a href="#">Contributors</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">Terms of Service</a></li>
+      </ul>
+    </div>
+
+    <!-- Support -->
+    <div class="footer-section">
+      <h4>Support</h4>
+      <ul class="footer-links">
+        <li><a href="#">Help Center</a></li>
+        <li><a href="#">Contact</a></li>
+        <li><a href="#">Report Bug</a></li>
+      </ul>
+    </div>
+
   </div>
-<script src="auth-check.js"></script>
-<script src="auth.js"></script>
+
+  <!-- Bottom bar -->
+  <div class="footer-bottom">
+    <p>© 2026 ExpenseFlow. All rights reserved.</p>
+  </div>
+  <div class="footer-container">
+
+    <!-- Brand -->
+    <div class="footer-section">
+      <div class="footer-logo">
+        <i class="fas fa-wallet"></i>
+        <span>ExpenseFlow</span>
+      </div>
+      <p>
+        Smart money management made simple.
+        Track, analyze, and optimize your finances with confidence.
+      </p>
+
+      <div class="social-links">
+        <a href="#" class="social-link" aria-label="Github">
+          <i class="fab fa-github"></i>
+        </a>
+        <a href="#" class="social-link" aria-label="LinkedIn">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+        <a href="#" class="social-link" aria-label="Twitter">
+          <i class="fab fa-x-twitter"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- Product -->
+    <div class="footer-section">
+      <h4>Product</h4>
+      <ul class="footer-links">
+        <li><a href="#">Dashboard</a></li>
+        <li><a href="#">Analytics</a></li>
+        <li><a href="#">Budget Goals</a></li>
+        <li><a href="#">Reports</a></li>
+      </ul>
+    </div>
+
+    <!-- Company -->
+    <div class="footer-section">
+      <h4>Company</h4>
+      <ul class="footer-links">
+        <li><a href="#">About Us</a></li>
+        <li><a href="#">Contributors</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">Terms of Service</a></li>
+      </ul>
+    </div>
+
+    <!-- Support -->
+    <div class="footer-section">
+      <h4>Support</h4>
+      <ul class="footer-links">
+        <li><a href="#">Help Center</a></li>
+        <li><a href="#">Contact</a></li>
+        <li><a href="#">Report Bug</a></li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- Bottom bar -->
+  <div class="footer-bottom">
+    <p>© 2026 ExpenseFlow. All rights reserved.</p>
+  </div>
+</footer>
+
 <script src="trackerscript.js"></script>
 <script src="analytics-dashboard.js"></script>
 <script src="auth.js"></script>
@@ -1508,13 +1642,10 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 
-  function closeRecurringModal() {
-    const modal = document.getElementById('recurring-modal');
-    if (modal) {
-      modal.style.display = 'none';
-      modal.classList.remove('active');
-    }
-  }
+
+    // Mobile Navigation Toggle
+    const navToggle = document.getElementById('navToggle');
+    const navMenu = document.getElementById('navMenu');
 
       // Close modal when clicking outside
       const modal = document.getElementById('recurring-modal');
