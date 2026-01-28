@@ -1,7 +1,7 @@
 // Real-time synchronization with Socket.IO
 var API_BASE_URL = '/api';
 let socket = null;
-var authToken = localStorage.getItem('authToken');
+var authToken = localStorage.getItem('token');
 var currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
 let offlineQueue = JSON.parse(localStorage.getItem('offlineQueue') || '[]');
 let deviceId = localStorage.getItem('deviceId') || generateDeviceId();
