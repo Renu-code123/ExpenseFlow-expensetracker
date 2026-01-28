@@ -174,110 +174,7 @@
 <!-- Cursor -->
 <div id="cursor-trail" class="cursor-trail-container"></div>
 
-  window.addEventListener('mousemove', e => {
-    coords.x = e.clientX;
-    coords.y = e.clientY;
-
-    // Calculate velocity for smooth movement
-    velocity.x = e.clientX - lastMouseX;
-    velocity.y = e.clientY - lastMouseY;
-    lastMouseX = e.clientX;
-    lastMouseY = e.clientY;
-
-    isMoving = true;
-
-    // Reset movement timeout
-    clearTimeout(window.movementTimeout);
-    window.movementTimeout = setTimeout(() => {
-      isMoving = false;
-    }, 50);
-  });
-
-  // Click effect
-  window.addEventListener('mousedown', () => {
-    trailCircles.forEach(circle => {
-      circle.element.classList.add('cursor-clicking');
-    });
-  });
-
-  window.addEventListener('mouseup', () => {
-    trailCircles.forEach(circle => {
-      circle.element.classList.remove('cursor-clicking');
-    });
-  });
-
-  // Hover effect for interactive elements
-  window.addEventListener('mouseover', e => {
-    const interactive = e.target.closest('a, button, input, select, textarea, [role="button"]');
-    trailCircles.forEach(circle => {
-      circle.element.classList.toggle('cursor-hovering', !!interactive);
-    });
-  });
-
-  // Smooth animation function
-  function animateTrail() {
-    let targetX = coords.x;
-    let targetY = coords.y;
-
-    // Add velocity offset to first circle for more natural feel
-    const velocityOffset = 0.5;
-    const offsetX = velocity.x * velocityOffset;
-    const offsetY = velocity.y * velocityOffset;
-
-    trailCircles.forEach((circle, index) => {
-      // First circle follows cursor exactly
-      if (index === 0) {
-        circle.x = targetX + offsetX;
-        circle.y = targetY + offsetY;
-      } 
-      // Other circles follow with smooth delay
-      else {
-        const prevCircle = trailCircles[index - 1];
-
-        // Smooth interpolation factor (changes based on movement speed)
-        const speed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
-        const lerpFactor = isMoving ? 
-          Math.min(0.3 + (speed * 0.01), 0.5) :  // Faster movement = tighter trail
-          0.1; // Slow movement = more spread
-
-        circle.x += (prevCircle.x - circle.x) * lerpFactor;
-        circle.y += (prevCircle.y - circle.y) * lerpFactor;
-      }
-
-      // Apply position with easing
-      circle.element.style.left = circle.x + 'px';
-      circle.element.style.top = circle.y + 'px';
-
-      // Dynamic opacity based on speed and position
-      if (index > 0) {
-        const speed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
-        const baseOpacity = 0.9 - (index / COUNT) * 0.8;
-        const speedMultiplier = Math.min(1 + speed * 0.02, 1.5);
-        circle.element.style.opacity = (baseOpacity * speedMultiplier).toString();
-      }
-
-      // Update target for next circle
-      targetX = circle.x;
-      targetY = circle.y;
-    });
-
-    requestAnimationFrame(animateTrail);
-  }
-
-  // Handle window resize
-  window.addEventListener('resize', () => {
-    // Adjust if cursor goes out of bounds
-    if (coords.x > window.innerWidth) coords.x = window.innerWidth;
-    if (coords.y > window.innerHeight) coords.y = window.innerHeight;
-  });
-
-  // Handle mouse leave/enter
-  window.addEventListener('mouseleave', () => {
-    trailCircles.forEach(circle => {
-      circle.element.style.opacity = '0';
-    });
-  });
-
+ 
 
 
   <!-- Header -->
@@ -1336,9 +1233,7 @@
     });
   </script>
   <script>
-    // Currency Management Functions
-    let supportedCurrencies = [];
-    let currentUserCurrency = 'INR';
+   
 
     // Load supported currencies on page load
     async function loadSupportedCurrencies() {
@@ -1361,11 +1256,7 @@
         console.error('Error loading currencies:', error);
       }
     }
-
-    // Populate currency dropdowns
-    function populateCurrencySelects() {
-      const currencySelect = document.getElementById('currency');
-      const preferredCurrencySelect = document.getElementById('preferred-currency');
+    </script>
 
   <style>
     @keyframes spin {
@@ -1624,6 +1515,7 @@
     <p>© 2026 ExpenseFlow. All rights reserved.</p>
   </div>
 </footer>
+<script src="protect.js"></script>
 
 <script src="trackerscript.js"></script>
 <script src="analytics-dashboard.js"></script>
@@ -1641,23 +1533,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 </script>
-
-
-    // Mobile Navigation Toggle
-    const navToggle = document.getElementById('navToggle');
-    const navMenu = document.getElementById('navMenu');
-
-      // Close modal when clicking outside
-      const modal = document.getElementById('recurring-modal');
-      if (modal) {
-        modal.addEventListener('click', (e) => {
-          if (e.target === modal) {
-            closeRecurringModal();
-          }
-        });
-      }
-    });
-  </script>
   <script>
     // Currency Management Functions
     let supportedCurrencies = [];
@@ -1675,7 +1550,15 @@ document.addEventListener("DOMContentLoaded", () => {
             'Authorization': `Bearer ${token}`
           }
         });
-
+        const data = await response.json();
+        if (data.success) {
+          supportedCurrencies = data.data.currencies;
+          populateCurrencySelects();
+        }
+      } catch (error) {
+        console.error('Error loading currencies:', error);
+      }
+    }
     const closeBtn = document.getElementById('recurring-modal-close');
     if (closeBtn) {
       closeBtn.addEventListener('click', closeRecurringModal);
@@ -1695,17 +1578,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
     }
-  });
 </script>
 <script>
-  // Currency Management Functions
-  let supportedCurrencies = [];
-  let currentUserCurrency = 'INR';
+
 
   // Load supported currencies on page load
   async function loadSupportedCurrencies() {
     try {
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem('token');
       if (!token) return;
 
       const response = await fetch('/api/currency/supported', {
@@ -1747,7 +1627,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Load user's currency preference
   async function loadUserCurrencyPreference() {
     try {
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem('token');
       if (!token) return;
 
         const data = await response.json();
@@ -1794,7 +1674,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Load exchange rate information
   async function loadExchangeRateInfo() {
     try {
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem('token');
       const response = await fetch(`/api/currency/rates?base=${currentUserCurrency}`, {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -1845,7 +1725,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Save currency preference
   async function saveCurrencyPreference() {
     try {
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem('token');
       const prefSelect = document.getElementById('preferred-currency');
       if (!prefSelect) return;
 
@@ -1910,7 +1790,6 @@ document.addEventListener("DOMContentLoaded", () => {
     </div>
   </div>
   <script src="auth-check.js"></script>
-  <script src="auth.js"></script>
   <script src="trackerscript.js"></script>
   <script src="analytics-dashboard.js"></script>
   <script src="workspace-feature.js"></script>
