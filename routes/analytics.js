@@ -57,6 +57,11 @@ router.get('/warehouse', auth, [
       projection.period = 1;
       projection.granularity = 1;
     }
+    // You may want to add logic here to fetch and return data
+    return res.status(200).json({ message: 'Warehouse analytics endpoint is working.' });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
 });
 
 // Get spending trends
