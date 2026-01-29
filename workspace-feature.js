@@ -8,7 +8,7 @@ let isInitialized = false;
 
 // Enhanced API Functions with better error handling
 async function getAuthHeaders() {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('token');
     if (!token) {
         throw new Error('No authentication token found. Please log in again.');
     }
@@ -44,7 +44,7 @@ async function fetchWorkspaces(forceRefresh = false) {
         
         if (response.status === 401) {
             // Token expired, redirect to login
-            localStorage.removeItem('authToken');
+            localStorage.removeItem('token');
             window.location.href = 'login.html';
             return [];
         }
