@@ -191,6 +191,57 @@
             border-radius: 2px;
         }
 
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .user-profile:hover .profile-img {
+            transform: scale(1.08);
+        }
+
+        .profile-img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid var(--accent-primary);
+            object-fit: cover;
+            transition: transform 0.25s ease;
+        }
+
+        .username {
+            font-weight: 500;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+
+        .currency-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(100, 255, 218, 0.15);
+            color: var(--accent-primary);
+            padding: 0.45rem 0.85rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .currency-btn:hover {
+            background: rgba(100, 255, 218, 0.12);
+            border-color: rgba(100, 255, 218, 0.3);
+        }
+
+        .currency-btn i {
+            font-size: 0.95rem;
+        }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -508,6 +559,10 @@
                 display: none;
             }
             
+            .user-profile {
+                display: none;
+            }
+            
             .nav-toggle.active .bar:nth-child(2) {
                 opacity: 0;
             }
@@ -568,25 +623,28 @@
     <header class="header">
         <nav class="navbar">
             <div class="nav-container">
-                <a href="index.html" class="nav-logo">
-                    <i class="fas fa-wallet"></i>
-                    <span>ExpenseFlow</span>
-                </a>
+                <div class="nav-logo">
+                    <span>👛 ExpenseFlow</span>
+                </div>
                 <div class="nav-menu" id="nav-menu">
                     <a href="index.html" class="nav-link">Dashboard</a>
-                    <a href="analytics.html" class="nav-link active">Analytics</a>
-                    <a href="public/analytics.html" class="nav-link">Analytics</a>
-                    <a href="#analytics" class="nav-link">Analytics</a>
+                    <a href="analytics.html" class="nav-link">Analytics</a>
                     <a href="goals.html" class="nav-link active">Goals</a>
-                    <a href="#settings" class="nav-link">Settings</a>
+                    <a href="public/settings.html" class="nav-link">Settings</a>
                 </div>
                 <div class="nav-toggle" id="nav-toggle">
                     <span class="bar"></span>
                     <span class="bar"></span>
                     <span class="bar"></span>
                 </div>
-            </div>
-        </nav>
+                <div class="user-profile">
+                    <button class="currency-btn" onclick="openCurrencyModal()" title="Currency Settings">
+                        <i class="fas fa-coins"></i>
+                        <span id="current-currency">INR</span>
+                    </button>
+                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face"
+                        alt="User" class="profile-img">
+                    <span class="username">John Doe</span>
     </header>
 
     <div class="container">
