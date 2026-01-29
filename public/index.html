@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en"  favicon="favicon.ico">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -172,210 +171,11 @@
 
 <body>
 
-        <!-- Smooth Cursor Trail -->
-<style>
-  .cursor-trail-container {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 999999;
-  }
+<!-- Cursor -->
+<div id="cursor-trail" class="cursor-trail-container"></div>
 
-  .trail-dot {
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #64ffda 0%, #00b4d8 100%);
-    box-shadow: 
-      0 0 15px rgba(100, 255, 218, 0.8),
-      0 0 30px rgba(100, 255, 218, 0.4);
-    transform: translate(-50%, -50%);
-    will-change: transform, opacity;
-    mix-blend-mode: screen;
-    transition: opacity 0.3s ease, transform 0.3s ease;
-  }
+ 
 
-  .trail-dot:first-child {
-    width: 12px;
-    height: 12px;
-    background: linear-gradient(135deg, #64ffda 0%, #00b4d8 100%);
-    box-shadow: 
-      0 0 20px rgba(100, 255, 218, 0.9),
-      0 0 40px rgba(100, 255, 218, 0.6);
-    z-index: 2;
-  }
-
-  .cursor-clicking {
-    transform: translate(-50%, -50%) scale(1.5);
-    background: linear-gradient(135deg, #ff6b9d 0%, #ffcc00 100%) !important;
-    box-shadow: 
-      0 0 25px rgba(255, 107, 157, 0.9),
-      0 0 50px rgba(255, 107, 157, 0.6) !important;
-  }
-
-  .cursor-hovering {
-    transform: translate(-50%, -50%) scale(1.3);
-    background: linear-gradient(135deg, #00b4d8 0%, #64ffda 100%) !important;
-  }
-</style>
-
-<div class="cursor-trail-container" id="cursor-trail"></div>
-
-<script>
-(function() {
-  // Hide default cursor
-  document.body.style.cursor = 'none';
-
-  const container = document.getElementById('cursor-trail');
-  const coords = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
-  const trailCircles = [];
-  const COUNT = 12; // Fewer circles for smoother trail
-
-  // Create trail circles
-  for (let i = 0; i < COUNT; i++) {
-    const circle = document.createElement('div');
-    circle.className = 'trail-dot';
-
-    // Opacity decreases along the trail
-    const opacity = 0.9 - (i / COUNT) * 0.8;
-    circle.style.opacity = opacity.toString();
-
-    // Size decreases along the trail
-    const scale = 1 - (i / COUNT) * 0.5;
-    circle.style.transform = `translate(-50%, -50%) scale(${scale})`;
-
-    container.appendChild(circle);
-    trailCircles.push({ 
-      element: circle, 
-      x: coords.x, 
-      y: coords.y,
-      targetX: coords.x,
-      targetY: coords.y
-    });
-  }
-
-  // Track mouse position
-  let isMoving = false;
-  let lastMouseX = coords.x;
-  let lastMouseY = coords.y;
-  let velocity = { x: 0, y: 0 };
-
-  window.addEventListener('mousemove', e => {
-    coords.x = e.clientX;
-    coords.y = e.clientY;
-
-    // Calculate velocity for smooth movement
-    velocity.x = e.clientX - lastMouseX;
-    velocity.y = e.clientY - lastMouseY;
-    lastMouseX = e.clientX;
-    lastMouseY = e.clientY;
-
-    isMoving = true;
-
-    // Reset movement timeout
-    clearTimeout(window.movementTimeout);
-    window.movementTimeout = setTimeout(() => {
-      isMoving = false;
-    }, 50);
-  });
-
-  // Click effect
-  window.addEventListener('mousedown', () => {
-    trailCircles.forEach(circle => {
-      circle.element.classList.add('cursor-clicking');
-    });
-  });
-
-  window.addEventListener('mouseup', () => {
-    trailCircles.forEach(circle => {
-      circle.element.classList.remove('cursor-clicking');
-    });
-  });
-
-  // Hover effect for interactive elements
-  window.addEventListener('mouseover', e => {
-    const interactive = e.target.closest('a, button, input, select, textarea, [role="button"]');
-    trailCircles.forEach(circle => {
-      circle.element.classList.toggle('cursor-hovering', !!interactive);
-    });
-  });
-
-  // Smooth animation function
-  function animateTrail() {
-    let targetX = coords.x;
-    let targetY = coords.y;
-
-    // Add velocity offset to first circle for more natural feel
-    const velocityOffset = 0.5;
-    const offsetX = velocity.x * velocityOffset;
-    const offsetY = velocity.y * velocityOffset;
-
-    trailCircles.forEach((circle, index) => {
-      // First circle follows cursor exactly
-      if (index === 0) {
-        circle.x = targetX + offsetX;
-        circle.y = targetY + offsetY;
-      } 
-      // Other circles follow with smooth delay
-      else {
-        const prevCircle = trailCircles[index - 1];
-
-        // Smooth interpolation factor (changes based on movement speed)
-        const speed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
-        const lerpFactor = isMoving ? 
-          Math.min(0.3 + (speed * 0.01), 0.5) :  // Faster movement = tighter trail
-          0.1; // Slow movement = more spread
-
-        circle.x += (prevCircle.x - circle.x) * lerpFactor;
-        circle.y += (prevCircle.y - circle.y) * lerpFactor;
-      }
-
-      // Apply position with easing
-      circle.element.style.left = circle.x + 'px';
-      circle.element.style.top = circle.y + 'px';
-
-      // Dynamic opacity based on speed and position
-      if (index > 0) {
-        const speed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
-        const baseOpacity = 0.9 - (index / COUNT) * 0.8;
-        const speedMultiplier = Math.min(1 + speed * 0.02, 1.5);
-        circle.element.style.opacity = (baseOpacity * speedMultiplier).toString();
-      }
-
-      // Update target for next circle
-      targetX = circle.x;
-      targetY = circle.y;
-    });
-
-    requestAnimationFrame(animateTrail);
-  }
-
-  // Handle window resize
-  window.addEventListener('resize', () => {
-    // Adjust if cursor goes out of bounds
-    if (coords.x > window.innerWidth) coords.x = window.innerWidth;
-    if (coords.y > window.innerHeight) coords.y = window.innerHeight;
-  });
-
-  // Handle mouse leave/enter
-  window.addEventListener('mouseleave', () => {
-    trailCircles.forEach(circle => {
-      circle.element.style.opacity = '0';
-    });
-  });
-
-  window.addEventListener('mouseenter', () => {
-    trailCircles.forEach((circle, index) => {
-      const opacity = 0.9 - (index / COUNT) * 0.8;
-      circle.element.style.opacity = opacity.toString();
-    });
-  });
-
-  // Start animation
-  animateTrail();
-})();
-</script>
 
   <!-- Header -->
   <header class="header">
@@ -391,6 +191,7 @@
           <a href="#goals" class="nav-link">Goals</a>
           <a href="#settings" class="nav-link">Settings</a>
           <a href="Monthlysummary.html" class="nav-link">Monthly/Yearly Summary</a>
+           <a href="cookiepolicy.html" class="nav-link">Cookie Policy</a>
           <a href="./contributor.html" class="nav-link">Contributors</a>
         </div>
         <div class="nav-toggle" id="nav-toggle">
@@ -409,9 +210,10 @@
             <i class="fas fa-coins"></i>
             <span id="current-currency">INR</span>
           </button>
-          <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face"
+         <a href="profile.html"> <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face"
             alt="User" class="profile-img">
           <span class="username" id="navUsername"></span>
+          </a>
           <div id="redirect">
             <a href="#" id="logoutLink" onclick="logout()">Logout</a>
           </div>
@@ -525,84 +327,22 @@
           </div>
         </div>
       </div>
-    </section>
 
-    <!-- How It Works Section -->
-    <section class="how-it-works">
-      <div class="container">
-        <div class="section-header-center">
-          <h2 class="section-title">How It Works</h2>
-          <p class="section-subtitle">Get started in three simple steps</p>
-        </div>
-        <div class="steps-grid">
-          <div class="step-card">
-            <div class="step-number">1</div>
-            <div class="step-icon">
-              <i class="fas fa-plus-circle"></i>
-            </div>
-            <h3>Add Expenses</h3>
-            <p>Quickly log your daily expenses with our simple form. AI suggests categories automatically.</p>
-          </div>
-          <div class="step-card">
-            <div class="step-number">2</div>
-            <div class="step-icon">
-              <i class="fas fa-chart-line"></i>
-            </div>
-            <h3>Track & Analyze</h3>
-            <p>Watch your spending patterns emerge through beautiful visualizations and insights.</p>
-          </div>
-          <div class="step-card">
-            <div class="step-number">3</div>
-            <div class="step-icon">
-              <i class="fas fa-piggy-bank"></i>
-            </div>
-            <h3>Save More</h3>
-            <p>Make informed decisions based on data and achieve your financial goals faster.</p>
-          </div>
-        </div>
+      <div class="nav-menu" id="nav-menu">
+        <a href="#dashboard" class="nav-link active">Dashboard</a>
+        <a href="#analytics" class="nav-link">Analytics</a>
+        <a href="#goals" class="nav-link">Goals</a>
+        <a href="#settings" class="nav-link">Settings</a>
+        <a href="Monthlysummary.html" class="nav-link">Summary</a>
+        <a href="contributor.html" class="nav-link">Contributors</a>
       </div>
-    </section>
 
-    <section id="dashboard" class="container">
-      <!-- Quick Stats Overview -->
-      <div class="quick-stats">
-        <div class="stat-card">
-          <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-            <i class="fas fa-wallet"></i>
-          </div>
-          <div class="stat-content">
-            <p class="stat-label" data-i18n="stats.balance">Total Balance</p>
-            <h3 class="stat-value" id="quick-balance">₹0.00</h3>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-            <i class="fas fa-arrow-up"></i>
-          </div>
-          <div class="stat-content">
-            <p class="stat-label" data-i18n="stats.income">This Month Income</p>
-            <h3 class="stat-value income" id="quick-income">₹0.00</h3>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
-            <i class="fas fa-arrow-down"></i>
-          </div>
-          <div class="stat-content">
-            <p class="stat-label" data-i18n="stats.expense">This Month Expenses</p>
-            <h3 class="stat-value expense" id="quick-expense">₹0.00</h3>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-            <i class="fas fa-piggy-bank"></i>
-          </div>
-          <div class="stat-content">
-            <p class="stat-label" data-i18n="stats.savings">Savings Rate</p>
-            <h3 class="stat-value" id="quick-savings">0%</h3>
-          </div>
-        </div>
+      <div class="nav-toggle" id="nav-toggle">
+        <span></span><span></span><span></span>
       </div>
+    </div>
+  </nav>
+</header>
 
       <!-- Balance Card -->
       <div class="balance-card">
@@ -735,6 +475,9 @@
           </div>
         </div>
       </div>
+    </div>
+  </nav>
+</header>
 
       <!-- Export Modal -->
       <div class="export-modal" id="export-modal">
@@ -1492,9 +1235,7 @@
     });
   </script>
   <script>
-    // Currency Management Functions
-    let supportedCurrencies = [];
-    let currentUserCurrency = 'INR';
+   
 
     // Load supported currencies on page load
     async function loadSupportedCurrencies() {
@@ -1517,11 +1258,7 @@
         console.error('Error loading currencies:', error);
       }
     }
-
-    // Populate currency dropdowns
-    function populateCurrencySelects() {
-      const currencySelect = document.getElementById('currency');
-      const preferredCurrencySelect = document.getElementById('preferred-currency');
+    </script>
 
   <style>
     @keyframes spin {
@@ -1610,19 +1347,7 @@
         </div>
       </form>
     </div>
-  </div>
-
-  <!-- API and Feature Scripts -->
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="auth-integration.js"></script>
-  <script src="api-integration.js"></script>
-  <script src="workspace-feature.js"></script>
-  <script src="budget-goals.js"></script>
-  <script src="receipt-upload.js"></script>
-  <script src="receipt-ocr.js"></script>
-  <script src="analytics-dashboard.js"></script>
-  <script src="realtime-sync.js"></script>
-  <script src="report-generator.js"></script>
+  </section>
 
   <!-- PWA Installation Prompt -->
   <div id="install-prompt" class="install-prompt" style="display: none;">
@@ -1643,59 +1368,173 @@
     </div>
   </div>
 
-  
-  </footer>
+  <!-- ADD TRANSACTION -->
+  <section class="form-section">
+    <h3>Add Transaction</h3>
 
-  <!-- Update Available Notification -->
-  <div id="update-notification" class="update-notification" style="display: none;">
-    <div class="update-content">
-      <i class="fas fa-sync-alt"></i>
-      <span>A new version is available!</span>
-      <button id="update-button" class="update-btn">Update Now</button>
+    <form id="form" class="transaction-form">
+      <input id="text" type="text" placeholder="Description" required />
+      <input id="amount" type="number" placeholder="Amount" required />
+      <select id="type" required>
+        <option value="">Select Type</option>
+        <option value="income">Income</option>
+        <option value="expense">Expense</option>
+      </select>
+      <button type="submit">Add</button>
+    </form>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-container">
+
+    <!-- Brand -->
+    <div class="footer-section">
+      <div class="footer-logo">
+        <i class="fas fa-wallet"></i>
+        <span>ExpenseFlow</span>
+      </div>
+      <p>
+        Smart money management made simple.
+        Track, analyze, and optimize your finances with confidence.
+      </p>
+
+      <div class="social-links">
+        <a href="#" class="social-link" aria-label="Github">
+          <i class="fab fa-github"></i>
+        </a>
+        <a href="#" class="social-link" aria-label="LinkedIn">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+        <a href="#" class="social-link" aria-label="Twitter">
+          <i class="fab fa-x-twitter"></i>
+        </a>
+      </div>
     </div>
+
+    <!-- Product -->
+    <div class="footer-section">
+      <h4>Product</h4>
+      <ul class="footer-links">
+        <li><a href="#">Dashboard</a></li>
+        <li><a href="#">Analytics</a></li>
+        <li><a href="#">Budget Goals</a></li>
+        <li><a href="#">Reports</a></li>
+      </ul>
+    </div>
+
+    <!-- Company -->
+    <div class="footer-section">
+      <h4>Company</h4>
+      <ul class="footer-links">
+        <li><a href="#">About Us</a></li>
+        <li><a href="#">Contributors</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">Terms of Service</a></li>
+      </ul>
+    </div>
+
+    <!-- Support -->
+    <div class="footer-section">
+      <h4>Support</h4>
+      <ul class="footer-links">
+        <li><a href="#">Help Center</a></li>
+        <li><a href="#">Contact</a></li>
+        <li><a href="#">Report Bug</a></li>
+      </ul>
+    </div>
+
   </div>
-<script src="auth-check.js"></script>
-<script src="auth.js"></script>
+
+  <!-- Bottom bar -->
+  <div class="footer-bottom">
+    <p>© 2026 ExpenseFlow. All rights reserved.</p>
+  </div>
+  <div class="footer-container">
+
+    <!-- Brand -->
+    <div class="footer-section">
+      <div class="footer-logo">
+        <i class="fas fa-wallet"></i>
+        <span>ExpenseFlow</span>
+      </div>
+      <p>
+        Smart money management made simple.
+        Track, analyze, and optimize your finances with confidence.
+      </p>
+
+      <div class="social-links">
+        <a href="#" class="social-link" aria-label="Github">
+          <i class="fab fa-github"></i>
+        </a>
+        <a href="#" class="social-link" aria-label="LinkedIn">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+        <a href="#" class="social-link" aria-label="Twitter">
+          <i class="fab fa-x-twitter"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- Product -->
+    <div class="footer-section">
+      <h4>Product</h4>
+      <ul class="footer-links">
+        <li><a href="#">Dashboard</a></li>
+        <li><a href="#">Analytics</a></li>
+        <li><a href="#">Budget Goals</a></li>
+        <li><a href="#">Reports</a></li>
+      </ul>
+    </div>
+
+    <!-- Company -->
+    <div class="footer-section">
+      <h4>Company</h4>
+      <ul class="footer-links">
+        <li><a href="#">About Us</a></li>
+        <li><a href="#">Contributors</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">Terms of Service</a></li>
+      </ul>
+    </div>
+
+    <!-- Support -->
+    <div class="footer-section">
+      <h4>Support</h4>
+      <ul class="footer-links">
+        <li><a href="#">Help Center</a></li>
+        <li><a href="#">Contact</a></li>
+        <li><a href="#">Report Bug</a></li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- Bottom bar -->
+  <div class="footer-bottom">
+    <p>© 2026 ExpenseFlow. All rights reserved.</p>
+  </div>
+</footer>
+<script src="protect.js"></script>
+
 <script src="trackerscript.js"></script>
 <script src="analytics-dashboard.js"></script>
+<script src="auth.js"></script>
 <script src="settings.js"></script>
-<script src="report-generator.js"></script>
 
-
-</body>
-
-</html>
+<!-- Cursor Trail Script -->
 <script>
-  // Recurring Modal Control
-  function openRecurringModal() {
-    const modal = document.getElementById('recurring-modal');
-    if (modal) {
-      modal.style.display = 'flex';
-      modal.classList.add('active');
-      document.getElementById('recurring-modal-title').textContent = 'Add Recurring Expense';
-      document.getElementById('recurring-form').reset();
-    }
+document.addEventListener("DOMContentLoaded", () => {
+  const container = document.getElementById("cursor-trail");
+  for (let i = 0; i < 8; i++) {
+    const dot = document.createElement("div");
+    dot.className = "trail-dot";
+    container.appendChild(dot);
   }
-
-  function closeRecurringModal() {
-    const modal = document.getElementById('recurring-modal');
-    if (modal) {
-      modal.style.display = 'none';
-      modal.classList.remove('active');
-    }
-  }
-
-      // Close modal when clicking outside
-      const modal = document.getElementById('recurring-modal');
-      if (modal) {
-        modal.addEventListener('click', (e) => {
-          if (e.target === modal) {
-            closeRecurringModal();
-          }
-        });
-      }
-    });
-  </script>
+});
+</script>
   <script>
     // Currency Management Functions
     let supportedCurrencies = [];
@@ -1713,7 +1552,15 @@
             'Authorization': `Bearer ${token}`
           }
         });
-
+        const data = await response.json();
+        if (data.success) {
+          supportedCurrencies = data.data.currencies;
+          populateCurrencySelects();
+        }
+      } catch (error) {
+        console.error('Error loading currencies:', error);
+      }
+    }
     const closeBtn = document.getElementById('recurring-modal-close');
     if (closeBtn) {
       closeBtn.addEventListener('click', closeRecurringModal);
@@ -1733,17 +1580,14 @@
         }
       });
     }
-  });
 </script>
 <script>
-  // Currency Management Functions
-  let supportedCurrencies = [];
-  let currentUserCurrency = 'INR';
+
 
   // Load supported currencies on page load
   async function loadSupportedCurrencies() {
     try {
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem('token');
       if (!token) return;
 
       const response = await fetch('/api/currency/supported', {
@@ -1785,7 +1629,7 @@
   // Load user's currency preference
   async function loadUserCurrencyPreference() {
     try {
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem('token');
       if (!token) return;
 
         const data = await response.json();
@@ -1798,6 +1642,13 @@
           document.getElementById('current-currency').textContent = currentUserCurrency;
           populateCurrencySelects();
         }
+      } catch (error) {
+      console.error('Error loading currency preference:', error);
+      }
+      const response = await fetch('/api/currency/preference', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
 
       const data = await response.json();
@@ -1806,11 +1657,9 @@
         const currentCurrencyEl = document.getElementById('current-currency');
         if (currentCurrencyEl) currentCurrencyEl.textContent = currentUserCurrency;
         populateCurrencySelects();
-      }
-    } catch (error) {
-      console.error('Error loading currency preference:', error);
-    }
-  }
+       } }
+    
+  
 
   // Open currency settings modal
   function openCurrencyModal() {
@@ -1832,7 +1681,7 @@
   // Load exchange rate information
   async function loadExchangeRateInfo() {
     try {
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem('token');
       const response = await fetch(`/api/currency/rates?base=${currentUserCurrency}`, {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -1871,9 +1720,8 @@
         } else {
           alert('Failed to update currency preference');
         }
-      } catch (error) {
-        console.error('Error saving currency preference:', error);
-        alert('Error saving currency preference');
+      } else {
+        rateInfo.innerHTML = '<p>Failed to load exchange rates.</p>';
       }
     } catch (error) {
       console.error('Error loading exchange rates:', error);
@@ -1883,7 +1731,7 @@
   // Save currency preference
   async function saveCurrencyPreference() {
     try {
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem('token');
       const prefSelect = document.getElementById('preferred-currency');
       if (!prefSelect) return;
 
@@ -1906,10 +1754,16 @@
         closeCurrencyModal();
         // Reload transactions to show in new currency
         location.reload();
-      } else {
+      } else {  
         alert('Failed to update currency preference');
       }
-    });
+    }
+
+   catch (error) {
+      console.error('Error saving currency preference:', error);
+      alert('Error saving currency preference');
+    }
+  };
 
 
   </script>
@@ -1947,8 +1801,7 @@
       <button id="update-button" class="update-btn" data-i18n="update.action">Update Now</button>
     </div>
   </div>
-  <script src="auth-check.js"></script>
-  <script src="auth.js"></script>
+
   <script src="trackerscript.js"></script>
   <script src="analytics-dashboard.js"></script>
   <script src="workspace-feature.js"></script>
