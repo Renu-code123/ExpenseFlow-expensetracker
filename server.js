@@ -9,6 +9,7 @@ const CronJobs = require('./services/cronJobs');
 const { generalLimiter } = require('./middleware/rateLimiter');
 const { sanitizeInput, mongoSanitizeMiddleware } = require('./middleware/sanitization');
 const securityMonitor = require('./services/securityMonitor');
+const protect=require("./middleware/authMiddleware");
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
@@ -35,10 +36,30 @@ app.use(helmet({
     directives: {
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: [
+  "'self'",
+  "'unsafe-inline'",
+  "https://cdn.socket.io",
+  "https://cdn.jsdelivr.net"
+],
       scriptSrcAttr: ["'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "https:", "https://res.cloudinary.com"],
-      connectSrc: ["'self'", "https://fonts.googleapis.com", "https://fonts.gstatic.com", "https://api.exchangerate-api.com", "https://api.frankfurter.app", "https://res.cloudinary.com"],
+      connectSrc: [
+  "'self'",
+  "http://localhost:3000",
+  "ws://localhost:3000",
+
+  // APIs
+  "https://api.exchangerate-api.com",
+  "https://api.frankfurter.app",
+
+  // Media
+  "https://res.cloudinary.com",
+
+  // Source maps + CDNs
+  "https://cdn.socket.io",
+  "https://cdn.jsdelivr.net"
+],
       fontSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com"],
       objectSrc: ["'none'"],
       mediaSrc: ["'self'"],
@@ -151,21 +172,22 @@ io.on('connection', (socket) => {
 
 // Routes
 app.use('/api/auth', require('./middleware/rateLimiter').authLimiter, authRoutes);
-app.use('/api/expenses', require('./middleware/rateLimiter').expenseLimiter, expenseRoutes);
-app.use('/api/sync', syncRoutes);
-app.use('/api/notifications', require('./routes/notifications'));
-app.use('/api/receipts', require('./middleware/rateLimiter').uploadLimiter, require('./routes/receipts'));
-app.use('/api/budgets', require('./routes/budgets'));
-app.use('/api/goals', require('./routes/goals'));
-app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/currency', require('./routes/currency'));
-app.use('/api/groups', require('./routes/groups'));
-app.use('/api/splits', require('./routes/splits'));
-app.use('/api/workspaces', require('./routes/workspaces'));
-app.use('/api/tax', require('./routes/tax'));
-app.use('/api/bills', require('./routes/bills'));
-app.use('/api/calendar', require('./routes/calendar'));
-app.use('/api/reminders', require('./routes/reminders'));
+
+app.use('/api/expenses', require('./middleware/rateLimiter').expenseLimiter, protect, expenseRoutes);
+app.use('/api/sync', protect, syncRoutes);
+app.use('/api/notifications', protect, require('./routes/notifications'));
+app.use('/api/receipts', require('./middleware/rateLimiter').uploadLimiter, protect, require('./routes/receipts'));
+app.use('/api/budgets', protect, require('./routes/budgets'));
+app.use('/api/goals', protect, require('./routes/goals'));
+app.use('/api/analytics', protect, require('./routes/analytics'));
+app.use('/api/groups', protect, require('./routes/groups'));
+app.use('/api/splits', protect, require('./routes/splits'));
+app.use('/api/workspaces', protect, require('./routes/workspaces'));
+app.use('/api/tax', protect, require('./routes/tax'));
+app.use('/api/bills', protect, require('./routes/bills'));
+app.use('/api/calendar', protect, require('./routes/calendar'));
+app.use('/api/reminders', protect, require('./routes/reminders'));
 
 // Root route to serve the UI
 app.get('/', (req, res) => {
