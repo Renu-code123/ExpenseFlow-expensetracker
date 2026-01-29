@@ -1,4 +1,14 @@
 const express = require('express');
+// Global error handlers for unhandled promise rejections and uncaught exceptions
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  // Optionally, perform cleanup or alerting here
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception thrown:', err);
+  // Optionally, perform cleanup or alerting here
+});
 const http = require('http');
 const socketIo = require('socket.io');
 const mongoose = require('mongoose');
