@@ -2,106 +2,122 @@ const express = require('express');
 const Joi = require('joi');
 const auth = require('../middleware/auth');
 const Goal = require('../models/Goal');
-const budgetService = require('../services/budgetService');
+const goalService = require('../services/goalService');
 const router = express.Router();
 
-const goalSchema = Joi.object({
+const goalValidationSchema = Joi.object({
   title: Joi.string().trim().max(100).required(),
   description: Joi.string().trim().max(500).optional(),
-  targetAmount: Joi.number().min(0).required(),
+  targetAmount: Joi.number().min(0.01).required(),
   currentAmount: Joi.number().min(0).default(0),
-  goalType: Joi.string().valid('savings', 'expense_reduction', 'income_increase', 'debt_payoff').required(),
-  category: Joi.string().valid('food', 'transport', 'entertainment', 'utilities', 'healthcare', 'shopping', 'other', 'general').default('general'),
+  goalType: Joi.string().valid('savings', 'expense_reduction', 'income_increase', 'debt_payoff', 'emergency_fund').required(),
+  category: Joi.string().valid('food', 'transport', 'entertainment', 'utilities', 'healthcare', 'shopping', 'other', 'general', 'travel', 'car', 'house', 'education').default('general'),
   targetDate: Joi.date().required(),
-  priority: Joi.string().valid('low', 'medium', 'high').default('medium'),
+  priority: Joi.string().valid('low', 'medium', 'high', 'critical').default('medium'),
   reminderFrequency: Joi.string().valid('daily', 'weekly', 'monthly', 'none').default('weekly'),
+  autoAllocate: Joi.boolean().default(false),
   milestones: Joi.array().items(
     Joi.object({
-      amount: Joi.number().min(0).required(),
-      date: Joi.date().required()
+      percentage: Joi.number().min(1).max(100).required(),
+      achieved: Joi.boolean().default(false),
+      achievedDate: Joi.date().optional()
     })
-  ).optional()
+  ).optional(),
+  color: Joi.string().optional()
 });
 
-// Create goal
+/**
+ * @route   GET /api/goals
+ * @desc    Get all goals for user
+ * @access  Private
+ */
+router.get('/', auth, async (req, res) => {
+  try {
+    const goals = await Goal.find({ user: req.user._id }).sort({ createdAt: -1 });
+    res.json({ success: true, data: goals });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * @route   POST /api/goals
+ * @desc    Create a new goal
+ * @access  Private
+ */
 router.post('/', auth, async (req, res) => {
   try {
-    const { error, value } = goalSchema.validate(req.body);
+    const { error, value } = goalValidationSchema.validate(req.body);
     if (error) return res.status(400).json({ error: error.details[0].message });
 
     const goal = new Goal({ ...value, user: req.user._id });
-    await goal.save();
 
-    res.status(201).json(goal);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Get all goals
-router.get('/', auth, async (req, res) => {
-  try {
-    const { status, type } = req.query;
-    const query = { user: req.user._id };
-    
-    if (status) query.status = status;
-    if (type) query.goalType = type;
-
-    const goals = await Goal.find(query).sort({ createdAt: -1 });
-    res.json(goals);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Get goals summary
-router.get('/summary', auth, async (req, res) => {
-  try {
-    const summary = await budgetService.getGoalsSummary(req.user._id);
-    res.json(summary);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Update goal progress
-router.patch('/:id/progress', auth, async (req, res) => {
-  try {
-    const { amount } = req.body;
-    
-    if (!amount || typeof amount !== 'number') {
-      return res.status(400).json({ error: 'Valid amount is required' });
+    // Add default milestones if not provided
+    if (!goal.milestones || goal.milestones.length === 0) {
+      goal.milestones = [
+        { percentage: 25 },
+        { percentage: 50 },
+        { percentage: 75 },
+        { percentage: 100 }
+      ];
     }
 
+    await goal.save();
+    res.status(201).json({ success: true, data: goal });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * @route   GET /api/goals/analyze/impact
+ * @desc    Analyze impact of a potential large expense on all goals
+ * @access  Private
+ */
+router.get('/analyze/impact', auth, async (req, res) => {
+  try {
+    const { amount } = req.query;
+    if (!amount || isNaN(amount)) return res.status(400).json({ error: 'Valid amount is required' });
+
+    const impacts = await goalService.analyzeExpenseImpact(req.user._id, parseFloat(amount));
+    res.json({ success: true, data: impacts });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * @route   GET /api/goals/:id
+ * @desc    Get specific goal with prediction
+ * @access  Private
+ */
+router.get('/:id', auth, async (req, res) => {
+  try {
     const goal = await Goal.findOne({ _id: req.params.id, user: req.user._id });
     if (!goal) return res.status(404).json({ error: 'Goal not found' });
 
-    goal.currentAmount += amount;
-    
-    // Check milestones
-    goal.milestones.forEach(milestone => {
-      if (!milestone.achieved && goal.currentAmount >= milestone.amount) {
-        milestone.achieved = true;
-        milestone.achievedDate = new Date();
+    const prediction = await goalService.predictCompletion(goal._id, req.user._id);
+
+    res.json({
+      success: true,
+      data: {
+        ...goal.toJSON(),
+        prediction
       }
     });
-
-    // Check if goal is completed
-    if (goal.currentAmount >= goal.targetAmount && goal.status === 'active') {
-      goal.status = 'completed';
-    }
-
-    await goal.save();
-    res.json(goal);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// Update goal
+/**
+ * @route   PUT /api/goals/:id
+ * @desc    Update a goal
+ * @access  Private
+ */
 router.put('/:id', auth, async (req, res) => {
   try {
-    const { error, value } = goalSchema.validate(req.body);
+    const { error, value } = goalValidationSchema.validate(req.body);
     if (error) return res.status(400).json({ error: error.details[0].message });
 
     const goal = await Goal.findOneAndUpdate(
@@ -109,42 +125,64 @@ router.put('/:id', auth, async (req, res) => {
       value,
       { new: true }
     );
-
     if (!goal) return res.status(404).json({ error: 'Goal not found' });
-    res.json(goal);
+
+    // Check milestones after update
+    await goalService.checkMilestones(goal._id);
+
+    res.json({ success: true, data: goal });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// Update goal status
-router.patch('/:id/status', auth, async (req, res) => {
+/**
+ * @route   PATCH /api/goals/:id/contribute
+ * @desc    Add funds to a goal
+ * @access  Private
+ */
+router.patch('/:id/contribute', auth, async (req, res) => {
   try {
-    const { status } = req.body;
-    
-    if (!['active', 'completed', 'paused', 'cancelled'].includes(status)) {
-      return res.status(400).json({ error: 'Invalid status' });
+    const { amount } = req.body;
+    if (!amount || typeof amount !== 'number' || amount <= 0) {
+      return res.status(400).json({ error: 'Valid positive amount is required' });
     }
 
-    const goal = await Goal.findOneAndUpdate(
-      { _id: req.params.id, user: req.user._id },
-      { status },
-      { new: true }
-    );
-
+    const goal = await Goal.findOne({ _id: req.params.id, user: req.user._id });
     if (!goal) return res.status(404).json({ error: 'Goal not found' });
-    res.json(goal);
+
+    goal.currentAmount += amount;
+
+    // Auto-complete if reached target
+    if (goal.currentAmount >= goal.targetAmount) {
+      goal.status = 'completed';
+    }
+
+    // Check milestones
+    const alerts = await goalService.checkMilestones(goal._id);
+
+    await goal.save();
+
+    res.json({
+      success: true,
+      data: goal,
+      alerts: alerts || []
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// Delete goal
+/**
+ * @route   DELETE /api/goals/:id
+ * @desc    Delete a goal
+ * @access  Private
+ */
 router.delete('/:id', auth, async (req, res) => {
   try {
     const goal = await Goal.findOneAndDelete({ _id: req.params.id, user: req.user._id });
     if (!goal) return res.status(404).json({ error: 'Goal not found' });
-    res.json({ message: 'Goal deleted successfully' });
+    res.json({ success: true, message: 'Goal deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

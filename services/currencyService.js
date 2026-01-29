@@ -1,268 +1,446 @@
-const axios = require('axios');
+/**
+ * Currency Service
+ * Issue #337: Multi-Account Liquidity Management & Historical Revaluation
+ * Handles currency conversion, exchange rates, and crypto prices
+ */
+
 const CurrencyRate = require('../models/CurrencyRate');
 
-// Supported currencies (30+ major currencies)
-const SUPPORTED_CURRENCIES = [
-    'USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'HKD', 'NZD',
-    'SEK', 'KRW', 'SGD', 'NOK', 'MXN', 'INR', 'RUB', 'ZAR', 'TRY', 'BRL',
-    'TWD', 'DKK', 'PLN', 'THB', 'IDR', 'HUF', 'CZK', 'ILS', 'CLP', 'PHP',
-    'AED', 'SAR', 'MYR', 'RON'
+// Supported fiat currencies
+const FIAT_CURRENCIES = [
+  'USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'HKD', 'NZD',
+  'SEK', 'KRW', 'SGD', 'NOK', 'MXN', 'INR', 'RUB', 'ZAR', 'TRY', 'BRL',
+  'TWD', 'DKK', 'PLN', 'THB', 'IDR', 'HUF', 'CZK', 'ILS', 'CLP', 'PHP',
+  'AED', 'COP', 'SAR', 'MYR', 'RON', 'PKR', 'NGN', 'EGP', 'VND', 'BDT'
 ];
 
-// Cache duration: 1 hour
-const CACHE_DURATION_MS = 60 * 60 * 1000;
+// Supported cryptocurrencies
+const CRYPTO_CURRENCIES = [
+  'BTC', 'ETH', 'USDT', 'USDC', 'BNB', 'XRP', 'ADA', 'DOGE', 'SOL', 'DOT',
+  'MATIC', 'LTC', 'SHIB', 'TRX', 'AVAX', 'LINK', 'ATOM', 'UNI', 'XLM', 'ALGO'
+];
 
-// Primary API: exchangerate-api.com (free tier)
-const PRIMARY_API_URL = 'https://api.exchangerate-api.com/v4/latest';
-
-// Fallback API: frankfurter.app
-const FALLBACK_API_URL = 'https://api.frankfurter.app/latest';
+// Fallback rates (used when API fails)
+const FALLBACK_RATES = {
+  'USD': 1,
+  'EUR': 0.92,
+  'GBP': 0.79,
+  'JPY': 149.50,
+  'AUD': 1.53,
+  'CAD': 1.36,
+  'CHF': 0.88,
+  'CNY': 7.24,
+  'INR': 83.12,
+  'BTC': 0.000024,
+  'ETH': 0.00041
+};
 
 class CurrencyService {
-    /**
-     * Fetch latest exchange rates from external API
-     * @param {string} baseCurrency - Base currency code (default: USD)
-     * @returns {Promise<Object>} Exchange rates object
-     */
-    async fetchExchangeRates(baseCurrency = 'USD') {
-        try {
-            // Try primary API first
-            const response = await axios.get(`${PRIMARY_API_URL}/${baseCurrency}`, {
-                timeout: 5000
-            });
+  constructor() {
+    this.validCurrencies = [...FIAT_CURRENCIES, ...CRYPTO_CURRENCIES];
+    this.fiatCurrencies = FIAT_CURRENCIES;
+    this.cryptoCurrencies = CRYPTO_CURRENCIES;
+    this.exchangeRates = new Map();
+    this.cryptoPrices = new Map();
+    this.lastUpdate = null;
+    this.cacheExpiry = 60 * 60 * 1000; // 1 hour cache
+    this.apiRetries = 3;
+    this.baseCurrency = 'USD';
+  }
 
-            if (response.data && response.data.rates) {
-                return {
-                    rates: response.data.rates,
-                    source: 'exchangerate-api.com'
-                };
-            }
-        } catch (error) {
-            console.error('Primary API failed, trying fallback:', error.message);
-            
-            // Try fallback API
-            try {
-                const response = await axios.get(`${FALLBACK_API_URL}?from=${baseCurrency}`, {
-                    timeout: 5000
-                });
+  init() {
+    console.log('Currency service initialized with', this.validCurrencies.length, 'currencies');
+    // Pre-fetch rates on startup
+    this.fetchAllRates().catch(err => {
+      console.warn('Initial rate fetch failed, using fallback rates:', err.message);
+      this.loadFallbackRates();
+    });
+  }
 
-                if (response.data && response.data.rates) {
-                    // Add base currency rate (1.0)
-                    const rates = { ...response.data.rates, [baseCurrency]: 1 };
-                    return {
-                        rates: rates,
-                        source: 'frankfurter.app'
-                    };
-                }
-            } catch (fallbackError) {
-                console.error('Fallback API also failed:', fallbackError.message);
-                throw new Error('Unable to fetch exchange rates from any source');
-            }
+  loadFallbackRates() {
+    Object.entries(FALLBACK_RATES).forEach(([currency, rate]) => {
+      this.exchangeRates.set(currency, rate);
+    });
+    this.lastUpdate = new Date();
+  }
+
+  isValidCurrency(currency) {
+    return this.validCurrencies.includes(currency?.toUpperCase());
+  }
+
+  isCrypto(currency) {
+    return this.cryptoCurrencies.includes(currency?.toUpperCase());
+  }
+
+  isFiat(currency) {
+    return this.fiatCurrencies.includes(currency?.toUpperCase());
+  }
+
+  /**
+   * Fetch exchange rates from external API
+   */
+  async fetchExchangeRates(baseCurrency = 'USD') {
+    const apis = [
+      {
+        name: 'exchangerate-api',
+        url: `https://api.exchangerate-api.com/v4/latest/${baseCurrency}`,
+        parser: (data) => data.rates
+      },
+      {
+        name: 'frankfurter',
+        url: `https://api.frankfurter.app/latest?from=${baseCurrency}`,
+        parser: (data) => data.rates
+      }
+    ];
+
+    for (const api of apis) {
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 10000);
+
+        const response = await fetch(api.url, { signal: controller.signal });
+        clearTimeout(timeout);
+
+        if (!response.ok) continue;
+
+        const data = await response.json();
+        const rates = api.parser(data);
+
+        if (rates && Object.keys(rates).length > 0) {
+          // Store in database
+          const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+          
+          await CurrencyRate.findOneAndUpdate(
+            { baseCurrency },
+            {
+              baseCurrency,
+              rates: new Map(Object.entries(rates)),
+              lastUpdated: new Date(),
+              source: api.name,
+              expiresAt
+            },
+            { upsert: true, new: true }
+          );
+
+          // Update in-memory cache
+          rates[baseCurrency] = 1;
+          Object.entries(rates).forEach(([currency, rate]) => {
+            this.exchangeRates.set(currency, rate);
+          });
+          
+          this.lastUpdate = new Date();
+          console.log(`Exchange rates updated from ${api.name}`);
+          
+          return rates;
         }
-
-        throw new Error('Invalid response from currency API');
+      } catch (error) {
+        console.warn(`Failed to fetch from ${api.name}:`, error.message);
+      }
     }
 
-    /**
-     * Update exchange rates in database
-     * @param {string} baseCurrency - Base currency code
-     * @returns {Promise<Object>} Saved currency rate document
-     */
-    async updateExchangeRates(baseCurrency = 'USD') {
-        try {
-            const { rates, source } = await this.fetchExchangeRates(baseCurrency);
+    throw new Error('All exchange rate APIs failed');
+  }
 
-            const currencyRate = new CurrencyRate({
-                baseCurrency: baseCurrency.toUpperCase(),
-                rates: rates,
-                lastUpdated: new Date(),
-                source: source,
-                expiresAt: new Date(Date.now() + CACHE_DURATION_MS)
-            });
+  /**
+   * Fetch cryptocurrency prices
+   */
+  async fetchCryptoPrices() {
+    const cryptoIds = {
+      'BTC': 'bitcoin',
+      'ETH': 'ethereum',
+      'USDT': 'tether',
+      'USDC': 'usd-coin',
+      'BNB': 'binancecoin',
+      'XRP': 'ripple',
+      'ADA': 'cardano',
+      'DOGE': 'dogecoin',
+      'SOL': 'solana',
+      'DOT': 'polkadot',
+      'MATIC': 'matic-network',
+      'LTC': 'litecoin',
+      'SHIB': 'shiba-inu',
+      'TRX': 'tron',
+      'AVAX': 'avalanche-2',
+      'LINK': 'chainlink',
+      'ATOM': 'cosmos',
+      'UNI': 'uniswap',
+      'XLM': 'stellar',
+      'ALGO': 'algorand'
+    };
 
-            await currencyRate.save();
-            console.log(`Updated exchange rates for ${baseCurrency} from ${source}`);
-            
-            return currencyRate;
-        } catch (error) {
-            console.error('Error updating exchange rates:', error.message);
-            throw error;
+    const ids = Object.values(cryptoIds).join(',');
+    
+    try {
+      const response = await fetch(
+        `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`,
+        { timeout: 10000 }
+      );
+
+      if (!response.ok) throw new Error('CoinGecko API failed');
+
+      const data = await response.json();
+      const prices = {};
+
+      Object.entries(cryptoIds).forEach(([symbol, id]) => {
+        if (data[id]?.usd) {
+          prices[symbol] = data[id].usd;
+          this.cryptoPrices.set(symbol, data[id].usd);
+          // Store as exchange rate (1 USD = x crypto)
+          this.exchangeRates.set(symbol, 1 / data[id].usd);
         }
+      });
+
+      console.log('Crypto prices updated from CoinGecko');
+      return prices;
+    } catch (error) {
+      console.warn('Failed to fetch crypto prices:', error.message);
+      return null;
     }
+  }
 
-    /**
-     * Get exchange rates (from cache or fetch new)
-     * @param {string} baseCurrency - Base currency code
-     * @returns {Promise<Object>} Currency rates object
-     */
-    async getExchangeRates(baseCurrency = 'USD') {
-        try {
-            // Try to get from cache first
-            const cachedRates = await CurrencyRate.getLatestRates(baseCurrency);
+  /**
+   * Fetch all rates (fiat + crypto)
+   */
+  async fetchAllRates() {
+    const [fiatRates, cryptoPrices] = await Promise.allSettled([
+      this.fetchExchangeRates(this.baseCurrency),
+      this.fetchCryptoPrices()
+    ]);
 
-            if (cachedRates && !cachedRates.isExpired()) {
-                return {
-                    baseCurrency: cachedRates.baseCurrency,
-                    rates: Object.fromEntries(cachedRates.rates),
-                    lastUpdated: cachedRates.lastUpdated,
-                    source: cachedRates.source,
-                    cached: true
-                };
-            }
+    return {
+      fiat: fiatRates.status === 'fulfilled' ? fiatRates.value : null,
+      crypto: cryptoPrices.status === 'fulfilled' ? cryptoPrices.value : null,
+      timestamp: new Date()
+    };
+  }
 
-            // Cache expired or not found, fetch new rates
-            const newRates = await this.updateExchangeRates(baseCurrency);
-            
-            return {
-                baseCurrency: newRates.baseCurrency,
-                rates: Object.fromEntries(newRates.rates),
-                lastUpdated: newRates.lastUpdated,
-                source: newRates.source,
-                cached: false
-            };
-        } catch (error) {
-            // If fetch fails, try to return expired cache as fallback
-            const expiredCache = await CurrencyRate.findOne({ 
-                baseCurrency: baseCurrency.toUpperCase()
-            }).sort({ lastUpdated: -1 });
+  /**
+   * Get current exchange rate
+   */
+  async getRate(fromCurrency, toCurrency = 'USD') {
+    fromCurrency = fromCurrency?.toUpperCase();
+    toCurrency = toCurrency?.toUpperCase();
 
-            if (expiredCache) {
-                console.warn('Using expired cache due to fetch failure');
-                return {
-                    baseCurrency: expiredCache.baseCurrency,
-                    rates: Object.fromEntries(expiredCache.rates),
-                    lastUpdated: expiredCache.lastUpdated,
-                    source: expiredCache.source,
-                    cached: true,
-                    expired: true
-                };
-            }
+    if (fromCurrency === toCurrency) return 1;
 
-            throw error;
+    // Check if cache is stale
+    if (!this.lastUpdate || Date.now() - this.lastUpdate.getTime() > this.cacheExpiry) {
+      try {
+        await this.fetchAllRates();
+      } catch (error) {
+        // Try to load from database
+        const dbRates = await CurrencyRate.getLatestRates(this.baseCurrency);
+        if (dbRates) {
+          dbRates.rates.forEach((rate, currency) => {
+            this.exchangeRates.set(currency, rate);
+          });
+          this.lastUpdate = dbRates.lastUpdated;
         }
+      }
     }
 
-    /**
-     * Convert amount from one currency to another
-     * @param {number} amount - Amount to convert
-     * @param {string} fromCurrency - Source currency code
-     * @param {string} toCurrency - Target currency code
-     * @returns {Promise<Object>} Conversion result
-     */
-    async convertCurrency(amount, fromCurrency, toCurrency) {
-        if (fromCurrency === toCurrency) {
-            return {
-                originalAmount: amount,
-                originalCurrency: fromCurrency,
-                convertedAmount: amount,
-                convertedCurrency: toCurrency,
-                exchangeRate: 1,
-                lastUpdated: new Date()
-            };
-        }
+    // Calculate rate
+    const fromRate = this.exchangeRates.get(fromCurrency) || 1;
+    const toRate = this.exchangeRates.get(toCurrency) || 1;
 
-        try {
-            // Get rates with fromCurrency as base
-            const ratesData = await this.getExchangeRates(fromCurrency);
-            
-            const rate = ratesData.rates[toCurrency.toUpperCase()];
-            
-            if (!rate) {
-                throw new Error(`Exchange rate not available for ${toCurrency}`);
-            }
+    return toRate / fromRate;
+  }
 
-            const convertedAmount = parseFloat((amount * rate).toFixed(4));
+  /**
+   * Get all current rates for a base currency
+   */
+  async getAllRates(baseCurrency = 'USD') {
+    await this.fetchAllRates().catch(() => {});
 
-            return {
-                originalAmount: amount,
-                originalCurrency: fromCurrency.toUpperCase(),
-                convertedAmount: convertedAmount,
-                convertedCurrency: toCurrency.toUpperCase(),
-                exchangeRate: rate,
-                lastUpdated: ratesData.lastUpdated
-            };
-        } catch (error) {
-            console.error('Currency conversion error:', error.message);
-            throw error;
-        }
+    const rates = {};
+    this.exchangeRates.forEach((rate, currency) => {
+      if (currency !== baseCurrency) {
+        const baseRate = this.exchangeRates.get(baseCurrency) || 1;
+        rates[currency] = rate / baseRate;
+      }
+    });
+    rates[baseCurrency] = 1;
+
+    return {
+      baseCurrency,
+      rates,
+      lastUpdated: this.lastUpdate,
+      source: 'cached'
+    };
+  }
+
+  /**
+   * Convert currency amount
+   */
+  async convertCurrency(amount, fromCurrency, toCurrency) {
+    fromCurrency = fromCurrency?.toUpperCase();
+    toCurrency = toCurrency?.toUpperCase();
+
+    if (!this.isValidCurrency(fromCurrency)) {
+      throw new Error(`Invalid source currency: ${fromCurrency}`);
+    }
+    if (!this.isValidCurrency(toCurrency)) {
+      throw new Error(`Invalid target currency: ${toCurrency}`);
     }
 
-    /**
-     * Get list of supported currencies
-     * @returns {Array<Object>} Array of currency objects
-     */
-    getSupportedCurrencies() {
-        const currencyNames = {
-            'USD': 'US Dollar',
-            'EUR': 'Euro',
-            'GBP': 'British Pound',
-            'JPY': 'Japanese Yen',
-            'AUD': 'Australian Dollar',
-            'CAD': 'Canadian Dollar',
-            'CHF': 'Swiss Franc',
-            'CNY': 'Chinese Yuan',
-            'HKD': 'Hong Kong Dollar',
-            'NZD': 'New Zealand Dollar',
-            'SEK': 'Swedish Krona',
-            'KRW': 'South Korean Won',
-            'SGD': 'Singapore Dollar',
-            'NOK': 'Norwegian Krone',
-            'MXN': 'Mexican Peso',
-            'INR': 'Indian Rupee',
-            'RUB': 'Russian Ruble',
-            'ZAR': 'South African Rand',
-            'TRY': 'Turkish Lira',
-            'BRL': 'Brazilian Real',
-            'TWD': 'Taiwan Dollar',
-            'DKK': 'Danish Krone',
-            'PLN': 'Polish Zloty',
-            'THB': 'Thai Baht',
-            'IDR': 'Indonesian Rupiah',
-            'HUF': 'Hungarian Forint',
-            'CZK': 'Czech Koruna',
-            'ILS': 'Israeli Shekel',
-            'CLP': 'Chilean Peso',
-            'PHP': 'Philippine Peso',
-            'AED': 'UAE Dirham',
-            'SAR': 'Saudi Riyal',
-            'MYR': 'Malaysian Ringgit',
-            'RON': 'Romanian Leu'
-        };
+    const exchangeRate = await this.getRate(fromCurrency, toCurrency);
+    const convertedAmount = amount * exchangeRate;
 
-        return SUPPORTED_CURRENCIES.map(code => ({
-            code: code,
-            name: currencyNames[code] || code,
-            symbol: this.getCurrencySymbol(code)
-        }));
+    return {
+      originalAmount: amount,
+      convertedAmount: Math.round(convertedAmount * 100) / 100,
+      exchangeRate,
+      fromCurrency,
+      toCurrency,
+      timestamp: new Date()
+    };
+  }
+
+  /**
+   * Convert multiple amounts at once
+   */
+  async convertMultiple(conversions) {
+    const results = [];
+    
+    for (const { amount, fromCurrency, toCurrency } of conversions) {
+      try {
+        const result = await this.convertCurrency(amount, fromCurrency, toCurrency);
+        results.push({ ...result, success: true });
+      } catch (error) {
+        results.push({
+          amount,
+          fromCurrency,
+          toCurrency,
+          success: false,
+          error: error.message
+        });
+      }
     }
 
-    /**
-     * Get currency symbol for a given currency code
-     * @param {string} currencyCode - Currency code
-     * @returns {string} Currency symbol
-     */
-    getCurrencySymbol(currencyCode) {
-        const symbols = {
-            'USD': '$', 'EUR': '€', 'GBP': '£', 'JPY': '¥', 'AUD': 'A$',
-            'CAD': 'C$', 'CHF': 'CHF', 'CNY': '¥', 'HKD': 'HK$', 'NZD': 'NZ$',
-            'SEK': 'kr', 'KRW': '₩', 'SGD': 'S$', 'NOK': 'kr', 'MXN': '$',
-            'INR': '₹', 'RUB': '₽', 'ZAR': 'R', 'TRY': '₺', 'BRL': 'R$',
-            'TWD': 'NT$', 'DKK': 'kr', 'PLN': 'zł', 'THB': '฿', 'IDR': 'Rp',
-            'HUF': 'Ft', 'CZK': 'Kč', 'ILS': '₪', 'CLP': '$', 'PHP': '₱',
-            'AED': 'د.إ', 'SAR': '﷼', 'MYR': 'RM', 'RON': 'lei'
-        };
+    return results;
+  }
 
-        return symbols[currencyCode] || currencyCode;
+  /**
+   * Get historical rates for a date
+   */
+  async getHistoricalRate(fromCurrency, toCurrency, date) {
+    const targetDate = new Date(date);
+    
+    // Try to find from database
+    const historicalRates = await CurrencyRate.findOne({
+      baseCurrency: 'USD',
+      createdAt: {
+        $gte: new Date(targetDate.setHours(0, 0, 0, 0)),
+        $lt: new Date(targetDate.setHours(23, 59, 59, 999))
+      }
+    });
+
+    if (historicalRates) {
+      const fromRate = historicalRates.rates.get(fromCurrency) || 1;
+      const toRate = historicalRates.rates.get(toCurrency) || 1;
+      return {
+        rate: toRate / fromRate,
+        date: historicalRates.lastUpdated,
+        source: 'database'
+      };
     }
 
-    /**
-     * Validate currency code
-     * @param {string} currencyCode - Currency code to validate
-     * @returns {boolean} True if valid
-     */
-    isValidCurrency(currencyCode) {
-        return SUPPORTED_CURRENCIES.includes(currencyCode.toUpperCase());
+    // Fallback to current rate
+    const currentRate = await this.getRate(fromCurrency, toCurrency);
+    return {
+      rate: currentRate,
+      date: new Date(),
+      source: 'current',
+      warning: 'Historical rate not available, using current rate'
+    };
+  }
+
+  /**
+   * Calculate total value in base currency
+   */
+  async calculateTotalInBaseCurrency(amounts, baseCurrency = 'USD') {
+    let total = 0;
+
+    for (const { amount, currency } of amounts) {
+      if (currency === baseCurrency) {
+        total += amount;
+      } else {
+        const rate = await this.getRate(currency, baseCurrency);
+        total += amount * rate;
+      }
     }
+
+    return {
+      total: Math.round(total * 100) / 100,
+      baseCurrency,
+      itemCount: amounts.length,
+      timestamp: new Date()
+    };
+  }
+
+  /**
+   * Get currency info
+   */
+  getCurrencyInfo(currency) {
+    const currencyInfo = {
+      'USD': { symbol: '$', name: 'US Dollar', decimals: 2 },
+      'EUR': { symbol: '€', name: 'Euro', decimals: 2 },
+      'GBP': { symbol: '£', name: 'British Pound', decimals: 2 },
+      'JPY': { symbol: '¥', name: 'Japanese Yen', decimals: 0 },
+      'INR': { symbol: '₹', name: 'Indian Rupee', decimals: 2 },
+      'BTC': { symbol: '₿', name: 'Bitcoin', decimals: 8 },
+      'ETH': { symbol: 'Ξ', name: 'Ethereum', decimals: 8 },
+      'USDT': { symbol: '₮', name: 'Tether', decimals: 2 },
+      'AUD': { symbol: 'A$', name: 'Australian Dollar', decimals: 2 },
+      'CAD': { symbol: 'C$', name: 'Canadian Dollar', decimals: 2 }
+    };
+
+    return currencyInfo[currency?.toUpperCase()] || {
+      symbol: currency,
+      name: currency,
+      decimals: 2
+    };
+  }
+
+  /**
+   * Format currency amount
+   */
+  formatAmount(amount, currency, locale = 'en-US') {
+    const info = this.getCurrencyInfo(currency);
+    
+    if (this.isCrypto(currency)) {
+      return `${info.symbol}${amount.toFixed(info.decimals)}`;
+    }
+
+    try {
+      return new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: currency,
+        minimumFractionDigits: info.decimals,
+        maximumFractionDigits: info.decimals
+      }).format(amount);
+    } catch {
+      return `${info.symbol}${amount.toFixed(info.decimals)}`;
+    }
+  }
+
+  /**
+   * Get supported currencies list
+   */
+  getSupportedCurrencies() {
+    return {
+      fiat: this.fiatCurrencies.map(code => ({
+        code,
+        ...this.getCurrencyInfo(code),
+        type: 'fiat'
+      })),
+      crypto: this.cryptoCurrencies.map(code => ({
+        code,
+        ...this.getCurrencyInfo(code),
+        type: 'crypto'
+      }))
+    };
+  }
 }
 
 module.exports = new CurrencyService();

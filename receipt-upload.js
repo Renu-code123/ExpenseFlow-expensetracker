@@ -1,9 +1,17 @@
 // Receipt Upload Integration
 class ReceiptManager {
   constructor() {
-    this.apiUrl = 'http://localhost:3000/api';
-    this.authToken = localStorage.getItem('authToken');
+    this.apiUrl = '/api';
+    this.authToken = localStorage.getItem('token');
     this.initializeUploadArea();
+  }
+
+  formatCurrency(value) {
+    const formatter = window.i18n?.formatCurrency;
+    if (typeof formatter === 'function') return formatter(value);
+    const numericValue = Number(value) || 0;
+    const symbol = window.i18n?.getCurrencySymbol?.(window.i18n?.getCurrency?.() || '') || '';
+    return `${symbol}${numericValue.toFixed(2)}`;
   }
 
   // Initialize drag and drop upload area
@@ -115,7 +123,7 @@ class ReceiptManager {
 
     try {
       this.showUploadProgress();
-      
+
       const response = await fetch(`${this.apiUrl}/receipts/upload/${this.currentExpenseId}`, {
         method: 'POST',
         headers: {
@@ -131,7 +139,7 @@ class ReceiptManager {
 
       const result = await response.json();
       this.showUploadSuccess(result.receipt);
-      
+
       // Display OCR results if available
       if (result.receipt.ocrData) {
         this.displayOCRResults(result.receipt.ocrData);
@@ -165,11 +173,11 @@ class ReceiptManager {
   showUploadProgress() {
     const progress = document.getElementById('upload-progress');
     progress.style.display = 'block';
-    
+
     // Animate progress bar
     const progressBar = progress.querySelector('.progress-bar');
     progressBar.style.width = '0%';
-    
+
     let width = 0;
     const interval = setInterval(() => {
       width += 10;
@@ -188,7 +196,7 @@ class ReceiptManager {
   showUploadSuccess(receipt) {
     this.hideUploadProgress();
     this.showNotification('Receipt uploaded successfully! 📄', 'success');
-    
+
     // Add receipt indicator to expense
     this.addReceiptIndicator(this.currentExpenseId, receipt);
   }
@@ -200,7 +208,7 @@ class ReceiptManager {
     const dateSpan = document.getElementById('ocr-date');
     const confidenceSpan = document.getElementById('ocr-confidence');
 
-    amountSpan.textContent = ocrData.extractedAmount ? `₹${ocrData.extractedAmount.toFixed(2)}` : 'Not found';
+    amountSpan.textContent = ocrData.extractedAmount ? this.formatCurrency(ocrData.extractedAmount) : 'Not found';
     dateSpan.textContent = ocrData.extractedDate ? new Date(ocrData.extractedDate).toLocaleDateString() : 'Not found';
     confidenceSpan.textContent = `${(ocrData.confidence || 0).toFixed(1)}%`;
 
@@ -233,7 +241,7 @@ class ReceiptManager {
     const fileInput = document.getElementById('receipt-input');
     const ocrResults = document.getElementById('ocr-results');
     const progress = document.getElementById('upload-progress');
-    
+
     fileInput.value = '';
     ocrResults.style.display = 'none';
     progress.style.display = 'none';
@@ -371,7 +379,7 @@ function addReceiptUploadButtons() {
 // Auto-add upload buttons when transactions are displayed
 const originalDisplayTransactions = window.displayTransactions;
 if (originalDisplayTransactions) {
-  window.displayTransactions = function() {
+  window.displayTransactions = function () {
     originalDisplayTransactions.call(this);
     setTimeout(addReceiptUploadButtons, 100);
   };

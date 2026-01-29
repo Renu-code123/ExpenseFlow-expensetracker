@@ -4,6 +4,8 @@ const Expense = require('../models/Expense');
 const budgetService = require('../services/budgetService');
 const categorizationService = require('../services/categorizationService');
 const exportService = require('../services/exportService');
+const currencyService = require('../services/currencyService');
+const aiService = require('../services/aiService');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
 const router = express.Router();
@@ -15,19 +17,37 @@ const expenseSchema = Joi.object({
   category: Joi.string().valid('food', 'transport', 'entertainment', 'utilities', 'healthcare', 'shopping', 'other').required(),
   type: Joi.string().valid('income', 'expense').required(),
   merchant: Joi.string().trim().max(50).optional(),
-  date: Joi.date().optional()
+  date: Joi.date().optional(),
+  workspaceId: Joi.string().hex().length(24).optional()
 });
 
-// GET all expenses for authenticated user
+// GET all expenses for authenticated user with pagination support
 router.get('/', auth, async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const skip = (page - 1) * limit;
+
     const user = await User.findById(req.user._id);
-    const expenses = await Expense.find({ user: req.user._id }).sort({ date: -1 });
-    
+
+    // Workspace filtering
+    const workspaceId = req.query.workspaceId;
+    const query = workspaceId
+      ? { workspace: workspaceId }
+      : { user: req.user._id, workspace: null };
+
+    // Get total count for pagination info
+    const total = await Expense.countDocuments(query);
+
+    const expenses = await Expense.find(query)
+      .sort({ date: -1 })
+      .skip(skip)
+      .limit(limit);
+
     // Convert expenses to user's preferred currency if needed
     const convertedExpenses = await Promise.all(expenses.map(async (expense) => {
       const expenseObj = expense.toObject();
-      
+
       // If expense currency differs from user preference, show converted amount
       if (expenseObj.originalCurrency !== user.preferredCurrency) {
         try {
@@ -47,11 +67,20 @@ router.get('/', auth, async (req, res) => {
         expenseObj.displayAmount = expenseObj.amount;
         expenseObj.displayCurrency = expenseObj.originalCurrency;
       }
-      
+
       return expenseObj;
     }));
-    
-    res.json(convertedExpenses);
+
+    res.json({
+      success: true,
+      data: convertedExpenses,
+      pagination: {
+        total,
+        page,
+        limit,
+        pages: Math.ceil(total / limit)
+      }
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -65,21 +94,23 @@ router.post('/', auth, async (req, res) => {
 
     const user = await User.findById(req.user._id);
     const expenseCurrency = value.currency || user.preferredCurrency;
-    
+
     // Validate currency
     if (!currencyService.isValidCurrency(expenseCurrency)) {
       return res.status(400).json({ error: 'Invalid currency code' });
     }
-    
+
     // Store original amount and currency
     const expenseData = {
       ...value,
-      user: req.user._id,
+      user: value.workspaceId ? req.user._id : req.user._id, // User still relevant for reporting
+      addedBy: req.user._id,
+      workspace: value.workspaceId || null,
       originalAmount: value.amount,
       originalCurrency: expenseCurrency,
       amount: value.amount // Keep original as primary amount
     };
-    
+
     // If expense currency differs from user preference, add conversion info
     if (expenseCurrency !== user.preferredCurrency) {
       try {
@@ -96,22 +127,69 @@ router.post('/', auth, async (req, res) => {
         // Continue without conversion data
       }
     }
-    
+
     const expense = new Expense(expenseData);
     await expense.save();
-    
+
+    // Check if expense requires approval
+    const approvalService = require('../services/approvalService');
+    let requiresApproval = false;
+    let workflow = null;
+
+    if (expenseData.workspace) {
+        requiresApproval = await approvalService.requiresApproval(expenseData, expenseData.workspace);
+    }
+
+    if (requiresApproval) {
+        try {
+            workflow = await approvalService.submitForApproval(expense._id, req.user._id);
+            expense.status = 'pending_approval';
+            expense.approvalWorkflow = workflow._id;
+            await expense.save();
+        } catch (approvalError) {
+            console.error('Failed to submit for approval:', approvalError.message);
+            // Continue with normal flow if approval submission fails
+        }
+    }
+
     // Update budget and goal progress using converted amount if available
     const amountForBudget = expenseData.convertedAmount || value.amount;
     if (value.type === 'expense') {
-      await budgetService.checkBudgetAlerts(req.user._id);
+        await budgetService.checkBudgetAlerts(req.user._id);
     }
     await budgetService.updateGoalProgress(req.user._id, value.type === 'expense' ? -amountForBudget : amountForBudget, value.category);
-    
+
     // Emit real-time update to all user's connected devices
     const io = req.app.get('io');
-    io.to(`user_${req.user._id}`).emit('expense_created', expense);
     
-    res.status(201).json(expense);
+    // Prepare the expense object with display amounts for socket emission
+    const expenseForSocket = expense.toObject();
+    if (expenseCurrency !== user.preferredCurrency) {
+      expenseForSocket.displayAmount = expenseData.convertedAmount;
+      expenseForSocket.displayCurrency = user.preferredCurrency;
+    } else {
+      expenseForSocket.displayAmount = expense.amount;
+      expenseForSocket.displayCurrency = expenseCurrency;
+    }
+    
+    io.to(`user_${req.user._id}`).emit('expense_created', expenseForSocket);
+
+    const response = {
+        ...expense.toObject(),
+        requiresApproval,
+        workflow: workflow ? { _id: workflow._id, status: workflow.status } : null
+    };
+
+    // Add display amounts to response
+    if (expenseCurrency !== user.preferredCurrency) {
+      response.displayAmount = expenseData.convertedAmount;
+      response.displayCurrency = user.preferredCurrency;
+    } else {
+      response.displayAmount = expense.amount;
+      response.displayCurrency = expenseCurrency;
+    }
+
+    res.status(201).json(response);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -125,12 +203,12 @@ router.put('/:id', auth, async (req, res) => {
 
     const user = await User.findById(req.user._id);
     const expenseCurrency = value.currency || user.preferredCurrency;
-    
+
     // Validate currency
     if (!currencyService.isValidCurrency(expenseCurrency)) {
       return res.status(400).json({ error: 'Invalid currency code' });
     }
-    
+
     // Prepare update data
     const updateData = {
       ...value,
@@ -138,7 +216,7 @@ router.put('/:id', auth, async (req, res) => {
       originalCurrency: expenseCurrency,
       amount: value.amount
     };
-    
+
     // If expense currency differs from user preference, add conversion info
     if (expenseCurrency !== user.preferredCurrency) {
       try {
@@ -161,15 +239,37 @@ router.put('/:id', auth, async (req, res) => {
       { new: true }
     );
     if (!expense) return res.status(404).json({ error: 'Expense not found' });
-    
+
     // Update budget calculations
     await budgetService.checkBudgetAlerts(req.user._id);
-    
+
     // Emit real-time update
     const io = req.app.get('io');
-    io.to(`user_${req.user._id}`).emit('expense_updated', expense);
     
-    res.json(expense);
+    // Prepare the expense object with display amounts for socket emission
+    const expenseForSocket = expense.toObject();
+    if (expenseCurrency !== user.preferredCurrency) {
+      expenseForSocket.displayAmount = updateData.convertedAmount || expense.amount;
+      expenseForSocket.displayCurrency = user.preferredCurrency;
+    } else {
+      expenseForSocket.displayAmount = expense.amount;
+      expenseForSocket.displayCurrency = expenseCurrency;
+    }
+    
+    io.to(`user_${req.user._id}`).emit('expense_updated', expenseForSocket);
+
+    const response = expense.toObject();
+    
+    // Add display amounts to response
+    if (expenseCurrency !== user.preferredCurrency) {
+      response.displayAmount = updateData.convertedAmount || expense.amount;
+      response.displayCurrency = user.preferredCurrency;
+    } else {
+      response.displayAmount = expense.amount;
+      response.displayCurrency = expenseCurrency;
+    }
+
+    res.json(response);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -180,14 +280,14 @@ router.delete('/:id', auth, async (req, res) => {
   try {
     const expense = await Expense.findOneAndDelete({ _id: req.params.id, user: req.user._id });
     if (!expense) return res.status(404).json({ error: 'Expense not found' });
-    
+
     // Update budget calculations
     await budgetService.checkBudgetAlerts(req.user._id);
-    
+
     // Emit real-time update
     const io = req.app.get('io');
     io.to(`user_${req.user._id}`).emit('expense_deleted', { id: req.params.id });
-    
+
     res.json({ message: 'Expense deleted' });
   } catch (error) {
     res.status(500).json({ error: error.message });
