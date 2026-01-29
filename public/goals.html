@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Goals & Savings - ExpenseFlow</title>
+    <link rel="stylesheet" href="goals.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav-bar">
+        <div class="nav-content">
+            <a href="dashboard-clean.html" class="nav-back">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <div class="nav-title">
+                <i class="fas fa-target"></i> Goals & Savings
+            </div>
+            <div class="nav-actions">
+                <a href="transactions.html" class="nav-link">Transactions</a>
+                <a href="analytics.html" class="nav-link">Analytics</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Header -->
+        <header class="page-header">
+            <div class="header-content">
+                <h1>🎯 Financial Goals & Savings</h1>
+                <div class="header-actions">
+                    <button class="add-goal-btn" onclick="openGoalModal()">
+                        <i class="fas fa-plus"></i> Add Goal
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Summary Cards -->
+        <section class="summary-section">
+            <div class="summary-cards">
+                <div class="summary-card total-goals">
+                    <div class="card-icon">🎯</div>
+                    <div class="card-content">
+                        <h3>Total Goals</h3>
+                        <p class="stat-value" id="totalGoals">5</p>
+                        <span class="stat-detail">3 Active, 2 Completed</span>
+                    </div>
+                </div>
+                
+                <div class="summary-card total-saved">
+                    <div class="card-icon">💰</div>
+                    <div class="card-content">
+                        <h3>Total Saved</h3>
+                        <p class="stat-value" id="totalSaved">₹1,25,000</p>
+                        <span class="stat-detail">Across all goals</span>
+                    </div>
+                </div>
+                
+                <div class="summary-card target-amount">
+                    <div class="card-icon">🏆</div>
+                    <div class="card-content">
+                        <h3>Target Amount</h3>
+                        <p class="stat-value" id="targetAmount">₹2,50,000</p>
+                        <span class="stat-detail">50% achieved</span>
+                    </div>
+                </div>
+                
+                <div class="summary-card monthly-savings">
+                    <div class="card-icon">📈</div>
+                    <div class="card-content">
+                        <h3>Monthly Savings</h3>
+                        <p class="stat-value" id="monthlySavings">₹15,000</p>
+                        <span class="stat-detail">Average per month</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Goals Grid -->
+        <section class="goals-section">
+            <div class="section-header">
+                <h2>📋 Your Financial Goals</h2>
+                <div class="filter-tabs">
+                    <button class="tab-btn active" data-filter="all">All Goals</button>
+                    <button class="tab-btn" data-filter="active">Active</button>
+                    <button class="tab-btn" data-filter="completed">Completed</button>
+                    <button class="tab-btn" data-filter="paused">Paused</button>
+                </div>
+            </div>
+            
+            <div class="goals-grid" id="goalsGrid">
+                <!-- Goals will be loaded here -->
+            </div>
+            
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <i class="fas fa-bullseye"></i>
+                <h3>No goals found</h3>
+                <p>Start by creating your first financial goal</p>
+                <button class="add-first-goal-btn" onclick="openGoalModal()">
+                    <i class="fas fa-plus"></i> Create Goal
+                </button>
+            </div>
+        </section>
+
+        <!-- Achievements Section -->
+        <section class="achievements-section">
+            <div class="section-header">
+                <h2>🏆 Achievements & Milestones</h2>
+            </div>
+            
+            <div class="achievements-grid">
+                <div class="achievement-card earned">
+                    <div class="achievement-icon">🥇</div>
+                    <div class="achievement-content">
+                        <h4>First Goal</h4>
+                        <p>Created your first financial goal</p>
+                        <span class="achievement-date">Earned on Jan 15, 2024</span>
+                    </div>
+                </div>
+                
+                <div class="achievement-card earned">
+                    <div class="achievement-icon">💯</div>
+                    <div class="achievement-content">
+                        <h4>Goal Achiever</h4>
+                        <p>Completed your first goal</p>
+                        <span class="achievement-date">Earned on Feb 20, 2024</span>
+                    </div>
+                </div>
+                
+                <div class="achievement-card">
+                    <div class="achievement-icon">🎯</div>
+                    <div class="achievement-content">
+                        <h4>Consistent Saver</h4>
+                        <p>Save for 30 consecutive days</p>
+                        <span class="achievement-progress">Progress: 18/30 days</span>
+                    </div>
+                </div>
+                
+                <div class="achievement-card">
+                    <div class="achievement-icon">💎</div>
+                    <div class="achievement-content">
+                        <h4>Big Saver</h4>
+                        <p>Save ₹1,00,000 in total</p>
+                        <span class="achievement-progress">Progress: ₹75,000/₹1,00,000</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Savings Insights -->
+        <section class="insights-section">
+            <div class="section-header">
+                <h2>💡 Savings Insights</h2>
+            </div>
+            
+            <div class="insights-grid">
+                <div class="insight-card">
+                    <div class="insight-icon">📊</div>
+                    <div class="insight-content">
+                        <h4>Savings Rate</h4>
+                        <p>You're saving 25% of your income. Great job!</p>
+                        <div class="insight-chart">
+                            <div class="chart-bar" style="width: 25%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <div class="insight-icon">⏰</div>
+                    <div class="insight-content">
+                        <h4>Goal Timeline</h4>
+                        <p>At current rate, you'll reach your vacation goal in 8 months</p>
+                        <div class="timeline-progress">
+                            <div class="timeline-bar" style="width: 60%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <div class="insight-icon">💡</div>
+                    <div class="insight-content">
+                        <h4>Recommendation</h4>
+                        <p>Increase monthly savings by ₹2,000 to reach goals 3 months earlier</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Add/Edit Goal Modal -->
+    <div id="goalModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Create New Goal</h3>
+                <button class="modal-close" onclick="closeGoalModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="goalForm" class="goal-form">
+                <div class="form-group">
+                    <label for="goalName">Goal Name *</label>
+                    <input type="text" id="goalName" placeholder="e.g., Emergency Fund, Vacation, New Car" required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="goalAmount">Target Amount *</label>
+                        <input type="number" id="goalAmount" placeholder="₹50,000" step="100" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="goalCategory">Category</label>
+                        <select id="goalCategory">
+                            <option value="emergency">Emergency Fund</option>
+                            <option value="vacation">Vacation</option>
+                            <option value="car">Vehicle</option>
+                            <option value="house">House/Property</option>
+                            <option value="education">Education</option>
+                            <option value="retirement">Retirement</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="goalDeadline">Target Date</label>
+                        <input type="date" id="goalDeadline">
+                    </div>
+                    <div class="form-group">
+                        <label for="monthlyContribution">Monthly Contribution</label>
+                        <input type="number" id="monthlyContribution" placeholder="₹5,000" step="100">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="goalDescription">Description</label>
+                    <textarea id="goalDescription" placeholder="Describe your goal and why it's important to you" rows="3"></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" onclick="closeGoalModal()">Cancel</button>
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-save"></i> Create Goal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Goal Details Modal -->
+    <div id="goalDetailsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="detailsModalTitle">Goal Details</h3>
+                <button class="modal-close" onclick="closeGoalDetailsModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="goal-details" id="goalDetailsContent">
+                <!-- Goal details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Contribution Modal -->
+    <div id="contributionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Contribution</h3>
+                <button class="modal-close" onclick="closeContributionModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="contributionForm" class="contribution-form">
+                <div class="form-group">
+                    <label for="contributionAmount">Amount *</label>
+                    <input type="number" id="contributionAmount" placeholder="₹1,000" step="10" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="contributionDate">Date</label>
+                    <input type="date" id="contributionDate" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="contributionNote">Note</label>
+                    <input type="text" id="contributionNote" placeholder="Optional note">
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" onclick="closeContributionModal()">Cancel</button>
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-plus"></i> Add Contribution
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="protect.js"></script>
+    <script src="goals.js"></script>
+</body>
+</html>
