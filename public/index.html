@@ -167,6 +167,185 @@
             display: grid;
             grid-template-columns: repeat(3, minmax(100px, 1fr));
         }
+
+    /* Auto-Categorize Button Styles */
+    .auto-categorize-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.2rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    }
+
+    .auto-categorize-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .auto-categorize-btn:active {
+      transform: translateY(0);
+    }
+
+    .auto-categorize-btn.loading {
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .auto-categorize-btn.loading i {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* Suggested Badge Styles */
+    .suggested-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.2rem 0.5rem;
+      background: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 152, 0, 0.2));
+      color: #ffc107;
+      border: 1px solid rgba(255, 193, 7, 0.3);
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .auto-apply-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.2rem 0.5rem;
+      background: linear-gradient(135deg, rgba(76, 175, 80, 0.2), rgba(56, 142, 60, 0.2));
+      color: #4caf50;
+      border: 1px solid rgba(76, 175, 80, 0.3);
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Suggestion Item Enhancements */
+    .suggestion-item.high-confidence {
+      border-left: 3px solid #4caf50;
+    }
+
+    .suggestions-threshold-info {
+      padding: 0.5rem 1rem;
+      color: var(--text-secondary, #888);
+      font-size: 0.8rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .suggestions-threshold-info i {
+      margin-right: 0.3rem;
+      color: #64ffda;
+    }
+
+    /* Auto-Categorize Results Modal Styles */
+    .categorize-results-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .categorize-results-modal.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .categorize-results-content {
+      background: var(--card-bg, #1a1a2e);
+      border-radius: 16px;
+      padding: 2rem;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      border: 1px solid rgba(100, 255, 218, 0.2);
+    }
+
+    .categorize-results-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+
+    .categorize-results-header h3 {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #64ffda;
+      margin: 0;
+    }
+
+    .categorize-results-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+      text-align: center;
+      padding: 1rem;
+      background: rgba(100, 255, 218, 0.05);
+      border-radius: 8px;
+    }
+
+    .stat-card .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #64ffda;
+    }
+
+    .stat-card .stat-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary, #888);
+      text-transform: uppercase;
+    }
+
+    .stat-card.auto .stat-value { color: #4caf50; }
+    .stat-card.suggested .stat-value { color: #ffc107; }
+    .stat-card.unchanged .stat-value { color: #888; }
+
+    .categorize-results-close {
+      background: none;
+      border: none;
+      color: var(--text-secondary, #888);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.5rem;
+    }
+
+    .categorize-results-close:hover {
+      color: #fff;
+    }
   </style>
 </head>
 
@@ -441,7 +620,12 @@
       <div class="history-section">
         <div class="section-header">
           <h3><i class="fas fa-history"></i> <span data-i18n="history.title">Transaction History</span></h3>
-          <div class="filter-controls">
+          <button id="auto-categorize-btn" class="auto-categorize-btn" title="Auto-categorize uncategorized transactions">
+            <i class="fas fa-magic"></i>
+            <span>Auto-Categorize</span>
+          </button>
+        </div>
+        <div class="filter-controls">
             <div class="search-container">
               <input type="text" id="search-input" placeholder="Search transactions..." class="search-input"
                 data-i18n-placeholder="history.search">
@@ -1280,7 +1464,117 @@
           }
         });
       }
+
+      // Auto-Categorize Button Handler
+      const autoCategorizeBtn = document.getElementById('auto-categorize-btn');
+      if (autoCategorizeBtn) {
+        autoCategorizeBtn.addEventListener('click', handleAutoCategorize);
+      }
     });
+
+    // Auto-Categorize Handler Function
+    async function handleAutoCategorize() {
+      const btn = document.getElementById('auto-categorize-btn');
+      if (!btn || btn.classList.contains('loading')) return;
+
+      const icon = btn.querySelector('i');
+      const originalIcon = icon.className;
+      
+      // Set loading state
+      btn.classList.add('loading');
+      icon.className = 'fas fa-spinner';
+
+      try {
+        const result = await window.autoCategorizeAllUncategorized();
+        
+        if (result.success) {
+          showAutoCategorizeResults(result.data);
+          
+          // Refresh the transaction list
+          if (typeof window.updateAllData === 'function') {
+            await window.updateAllData();
+          }
+        }
+      } catch (error) {
+        console.error('Auto-categorize error:', error);
+        if (typeof showNotification === 'function') {
+          showNotification('Failed to auto-categorize expenses', 'error');
+        }
+      } finally {
+        // Reset button state
+        btn.classList.remove('loading');
+        icon.className = originalIcon;
+      }
+    }
+
+    // Show Auto-Categorize Results Modal
+    function showAutoCategorizeResults(data) {
+      // Remove existing modal if any
+      const existingModal = document.querySelector('.categorize-results-modal');
+      if (existingModal) existingModal.remove();
+
+      const modal = document.createElement('div');
+      modal.className = 'categorize-results-modal';
+      modal.innerHTML = `
+        <div class="categorize-results-content">
+          <div class="categorize-results-header">
+            <h3><i class="fas fa-magic"></i> Auto-Categorization Results</h3>
+            <button class="categorize-results-close">&times;</button>
+          </div>
+          <div class="categorize-results-stats">
+            <div class="stat-card auto">
+              <div class="stat-value">${data.categorized}</div>
+              <div class="stat-label">Auto-Applied</div>
+            </div>
+            <div class="stat-card suggested">
+              <div class="stat-value">${data.suggested}</div>
+              <div class="stat-label">Suggested</div>
+            </div>
+            <div class="stat-card unchanged">
+              <div class="stat-value">${data.unchanged}</div>
+              <div class="stat-label">No Match</div>
+            </div>
+          </div>
+          <p style="text-align: center; color: var(--text-secondary, #888); font-size: 0.9rem;">
+            ${data.categorized > 0 
+              ? `<i class="fas fa-check-circle" style="color: #4caf50;"></i> ${data.categorized} expenses were automatically categorized with high confidence.` 
+              : 'No expenses were auto-categorized.'}
+            ${data.suggested > 0 
+              ? `<br><i class="fas fa-lightbulb" style="color: #ffc107;"></i> ${data.suggested} expenses have suggestions available.` 
+              : ''}
+          </p>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+
+      // Show modal with animation
+      requestAnimationFrame(() => {
+        modal.classList.add('active');
+      });
+
+      // Close handlers
+      const closeBtn = modal.querySelector('.categorize-results-close');
+      closeBtn.addEventListener('click', () => {
+        modal.classList.remove('active');
+        setTimeout(() => modal.remove(), 300);
+      });
+
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.classList.remove('active');
+          setTimeout(() => modal.remove(), 300);
+        }
+      });
+
+      // Show notification
+      if (typeof showNotification === 'function') {
+        const message = data.categorized > 0 
+          ? `Auto-categorized ${data.categorized} expenses!` 
+          : `Processed ${data.total} expenses`;
+        showNotification(message, data.categorized > 0 ? 'success' : 'info');
+      }
+    }
   </script>
   <script>
     // Currency Management Functions

@@ -166,6 +166,108 @@ async function fetchCategorySuggestions(description) {
   return null;
 }
 
+// Auto-categorize all uncategorized expenses
+async function autoCategorizeAllUncategorized(workspaceId = null) {
+  try {
+    const payload = {};
+    const activeWs = workspaceId || localStorage.getItem('activeWorkspaceId');
+    if (activeWs && activeWs !== 'personal') {
+      payload.workspaceId = activeWs;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/expenses/auto-categorize`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getAuthToken()}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) throw new Error('Failed to auto-categorize');
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error('Error auto-categorizing:', error);
+    showNotification('Failed to auto-categorize expenses', 'error');
+    throw error;
+  }
+}
+
+// Apply a category suggestion to an expense
+async function applyCategorySuggestion(expenseId, category, isCorrection = false, originalSuggestion = null) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/expenses/${expenseId}/apply-suggestion`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getAuthToken()}`
+      },
+      body: JSON.stringify({ category, isCorrection, originalSuggestion })
+    });
+
+    if (!response.ok) throw new Error('Failed to apply suggestion');
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error('Error applying suggestion:', error);
+    showNotification('Failed to apply category', 'error');
+    throw error;
+  }
+}
+
+// Train the categorization system with a correction
+async function trainCategorization(description, suggestedCategory, actualCategory) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/categorization/train`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getAuthToken()}`
+      },
+      body: JSON.stringify({ description, suggestedCategory, actualCategory })
+    });
+
+    if (!response.ok) throw new Error('Failed to train');
+    return await response.json();
+  } catch (error) {
+    console.error('Error training categorization:', error);
+  }
+}
+
+// Get user's learned patterns
+async function fetchUserPatterns(category = null) {
+  try {
+    let url = `${API_BASE_URL}/categorization/patterns`;
+    if (category) url += `?category=${category}`;
+
+    const response = await fetch(url, {
+      headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+    });
+
+    if (!response.ok) throw new Error('Failed to fetch patterns');
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching patterns:', error);
+    return null;
+  }
+}
+
+// Get categorization statistics
+async function fetchCategorizationStats() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/categorization/stats`, {
+      headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+    });
+
+    if (!response.ok) throw new Error('Failed to fetch stats');
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching categorization stats:', error);
+    return null;
+  }
+}
+
 // ========================
 // CORE LOGIC
 // ========================
@@ -366,16 +468,30 @@ function showSuggestions(suggestions) {
   header.innerHTML = `<i class="fas fa-brain"></i><span>AI Suggestions</span>`;
   categorySuggestions.appendChild(header);
 
+  // Show auto-apply threshold info
+  const thresholdInfo = document.createElement('div');
+  thresholdInfo.className = 'suggestions-threshold-info';
+  const autoApplyThreshold = suggestions.autoApplyThreshold || 0.85;
+  thresholdInfo.innerHTML = `<small><i class="fas fa-info-circle"></i> Auto-applies at ${(autoApplyThreshold * 100).toFixed(0)}%+ confidence</small>`;
+  categorySuggestions.appendChild(thresholdInfo);
+
   suggestions.suggestions.forEach((suggestion, index) => {
     const item = document.createElement('div');
-    item.className = `suggestion-item ${index === 0 ? 'primary' : ''}`;
-    const confidenceLevel = suggestion.confidence > 0.75 ? 'high' : suggestion.confidence > 0.5 ? 'medium' : 'low';
+    const isHighConfidence = suggestion.confidence >= (suggestions.autoApplyThreshold || 0.85);
+    item.className = `suggestion-item ${index === 0 ? 'primary' : ''} ${isHighConfidence ? 'high-confidence' : ''}`;
+    const confidenceLevel = suggestion.confidence >= 0.85 ? 'high' : suggestion.confidence >= 0.6 ? 'medium' : 'low';
+
+    // Add "Suggested" badge for lower confidence suggestions
+    const badgeHTML = isHighConfidence 
+      ? '<span class="auto-apply-badge"><i class="fas fa-check-circle"></i> Auto-apply</span>'
+      : '<span class="suggested-badge"><i class="fas fa-lightbulb"></i> Suggested</span>';
 
     item.innerHTML = `
       <div class="suggestion-content">
         <div class="suggestion-category">
           <span class="suggestion-category-icon">${categoryEmojis[suggestion.category] || '📋'}</span>
           <span>${categoryLabels[suggestion.category] || suggestion.category}</span>
+          ${badgeHTML}
         </div>
         <div class="suggestion-reason"><i class="fas fa-info-circle"></i><span>${suggestion.reason}</span></div>
       </div>
@@ -530,6 +646,11 @@ window.addEventListener('online', syncOfflineTransactions);
 // Global Exposure
 window.removeTransaction = removeTransaction;
 window.updateAllData = initApp;
+window.autoCategorizeAllUncategorized = autoCategorizeAllUncategorized;
+window.applyCategorySuggestion = applyCategorySuggestion;
+window.trainCategorization = trainCategorization;
+window.fetchUserPatterns = fetchUserPatterns;
+window.fetchCategorizationStats = fetchCategorizationStats;
 
 // Start the app
 document.addEventListener('DOMContentLoaded', initApp);
