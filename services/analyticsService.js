@@ -3,19 +3,18 @@ const Budget = require('../models/Budget');
 const AnalyticsCache = require('../models/AnalyticsCache');
 const mongoose = require('mongoose');
 const CACHE_KEYS = {
-    SPENDING_TRENDS: CACHE_KEYS.SPENDING_TRENDS
-    ,
-    CATEGORY_BREAKDOWN: CACHE_KEYS.CATEGORY_BREAKDOWN,
-    MONTHLY_COMPARISON: CACHE_KEYS.MONTHLY_COMPARISON,
-    INSIGHTS: CACHE_KEYS.INSIGHTS,
-    PREDICTIONS: CACHE_KEYS.PREDICTIONS
+    SPENDING_TRENDS: 'spending_trends',
+    CATEGORY_BREAKDOWN: 'category_breakdown',
+    MONTHLY_COMPARISON: 'monthly_comparison',
+    INSIGHTS: 'insights',
+    PREDICTIONS: 'predictions'
 };
 
 const CACHE_TTL = {
-    SHORT: CACHE_TTL.SHORT,     // minutes
-    MEDIUM: CACHE_TTL.MEDIUM,
-    LONG: CACHE_TTL.LONG,
-    XLONG: CACHE_TTL.XLONG
+    SHORT: 300,     // 5 minutes
+    MEDIUM: 3600,   // 1 hour
+    LONG: 86400,    // 24 hours
+    XLONG: 604800   // 7 days
 };
 
 class AnalyticsService {
@@ -70,7 +69,7 @@ class AnalyticsService {
         } = options;
 
         const cacheParams = { months, threshold };
-        
+
         if (useCache) {
             const cached = await AnalyticsCache.getCache('zscore_anomalies', userId, cacheParams);
             if (cached) return cached;
@@ -106,7 +105,7 @@ class AnalyticsService {
         // Calculate statistics and detect anomalies per category
         for (const [category, transactions] of Object.entries(categoryData)) {
             const amounts = transactions.map(t => t.amount);
-            
+
             if (amounts.length < this.MINIMUM_DATA_POINTS) {
                 categoryStats[category] = {
                     mean: amounts.length > 0 ? amounts.reduce((a, b) => a + b, 0) / amounts.length : 0,
@@ -133,7 +132,7 @@ class AnalyticsService {
             // Detect anomalies
             transactions.forEach(transaction => {
                 const zScore = this.calculateZScore(transaction.amount, mean, stdDev);
-                
+
                 if (Math.abs(zScore) >= threshold) {
                     anomalies.push({
                         transactionId: transaction.id,
@@ -166,8 +165,8 @@ class AnalyticsService {
             summary: {
                 totalTransactions: expenses.length,
                 totalAnomalies: anomalies.length,
-                anomalyRate: expenses.length > 0 
-                    ? Math.round((anomalies.length / expenses.length) * 1000) / 10 
+                anomalyRate: expenses.length > 0
+                    ? Math.round((anomalies.length / expenses.length) * 1000) / 10
                     : 0,
                 criticalCount: anomalies.filter(a => a.severity === 'critical').length,
                 highCount: anomalies.filter(a => a.severity === 'high').length,
@@ -548,7 +547,7 @@ class AnalyticsService {
 
         const now = new Date();
         const startDate = new Date(now.getFullYear(), now.getMonth() - months, 1);
-        
+
         // Optimize: Use a single aggregation to get all monthly stats instead of multiple queries in a loop
         const allStats = await Expense.aggregate([
             {
@@ -791,8 +790,8 @@ class AnalyticsService {
             date: { $gte: threeMonthsAgo },
             amount: { $gt: avgExpense * 3 }
         })
-        .sort({ amount: -1 })
-        .limit(3);
+            .sort({ amount: -1 })
+            .limit(3);
 
         if (unusualExpenses.length > 0) {
             insights.push({

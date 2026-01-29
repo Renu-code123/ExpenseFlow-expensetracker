@@ -219,6 +219,19 @@ body {
     padding: 25px;
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
+    height: 450px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-container canvas {
+    flex: 1;
+    min-height: 0;
+}
+
+.merchants-list {
+    flex: 1;
+    overflow-y: auto;
 }
 
 .chart-header {

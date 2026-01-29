@@ -3,7 +3,7 @@ const Joi = require('joi');
 const Expense = require('../models/Expense');
 const budgetService = require('../services/budgetService');
 const categorizationService = require('../services/categorizationService');
-const exportService = require('../services/exportService');
+// const exportService = require('../services/exportService');
 const currencyService = require('../services/currencyService');
 const aiService = require('../services/aiService');
 const User = require('../models/User');
@@ -137,31 +137,31 @@ router.post('/', auth, async (req, res) => {
     let workflow = null;
 
     if (expenseData.workspace) {
-        requiresApproval = await approvalService.requiresApproval(expenseData, expenseData.workspace);
+      requiresApproval = await approvalService.requiresApproval(expenseData, expenseData.workspace);
     }
 
     if (requiresApproval) {
-        try {
-            workflow = await approvalService.submitForApproval(expense._id, req.user._id);
-            expense.status = 'pending_approval';
-            expense.approvalWorkflow = workflow._id;
-            await expense.save();
-        } catch (approvalError) {
-            console.error('Failed to submit for approval:', approvalError.message);
-            // Continue with normal flow if approval submission fails
-        }
+      try {
+        workflow = await approvalService.submitForApproval(expense._id, req.user._id);
+        expense.status = 'pending_approval';
+        expense.approvalWorkflow = workflow._id;
+        await expense.save();
+      } catch (approvalError) {
+        console.error('Failed to submit for approval:', approvalError.message);
+        // Continue with normal flow if approval submission fails
+      }
     }
 
     // Update budget and goal progress using converted amount if available
     const amountForBudget = expenseData.convertedAmount || value.amount;
     if (value.type === 'expense') {
-        await budgetService.checkBudgetAlerts(req.user._id);
+      await budgetService.checkBudgetAlerts(req.user._id);
     }
     await budgetService.updateGoalProgress(req.user._id, value.type === 'expense' ? -amountForBudget : amountForBudget, value.category);
 
     // Emit real-time update to all user's connected devices
     const io = req.app.get('io');
-    
+
     // Prepare the expense object with display amounts for socket emission
     const expenseForSocket = expense.toObject();
     if (expenseCurrency !== user.preferredCurrency) {
@@ -171,13 +171,13 @@ router.post('/', auth, async (req, res) => {
       expenseForSocket.displayAmount = expense.amount;
       expenseForSocket.displayCurrency = expenseCurrency;
     }
-    
+
     io.to(`user_${req.user._id}`).emit('expense_created', expenseForSocket);
 
     const response = {
-        ...expense.toObject(),
-        requiresApproval,
-        workflow: workflow ? { _id: workflow._id, status: workflow.status } : null
+      ...expense.toObject(),
+      requiresApproval,
+      workflow: workflow ? { _id: workflow._id, status: workflow.status } : null
     };
 
     // Add display amounts to response
@@ -245,7 +245,7 @@ router.put('/:id', auth, async (req, res) => {
 
     // Emit real-time update
     const io = req.app.get('io');
-    
+
     // Prepare the expense object with display amounts for socket emission
     const expenseForSocket = expense.toObject();
     if (expenseCurrency !== user.preferredCurrency) {
@@ -255,11 +255,11 @@ router.put('/:id', auth, async (req, res) => {
       expenseForSocket.displayAmount = expense.amount;
       expenseForSocket.displayCurrency = expenseCurrency;
     }
-    
+
     io.to(`user_${req.user._id}`).emit('expense_updated', expenseForSocket);
 
     const response = expense.toObject();
-    
+
     // Add display amounts to response
     if (expenseCurrency !== user.preferredCurrency) {
       response.displayAmount = updateData.convertedAmount || expense.amount;
@@ -295,6 +295,7 @@ router.delete('/:id', auth, async (req, res) => {
 });
 
 // GET export expenses to CSV
+/*
 router.get('/export', auth, async (req, res) => {
   try {
     const { format, startDate, endDate, category } = req.query;
@@ -329,5 +330,6 @@ router.get('/export', auth, async (req, res) => {
     res.status(500).json({ error: 'Failed to export expenses' });
   }
 });
+*/
 
 module.exports = router;

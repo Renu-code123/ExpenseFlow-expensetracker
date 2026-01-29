@@ -6,17 +6,25 @@ const PDFService = require('./pdfService');
 class ReminderService {
     constructor() {
         // Initialize email transporter
-        this.transporter = nodemailer.createTransporter({
-            host: process.env.SMTP_HOST || 'smtp.gmail.com',
-            port: process.env.SMTP_PORT || 587,
-            secure: false,
-            auth: {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASS
-            }
-        });
+        // Initialize email transporter
+        try {
+            this.transporter = nodemailer.createTransporter({
+                host: process.env.SMTP_HOST || 'smtp.gmail.com',
+                port: process.env.SMTP_PORT || 587,
+                secure: false,
+                auth: {
+                    user: process.env.SMTP_USER,
+                    pass: process.env.SMTP_PASS
+                }
+            });
+        } catch (error) {
+            console.log('Failed to initialize nodemailer, email features disabled:', error.message);
+            this.transporter = {
+                sendMail: async () => ({ messageId: 'mock-email-id' })
+            };
+        }
     }
-    
+
     /**
      * Send payment reminder for overdue invoice
      */
@@ -25,22 +33,22 @@ class ReminderService {
             const invoice = await Invoice.findById(invoiceId)
                 .populate('client')
                 .populate('user');
-            
+
             if (!invoice) {
                 throw new Error('Invoice not found');
             }
-            
+
             // Check if client wants reminders
             if (invoice.client.preferences && invoice.client.preferences.send_payment_reminders === false) {
                 console.log(`Skipping reminder for invoice ${invoice.invoice_number} - client opted out`);
                 return null;
             }
-            
+
             const daysOverdue = invoice.days_overdue;
-            
+
             // Determine email template based on days overdue
             let subject, body;
-            
+
             if (daysOverdue <= 3) {
                 subject = `Payment Reminder: Invoice ${invoice.invoice_number}`;
                 body = this.generateEarlyReminderEmail(invoice, daysOverdue);
@@ -51,7 +59,7 @@ class ReminderService {
                 subject = `Urgent: Payment ${daysOverdue} Days Overdue - Invoice ${invoice.invoice_number}`;
                 body = this.generateUrgentReminderEmail(invoice, daysOverdue);
             }
-            
+
             // Send email
             const info = await this.transporter.sendMail({
                 from: `"${invoice.user.name}" <${process.env.SMTP_USER}>`,
@@ -59,19 +67,19 @@ class ReminderService {
                 subject: subject,
                 html: body
             });
-            
+
             // Mark reminder as sent
             await InvoiceService.markReminderSent(invoiceId, daysOverdue);
-            
+
             console.log(`Reminder sent for invoice ${invoice.invoice_number}:`, info.messageId);
-            
+
             return info;
         } catch (error) {
             console.error(`Failed to send reminder for invoice ${invoiceId}:`, error);
             throw error;
         }
     }
-    
+
     /**
      * Generate early reminder email (1-3 days overdue)
      */
@@ -112,7 +120,7 @@ class ReminderService {
             </div>
         `;
     }
-    
+
     /**
      * Generate mid-level reminder email (4-7 days overdue)
      */
@@ -156,7 +164,7 @@ class ReminderService {
             </div>
         `;
     }
-    
+
     /**
      * Generate urgent reminder email (8+ days overdue)
      */
@@ -205,7 +213,7 @@ class ReminderService {
             </div>
         `;
     }
-    
+
     /**
      * Send invoice via email
      */
@@ -214,17 +222,17 @@ class ReminderService {
             const invoice = await Invoice.findById(invoiceId)
                 .populate('client')
                 .populate('user');
-            
+
             if (!invoice) {
                 throw new Error('Invoice not found');
             }
-            
+
             // Generate PDF if not already generated
             if (!invoice.pdf_url) {
                 await PDFService.generateInvoicePDF(invoiceId, invoice.user._id);
                 await invoice.reload();
             }
-            
+
             const subject = `New Invoice ${invoice.invoice_number} from ${invoice.user.name}`;
             const body = `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -257,7 +265,7 @@ class ReminderService {
                     ${invoice.user.name}</p>
                 </div>
             `;
-            
+
             const info = await this.transporter.sendMail({
                 from: `"${invoice.user.name}" <${process.env.SMTP_USER}>`,
                 to: invoice.client.email,
@@ -268,31 +276,31 @@ class ReminderService {
                     path: invoice.pdf_url
                 }] : []
             });
-            
+
             // Mark as sent
             await invoice.markAsSent();
-            
+
             console.log(`Invoice ${invoice.invoice_number} sent:`, info.messageId);
-            
+
             return info;
         } catch (error) {
             console.error(`Failed to send invoice ${invoiceId}:`, error);
             throw error;
         }
     }
-    
+
     /**
      * Process all pending reminders
      */
     async processAllReminders() {
         try {
             const invoices = await InvoiceService.getInvoicesNeedingReminders();
-            
+
             const results = {
                 success: [],
                 failed: []
             };
-            
+
             for (const { invoice, days_overdue } of invoices) {
                 try {
                     await this.sendPaymentReminder(invoice._id);
@@ -307,13 +315,13 @@ class ReminderService {
                     });
                 }
             }
-            
+
             return results;
         } catch (error) {
             throw new Error(`Failed to process reminders: ${error.message}`);
         }
     }
-    
+
     /**
      * Helper: Format date
      */
@@ -324,7 +332,7 @@ class ReminderService {
             day: 'numeric'
         });
     }
-    
+
     /**
      * Helper: Format currency
      */

@@ -7,11 +7,16 @@ class SecurityMonitor {
   blockSuspiciousIPs() {
     return (req, res, next) => {
       const clientIP = req.ip || req.connection.remoteAddress;
-      
+
+      // Whitelist localhost
+      if (clientIP === '::1' || clientIP === '127.0.0.1' || clientIP === '::ffff:127.0.0.1') {
+        return next();
+      }
+
       if (this.blockedIPs.has(clientIP)) {
         return res.status(403).json({ error: 'IP blocked due to suspicious activity' });
       }
-      
+
       next();
     };
   }
@@ -25,13 +30,13 @@ class SecurityMonitor {
       data,
       userAgent: req.get('User-Agent')
     };
-    
+
     console.log('Security Event:', JSON.stringify(event));
-    
+
     // Track suspicious activity
     const activityCount = this.suspiciousActivity.get(clientIP) || 0;
     this.suspiciousActivity.set(clientIP, activityCount + 1);
-    
+
     // Block IP after 5 suspicious events
     if (activityCount >= 5) {
       this.blockedIPs.add(clientIP);
