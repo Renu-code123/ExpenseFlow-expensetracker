@@ -1,0 +1,150 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: #1a1a1a;
+    color: #ffffff;
+    line-height: 1.6;
+}
+
+.dashboard-container {
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: #2d2d2d;
+    border-radius: 10px;
+}
+
+.dashboard-header h1 {
+    color: #4CAF50;
+    font-size: 2rem;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+#logout-btn {
+    background: #f44336;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: #2d2d2d;
+    padding: 25px;
+    border-radius: 10px;
+    text-align: center;
+    border-left: 4px solid #4CAF50;
+}
+
+.stat-card h3 {
+    color: #cccccc;
+    margin-bottom: 10px;
+    font-size: 1rem;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #4CAF50;
+}
+
+.dashboard-content {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.chart-section, .recent-transactions {
+    background: #2d2d2d;
+    padding: 25px;
+    border-radius: 10px;
+}
+
+.chart-section h2, .recent-transactions h2 {
+    margin-bottom: 20px;
+    color: #4CAF50;
+}
+
+#expense-chart {
+    width: 100%;
+    height: 300px;
+    background: #1a1a1a;
+    border-radius: 5px;
+}
+
+#transactions-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.transaction-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #444;
+}
+
+.transaction-item:last-child {
+    border-bottom: none;
+}
+
+.quick-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.action-btn {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.3s;
+}
+
+.action-btn:hover {
+    background: #45a049;
+}
+
+@media (max-width: 768px) {
+    .dashboard-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .quick-actions {
+        flex-direction: column;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}

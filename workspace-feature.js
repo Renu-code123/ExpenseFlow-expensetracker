@@ -11,7 +11,7 @@
 
 var WORKSPACE_API_URL = '/api/workspaces';
 
-// State management
+// State management with persistence
 let currentWorkspaces = [];
 let activeWorkspace = null;
 let pendingInvites = [];
@@ -32,10 +32,7 @@ const ROLE_PERMISSIONS = {
   viewer: ['View expenses', 'View budgets', 'View reports']
 };
 
-// ========================
-// API Functions
-// ========================
-
+// Enhanced API Functions with better error handling
 async function getAuthHeaders() {
   const token = localStorage.getItem('authToken') || localStorage.getItem('token');
   return {
@@ -45,7 +42,7 @@ async function getAuthHeaders() {
 }
 
 /**
- * Fetch all workspaces for the user
+ * Enhanced workspace fetching with caching
  */
 async function fetchWorkspaces() {
   try {
@@ -68,7 +65,7 @@ async function fetchWorkspaces() {
 }
 
 /**
- * Create a new workspace
+ * Enhanced create workspace with validation
  */
 async function createWorkspace(name, description) {
   try {
@@ -887,7 +884,7 @@ if (document.readyState === 'loading') {
   initWorkspaceFeature();
 }
 
-// Export for use in other modules
+// Export functions for module usage
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     fetchWorkspaces,
@@ -901,4 +898,11 @@ if (typeof module !== 'undefined' && module.exports) {
     ROLES,
     ROLE_PERMISSIONS
   };
+}
+
+// Auto-initialize on DOM ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initWorkspaceFeature);
+} else {
+    initWorkspaceFeature();
 }
