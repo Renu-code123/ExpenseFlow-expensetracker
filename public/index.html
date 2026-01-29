@@ -209,9 +209,10 @@
             <i class="fas fa-coins"></i>
             <span id="current-currency">INR</span>
           </button>
-          <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face"
+         <a href="profile.html"> <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face"
             alt="User" class="profile-img">
           <span class="username" id="navUsername"></span>
+          </a>
           <div id="redirect">
             <a href="#" id="logoutLink" onclick="logout()">Logout</a>
           </div>
@@ -1640,6 +1641,13 @@ document.addEventListener("DOMContentLoaded", () => {
           document.getElementById('current-currency').textContent = currentUserCurrency;
           populateCurrencySelects();
         }
+      } catch (error) {
+      console.error('Error loading currency preference:', error);
+      }
+      const response = await fetch('/api/currency/preference', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
 
       const data = await response.json();
@@ -1648,11 +1656,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const currentCurrencyEl = document.getElementById('current-currency');
         if (currentCurrencyEl) currentCurrencyEl.textContent = currentUserCurrency;
         populateCurrencySelects();
-      }
-    } catch (error) {
-      console.error('Error loading currency preference:', error);
-    }
-  }
+       } }
+    
+  
 
   // Open currency settings modal
   function openCurrencyModal() {
@@ -1713,9 +1719,8 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
           alert('Failed to update currency preference');
         }
-      } catch (error) {
-        console.error('Error saving currency preference:', error);
-        alert('Error saving currency preference');
+      } else {
+        rateInfo.innerHTML = '<p>Failed to load exchange rates.</p>';
       }
     } catch (error) {
       console.error('Error loading exchange rates:', error);
@@ -1748,10 +1753,16 @@ document.addEventListener("DOMContentLoaded", () => {
         closeCurrencyModal();
         // Reload transactions to show in new currency
         location.reload();
-      } else {
+      } else {  
         alert('Failed to update currency preference');
       }
-    });
+    }
+
+   catch (error) {
+      console.error('Error saving currency preference:', error);
+      alert('Error saving currency preference');
+    }
+  };
 
 
   </script>
@@ -1789,7 +1800,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <button id="update-button" class="update-btn" data-i18n="update.action">Update Now</button>
     </div>
   </div>
-  <script src="auth-check.js"></script>
+
   <script src="trackerscript.js"></script>
   <script src="analytics-dashboard.js"></script>
   <script src="workspace-feature.js"></script>

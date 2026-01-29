@@ -1,3 +1,4 @@
+
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
@@ -174,8 +175,9 @@ io.on('connection', (socket) => {
 app.use('/api/auth', require('./middleware/rateLimiter').authLimiter, authRoutes);
 app.use('/api/currency', require('./routes/currency'));
 
+app.use('/api/user', protect, require('./routes/user'));
 app.use('/api/expenses', require('./middleware/rateLimiter').expenseLimiter, protect, expenseRoutes);
-app.use('/api/sync', protect, syncRoutes);
+app.use('/api/sync', syncRoutes);
 app.use('/api/notifications', protect, require('./routes/notifications'));
 app.use('/api/receipts', require('./middleware/rateLimiter').uploadLimiter, protect, require('./routes/receipts'));
 app.use('/api/budgets', protect, require('./routes/budgets'));

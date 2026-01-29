@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
       localStorage.setItem("user", JSON.stringify(data.user));
 
       // ✅ Redirect to dashboard
-      window.location.href = "/";
+      window.location.href = "index.html";
     } catch (err) {
       console.error(err);
       alert("Server error. Try again later.");
