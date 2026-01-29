@@ -3,9 +3,182 @@ const router = express.Router();
 const auth = require('../middleware/auth');
 const { body, query, validationResult } = require('express-validator');
 const advancedAnalyticsService = require('../services/advancedAnalyticsService');
+const gamificationService = require('../services/scoreService');
 const DataWarehouse = require('../models/DataWarehouse');
 const CustomDashboard = require('../models/CustomDashboard');
 const FinancialHealthScore = require('../models/FinancialHealthScore');
+
+// ========================
+// Gamification & Health Score Routes (Issue #421)
+// ========================
+
+/**
+ * GET /api/analytics/gamification/health-score
+ * Calculate and return complete Financial Health Score
+ */
+router.get('/gamification/health-score', auth, [
+  query('workspaceId').optional().isMongoId()
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const healthScore = await gamificationService.calculateHealthScore(
+      req.user.id,
+      req.query.workspaceId
+    );
+
+    res.json({
+      success: true,
+      data: healthScore
+    });
+  } catch (error) {
+    console.error('Get gamification health score error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to calculate financial health score'
+    });
+  }
+});
+
+/**
+ * GET /api/analytics/gamification/profile
+ * Get user's gamification profile (level, XP, badges)
+ */
+router.get('/gamification/profile', auth, async (req, res) => {
+  try {
+    const profile = await gamificationService.getUserGamificationProfile(req.user.id);
+
+    res.json({
+      success: true,
+      data: profile
+    });
+  } catch (error) {
+    console.error('Get gamification profile error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get gamification profile'
+    });
+  }
+});
+
+/**
+ * GET /api/analytics/gamification/badges
+ * Get all available badges with user's progress
+ */
+router.get('/gamification/badges', auth, async (req, res) => {
+  try {
+    const badges = await gamificationService.getAllBadges(req.user.id);
+
+    res.json({
+      success: true,
+      data: badges
+    });
+  } catch (error) {
+    console.error('Get badges error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get badges'
+    });
+  }
+});
+
+/**
+ * GET /api/analytics/gamification/leaderboard
+ * Get community leaderboard
+ */
+router.get('/gamification/leaderboard', auth, [
+  query('limit').optional().isInt({ min: 5, max: 50 }),
+  query('type').optional().isIn(['points', 'health'])
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const limit = parseInt(req.query.limit) || 10;
+    const type = req.query.type || 'points';
+
+    const leaderboard = await gamificationService.getLeaderboard(limit, type);
+
+    res.json({
+      success: true,
+      data: leaderboard
+    });
+  } catch (error) {
+    console.error('Get leaderboard error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get leaderboard'
+    });
+  }
+});
+
+/**
+ * PUT /api/analytics/gamification/financial-profile
+ * Update user's financial profile for score calculation
+ */
+router.put('/gamification/financial-profile', auth, [
+  body('monthlyIncome').optional().isFloat({ min: 0 }),
+  body('monthlyDebtPayment').optional().isFloat({ min: 0 }),
+  body('emergencyFundTarget').optional().isFloat({ min: 0 }),
+  body('emergencyFundCurrent').optional().isFloat({ min: 0 })
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const profile = await gamificationService.updateFinancialProfile(req.user.id, req.body);
+
+    res.json({
+      success: true,
+      message: 'Financial profile updated',
+      data: profile
+    });
+  } catch (error) {
+    console.error('Update financial profile error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update financial profile'
+    });
+  }
+});
+
+/**
+ * POST /api/analytics/gamification/recalculate
+ * Force recalculation of health score
+ */
+router.post('/gamification/recalculate', auth, [
+  body('workspaceId').optional().isMongoId()
+], async (req, res) => {
+  try {
+    const healthScore = await gamificationService.calculateHealthScore(
+      req.user.id,
+      req.body.workspaceId
+    );
+
+    res.json({
+      success: true,
+      message: 'Health score recalculated',
+      data: healthScore
+    });
+  } catch (error) {
+    console.error('Recalculate health score error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to recalculate health score'
+    });
+  }
+});
+
+// ========================
+// Existing Analytics Routes
+// ========================
 
 // Get data warehouse analytics
 router.get('/warehouse', auth, [
