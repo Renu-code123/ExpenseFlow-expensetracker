@@ -34,7 +34,7 @@ function formatAnalyticsCurrency(value, options = {}) {
 // ========================
 
 async function getAuthHeaders() {
-  const token = localStorage.getItem('authToken');
+  const token = localStorage.getItem('token');
   return {
     'Content-Type': 'application/json',
     'Authorization': token ? `Bearer ${token}` : ''
@@ -46,7 +46,7 @@ async function getAuthHeaders() {
  */
 async function fetchSpendingTrends(period = 'monthly', months = 6) {
   try {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('token');
     if (!token) return { data: [] };
 
     const response = await fetch(
@@ -671,7 +671,7 @@ async function loadAnalyticsDashboard() {
   const dashboardContainer = document.getElementById('analytics-dashboard');
   if (!dashboardContainer) return;
 
-  const token = localStorage.getItem('authToken');
+  const token = localStorage.getItem('token');
   if (!token) return;
 
   try {
