@@ -34,11 +34,11 @@ function formatAnalyticsCurrency(value, options = {}) {
 // ========================
 
 async function getAuthHeaders() {
-  const token = localStorage.getItem('authToken');
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': token ? `Bearer ${token}` : ''
-  };
+  // Accept either 'token' or legacy 'authToken' key used by auth integration
+  const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  return headers;
 }
 
 /**
@@ -46,7 +46,7 @@ async function getAuthHeaders() {
  */
 async function fetchSpendingTrends(period = 'monthly', months = 6) {
   try {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('token');
     if (!token) return { data: [] };
 
     const response = await fetch(
@@ -671,7 +671,7 @@ async function loadAnalyticsDashboard() {
   const dashboardContainer = document.getElementById('analytics-dashboard');
   if (!dashboardContainer) return;
 
-  const token = localStorage.getItem('authToken');
+  const token = localStorage.getItem('token');
   if (!token) return;
 
   try {

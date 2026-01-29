@@ -83,7 +83,7 @@ const formatAppCurrency = (value, { showPlus = false, absolute = false } = {}) =
 // ========================
 
 function getAuthToken() {
-  return localStorage.getItem('authToken');
+  return localStorage.getItem('token');
 }
 
 async function fetchExpenses(page = 1, limit = 50, workspaceId = null) {

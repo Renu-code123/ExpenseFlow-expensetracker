@@ -1,5 +1,11 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
+
+/**
+ * Enhanced User Model with 2FA Support
+ * Issue #338: Audit Trail & TOTP Security Suite
+ */
 
 /**
  * Badge Schema - Earned achievements/badges
@@ -192,6 +198,7 @@ const userSchema = new mongoose.Schema({
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
   this.password = await bcrypt.hash(this.password, 12);
+  this.security.passwordChangedAt = new Date();
   next();
 });
 
