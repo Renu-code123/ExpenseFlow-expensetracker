@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Profile | ExpenseFlow</title>
+<title>FAQ | ExpenseFlow</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <!-- Fonts & Icons -->
@@ -31,7 +31,7 @@
   --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.1);
   --border-radius: 16px;
   --border-radius-sm: 10px;
-  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 body.light {
@@ -157,10 +157,6 @@ body.light .header {
   background: var(--accent-primary);
   color: var(--bg-primary);
 }
-
-
-
-
 
 
 /* =========================
@@ -389,7 +385,102 @@ body.light .header {
     margin-bottom: 2rem;
 
 }
+.faq-hero{
+    text-align: center;
+    margin-bottom: 3rem;
+}
+.faq-hero h1{
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+.faq-hero .subtitle{
+    color:var(--text-secondary);
+    font-size: 1.2rem;
+    margin:auto;
+}
+.faq-content{
+    display:flex;
+    flex-direction: column;
+    gap:2rem;
+    margin-bottom: 3rem;
+}
+.faq-column{
+    display:flex;
+    flex-direction: column;
+    gap:20px;
 
+}
+.faq-item{
+    display:flex;
+    align-items:center;
+    gap:20px;
+    background: var(--card-bg);
+    padding: 1.3rem 1.5rem;
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--border-glass);
+}
+.faq-item p{
+    font-size:1.1rem;
+    font-weight:500;
+    color: var(--text-primary); 
+    transition: var(--transition);
+}
+.number{
+    font-size:1.1rem;
+    background: var(--primary-gradient);
+    border-radius: 100%;
+    width:30px;
+    height:30px;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+}
+.faq-item:hover{
+    box-shadow: var(--shadow-soft);
+    background: var(--card-glass);
+}
+.faq-item:hover p{
+    color:var(--accent-primary);
+    transform: translateX(5px);
+}
+
+
+.faq-column h2{
+    margin-bottom:1rem;
+    color:var(--text-primary);
+}
+
+.faq-text{
+    display:flex;
+    flex-direction: column;
+    gap:0.5rem;
+}
+.answer{
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color:var(--text-secondary);
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: var(--transition);
+}
+.faq-item.active .answer{
+    max-height:300px;
+    opacity:1;
+}
+.faq-item{
+    cursor: pointer;
+}
+.faq-arrow {
+  margin-left: auto;
+  color: var(--text-secondary);
+  transition: var(--transition);
+}
+
+.faq-item.active .faq-arrow {
+  transform: rotate(180deg);
+  color: var(--accent-primary);
+}
 
 </style>
 </head>
@@ -403,42 +494,125 @@ body.light .header {
     </div>
     <div class="nav-menu">
       <a href="index.html" class="nav-link">Dashboard</a>
-      <a href="profile.html" class="nav-link active">Profile</a>
+      <a href="faq.html" class="nav-link active">FAQ</a>
       <span class="theme-toggle" onclick="toggleTheme()">🌙</span>
     </div>
   </nav>
 </header>
 
 <main class="main-content">
-        <section class="profile-card">
-            <div class="profile-header">
-                <div class="avatar">
-                    <i class="fas fa-user"></i>
+   <section class="faq-hero">
+    <h1>Do You Have Questions?</h1>
+    <p class="subtitle">We have answers to the most common questions about ExpenseFlow.</p>
+   </section>
+   <!-- faq content -->
+   <section class="faq-content">
+    <div class="faq-column">
+        <h2>ExpenseFlow FAQs</h2>
+        <div class="faq-item">
+            <span class="number">1</span>
+            <div class="faq-text">
+                <p class="question">What is ExpenseFlow?</p>
+                <p class="answer">ExpenseFlow is a personal finance app that helps you track income,
+                    expenses, and manage your money easily.</p>
+            </div>
+            <span class="faq-arrow">
+                    <i class="fas fa-chevron-down"></i>
+                </span>
+        </div>
+          <div class="faq-item">
+            <span class="number">2</span>
+            <div class="faq-text">
+                <p class="question">How do I add an expense?</p>
+                <p class="answer"> To add an expense, go to the Dashboard and click on the "Add Expense" button. Fill in the details and save.</p>
+            </div>
+            <span class="faq-arrow">
+                    <i class="fas fa-chevron-down"></i>
+                </span>
+        </div>
+          <div class="faq-item">
+            <span class="number">3</span>
+            <div class="faq-text">
+                <p class="question">Can I edit or delete expenses?</p>
+                <p class="answer"> ExpenseFlow is a personal finance app that helps you track income,
+                    expenses, and manage your money easily.</p>
+            </div>
+            <span class="faq-arrow">
+                    <i class="fas fa-chevron-down"></i>
+                </span>
+        </div>
+    </div>
+   </section>
+      <section class="faq-content">
+    <div class="faq-column">
+        <h2>Account & Usage</h2>
+            <div class="faq-item">
+                <span class="number">1</span>
+                <div class="faq-text">
+                    <p class="question">Is login required?</p>
+                    <p class="answer">Yes, you need to create an account and log in to use ExpenseFlow.</p>
                 </div>
+                <span class="faq-arrow">
+                    <i class="fas fa-chevron-down"></i>
+                </span>
             </div>
-            <div class="info">
-                <h2 class="profile-name" id="profile-name"></h2>
-                <p class="profile-role">ExpenseFlow User</p>
+         <div class="faq-item">
+            <span class="number">2</span>
+            <div class="faq-text">
+                <p class="question">Is my data safe?</p>
+                <p class="answer">Yes, we use advanced encryption and security measures to protect your data.</p>
             </div>
+            <span class="faq-arrow">
+                    <i class="fas fa-chevron-down"></i>
+                </span>
+        </div>
+         <div class="faq-item">
+            <span class="number">3</span>
+            <div class="faq-text">
+                <p class="question">Does ExpenseFlow work on mobile?</p>
+                <p class="answer">Yes, ExpenseFlow is available on both iOS and Android devices for convenient mobile access.</p>
             </div>
-            <div>
-            <div class="profile-details">
-                <div class="profile-details">
-                    <div class="detail-item">
-                        <span>Email</span>
-                        <span id="profile-email"></span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="label">Username</span>
-                        <span class="value" id="profile-username"></span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="label">Account Created</span>
-                        <span class="value" id="profile-created"></span>
-                    </div>
+            <span class="faq-arrow">
+                    <i class="fas fa-chevron-down"></i>
+                </span>
+        </div>
+       
+   </section>
+     <section class="faq-content">
+    <div class="faq-column">
+        <h2>Troubleshooting</h2>
+            <div class="faq-item">
+                <span class="number">1</span>
+                <div class="faq-text">
+                    <p class="question">I forgot my password. What should I do?</p>
+                    <p class="answer">Use the “Forgot Password” option on the login page to reset it..</p>
                 </div>
+                <span class="faq-arrow">
+                    <i class="fas fa-chevron-down"></i>
+                </span>
             </div>
-        </section>
+         <div class="faq-item">
+            <span class="number">2</span>
+            <div class="faq-text">
+                <p class="question">My data is not showing. Why?</p>
+                <p class="answer">Make sure you are logged into the correct account.</p>
+            </div>
+            <span class="faq-arrow">
+                    <i class="fas fa-chevron-down"></i>
+                </span>
+        </div>
+         <div class="faq-item">
+            <span class="number">3</span>
+            <div class="faq-text">
+                <p class="question">Who can I contact for help?</p>
+                <p class="answer">You can reach us through the Contact Us page for support.</p>
+            </div>
+            <span class="faq-arrow">
+                    <i class="fas fa-chevron-down"></i>
+                </span>
+        </div>
+       
+   </section>
 </main>
 
 <!-- FOOTER -->
@@ -479,27 +653,17 @@ body.light .header {
     &copy; 2026 ExpenseFlow. All rights reserved. | Rates are updated daily
   </div>
 </footer>
+
 <script>
-    async function loadUserProfile(){
-        const token=localStorage.getItem('token');
-        if(!token) return ;
-        const res=await fetch('/api/user/profile',{
-            headers:{
-                'Authorization':`Bearer ${token}`
-            }
-        });
-        if(!res.ok) return ;
-        const data=await res.json();
-        console.log(data);
-        document.querySelector('.profile-name').textContent=data.name;
-        document.querySelector('.profile-role').textContent='ExpenseFlow User';
-        document.getElementById('profile-email').textContent=data.email;
-        document.getElementById('profile-created').textContent = new Date(data.createdAt).toLocaleString();
-
-    }
-    document.addEventListener('DOMContentLoaded',loadUserProfile);
-</script>
-
+    const faqitems=document.querySelectorAll('.faq-item');
+    faqitems.forEach((item)=>{
+    setTimeout(()=>{
+        item.addEventListener("click",()=>{
+            item.classList.toggle("active");
+            });
+        },
+        1000);
+    })
 </script>
 </body>
 </html>
