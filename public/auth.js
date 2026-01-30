@@ -15,8 +15,8 @@
 function getPasswordErrors(password) {
     const errors = [];
 
-    if (password.length < 8) {
-        errors.push("at least 8 characters");
+    if (password.length < 12) {
+        errors.push("at least 12 characters");
     }
     if (!/[A-Z]/.test(password)) {
         errors.push("one uppercase letter");
@@ -97,7 +97,7 @@ const updatePasswordUI = () => {
     const password = passwordInput.value;
 
     const checks = {
-        length: password.length >= 8,
+        length: password.length >= 12,
         upper: /[A-Z]/.test(password),
         lower: /[a-z]/.test(password),
         number: /[0-9]/.test(password),

@@ -1663,6 +1663,11 @@
           <a href="analytics.html" class="nav-link">Analytics</a>
           <a href="goals.html" class="nav-link">Goals</a>
           <a href="public/settings.html" class="nav-link">Settings</a>
+          <a href="#dashboard" class="nav-link active">Dashboard</a>
+          <a href="#analytics" class="nav-link">Analytics</a>
+          <a href="#goals" class="nav-link">Goals</a>
+          <a href="groups.html" class="nav-link">Groups</a>
+          <a href="#settings" class="nav-link">Settings</a>
         </div>
         <div class="nav-toggle" id="nav-toggle">
           <span class="bar"></span>
@@ -2183,6 +2188,39 @@
     z-index: 2;
   }
 
+<body>
+  <!-- Header -->
+  <header class="header">
+    <nav class="navbar">
+      <div class="nav-container">
+        <div class="nav-logo">
+          <i class="fas fa-wallet"></i>
+          <span>ExpenseFlow</span>
+        </div>
+        <div class="nav-menu" id="nav-menu">
+          <a href="#dashboard" class="nav-link active">Dashboard</a>
+          <a href="#analytics" class="nav-link">Analytics</a>
+          <a href="#goals" class="nav-link">Goals</a>
+          <a href="#settings" class="nav-link">Settings</a>
+          <!-- Theme Toggle -->
+          <button id="theme-toggle" class="theme-toggle-btn">
+            🌙
+          </button>
+
+        </div>
+        <div class="nav-toggle" id="nav-toggle">
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+        </div>
+        <div class="user-profile">
+          <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face"
+            alt="User" class="profile-img">
+          <span class="username">John Doe</span>
+        </div>
+      </div>
+    </nav>
+  </header>
   .cursor-clicking {
     transform: translate(-50%, -50%) scale(1.5);
     background: linear-gradient(135deg, #ff6b9d 0%, #ffcc00 100%) !important;
@@ -2372,6 +2410,21 @@
             <a href="analytics.html" class="nav-link">Analytics</a>
             <a href="goals.html" class="nav-link">Goals</a>
             <a href="public/settings.html" class="nav-link">Settings</a>
+            <a href="public/analytics.html" class="nav-link">Analytics</a>
+            <a href="#analytics" class="nav-link">Analytics</a>
+            <a href="#health" class="nav-link" id="health-tab">Health</a>
+            <a href="#goals" class="nav-link">Goals</a>
+            <a href="#settings" class="nav-link">Settings</a>
+          </div>
+          <div class="nav-actions">
+            <div class="nav-search">
+              <i class="fas fa-search"></i>
+              <input type="text" placeholder="Search transactions...">
+            </div>
+            <button class="nav-icon-btn" title="Notifications">
+              <i class="fas fa-bell"></i>
+              <span class="notification-badge">2</span>
+            </button>
           </div>
           <div class="nav-toggle" id="nav-toggle">
             <span class="bar"></span>
@@ -3031,6 +3084,35 @@
       <button id="update-button" class="update-btn">Update Now</button>
     </div>
   </div>
+  <script>
+// Wait for page to load
+window.addEventListener("DOMContentLoaded", () => {
+  const toggleBtn = document.getElementById("theme-toggle");
+  const body = document.body;
+
+  // Load saved theme from localStorage
+  const savedTheme = localStorage.getItem("theme");
+  if (savedTheme === "dark") {
+    body.classList.add("dark-theme");
+    toggleBtn.textContent = "☀️"; // change icon for dark
+  }
+
+  // Toggle dark/light mode
+  toggleBtn.addEventListener("click", () => {
+    body.classList.toggle("dark-theme");
+
+    const isDark = body.classList.contains("dark-theme");
+    toggleBtn.textContent = isDark ? "☀️" : "🌙";
+
+    // Save preference
+    localStorage.setItem("theme", isDark ? "dark" : "light");
+  });
+});
+</script>
+
+</body>
+
+</html>
   <!-- Chatbot -->
   <script type="module" src="chatbot/chatbot.js"></script>
 
