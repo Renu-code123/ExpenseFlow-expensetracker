@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en"  favicon="favicon.ico">
+<html lang="en" favicon="favicon.ico">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -30,152 +31,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    /* =========================
-   MOBILE RESPONSIVE STYLES
-   ========================= */
-    @media (max-width: 768px) {
+  <link rel="stylesheet" href="index.css">
 
-      /* General */
-      body {
-        overflow-x: hidden;
-      }
-
-      .container {
-        padding: 1rem;
-      }
-
-      /* Navbar */
-      .nav-menu {
-        position: absolute;
-        top: 70px;
-        left: 0;
-        width: 100%;
-        background: #0f0f23;
-        flex-direction: column;
-        align-items: center;
-        display: none;
-      }
-
-      .nav-menu.active {
-        display: flex;
-      }
-
-      .nav-link {
-        padding: 1rem;
-        width: 100%;
-        text-align: center;
-      }
-
-      .nav-toggle {
-        display: block;
-        cursor: pointer;
-      }
-
-      .user-profile {
-        display: none;
-      }
-
-      /* Hero */
-      .hero-title {
-        font-size: 1.8rem;
-        text-align: center;
-      }
-
-      .hero-subtitle {
-        text-align: center;
-        font-size: 1rem;
-      }
-
-      /* Balance & Cards */
-      .inc-exp-container {
-        flex-direction: column;
-        gap: 1rem;
-      }
-
-      .balance-card {
-        text-align: center;
-      }
-
-      /* Filters */
-      .filter-controls {
-        flex-direction: column;
-        gap: 0.75rem;
-      }
-
-      .advanced-filters {
-        flex-direction: column;
-      }
-
-      .date-filters,
-      .amount-filters {
-        flex-direction: column;
-        width: 100%;
-      }
-
-      /* Transaction Form */
-      .form-row {
-        flex-direction: column;
-      }
-
-      .form-control {
-        width: 100%;
-      }
-
-      /* Footer */
-      .footer-container {
-        flex-direction: column;
-        gap: 2rem;
-        text-align: center;
-      }
-
-      .footer-stats {
-        flex-direction: column;
-        gap: 0.5rem;
-      }
-    }
-
-    #redirect {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-left: 12px;
-      border: 1px solid #64ffda;
-      background-color: #0f0f23;
-      padding: 6px 12px;
-      border-radius: 8px;
-      transition: background-color 0.3s ease;
-    }
-
-    #redirect a {
-      color: #64ffda;
-      text-decoration: none;
-      font-weight: 500;
-      margin-right: 8px;
-    }
-
-    .i18n-multiline {
-      white-space: pre-line;
-    }
-
-    .footer-links {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(100px, 1fr));
-    }
-      .footer-links {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(100px, 1fr));
-        }
-  </style>
 </head>
 
 <body>
-
-<!-- Cursor -->
-<div id="cursor-trail" class="cursor-trail-container"></div>
-
- 
-
+  <!-- Cursor -->
+  <div id="cursor-trail" class="cursor-trail-container"></div>
 
   <!-- Header -->
   <header class="header">
@@ -214,9 +76,10 @@
             <i class="fas fa-coins"></i>
             <span id="current-currency">INR</span>
           </button>
-         <a href="profile.html"> <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face"
-            alt="User" class="profile-img">
-          <span class="username" id="navUsername"></span>
+          <a href="profile.html"> <img
+              src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face" alt="User"
+              class="profile-img">
+            <span class="username" id="navUsername"></span>
           </a>
           <div id="redirect">
             <a href="#" id="logoutLink" onclick="logout()">Logout</a>
@@ -284,7 +147,8 @@
       <div class="container">
         <div class="section-header-center">
           <h2 class="section-title" data-i18n="feature.heading">Powerful Features for Smart Finance</h2>
-          <p class="section-subtitle" data-i18n="feature.subheading">Everything you need to manage your money effectively</p>
+          <p class="section-subtitle" data-i18n="feature.subheading">Everything you need to manage your money
+            effectively</p>
         </div>
         <div class="features-grid">
           <div class="feature-card">
@@ -344,9 +208,9 @@
       <div class="nav-toggle" id="nav-toggle">
         <span></span><span></span><span></span>
       </div>
-    </div>
-  </nav>
-</header>
+      </div>
+      </nav>
+      </header>
 
       <!-- Balance Card -->
       <div class="balance-card">
@@ -480,9 +344,9 @@
           </div>
         </div>
       </div>
-    </div>
-  </nav>
-</header>
+      </div>
+      </nav>
+      </header>
 
       <!-- Export Modal -->
       <div class="export-modal" id="export-modal">
@@ -564,7 +428,8 @@
           </div>
 
           <div class="export-modal-footer">
-            <button type="button" class="btn-cancel" id="export-cancel-btn" data-i18n="export.actions.cancel">Cancel</button>
+            <button type="button" class="btn-cancel" id="export-cancel-btn"
+              data-i18n="export.actions.cancel">Cancel</button>
             <button type="button" class="btn-submit" id="export-submit-btn">
               <i class="fas fa-download"></i> <span data-i18n="export.actions.export">Export</span>
             </button>
@@ -654,7 +519,8 @@
       <!-- Recurring Expenses Section -->
       <div class="recurring-section" id="recurring-section">
         <div class="section-header">
-          <h3><i class="fas fa-sync-alt"></i> <span data-i18n="recurring.title">Recurring Expenses & Subscriptions</span></h3>
+          <h3><i class="fas fa-sync-alt"></i> <span data-i18n="recurring.title">Recurring Expenses &
+              Subscriptions</span></h3>
           <button class="add-recurring-btn" id="add-recurring-btn">
             <i class="fas fa-plus"></i> <span data-i18n="recurring.add">Add Recurring</span>
           </button>
@@ -776,90 +642,90 @@
             </div>
           </form>
         </div>
-      </section>
+    </section>
 
-      <!-- Goals Section -->
-      <section id="goals" class="goals-section" style="display: none;">
-        <div class="section-header">
-          <h3><i class="fas fa-bullseye"></i> Financial Goals</h3>
+    <!-- Goals Section -->
+    <section id="goals" class="goals-section" style="display: none;">
+      <div class="section-header">
+        <h3><i class="fas fa-bullseye"></i> Financial Goals</h3>
+      </div>
+      <div id="goals-content" class="goals-content">
+        <!-- Goals content will be loaded here -->
+        <div class="goals-placeholder">
+          <i class="fas fa-bullseye" style="font-size: 3rem; color: var(--accent-primary); margin-bottom: 1rem;"></i>
+          <h4>Set Your Financial Goals</h4>
+          <p>Create and track your savings goals, budget targets, and financial milestones.</p>
+          <button class="btn btn-primary" onclick="initializeGoals()">Get Started</button>
         </div>
-        <div id="goals-content" class="goals-content">
-          <!-- Goals content will be loaded here -->
-          <div class="goals-placeholder">
-            <i class="fas fa-bullseye" style="font-size: 3rem; color: var(--accent-primary); margin-bottom: 1rem;"></i>
-            <h4>Set Your Financial Goals</h4>
-            <p>Create and track your savings goals, budget targets, and financial milestones.</p>
-            <button class="btn btn-primary" onclick="initializeGoals()">Get Started</button>
-          </div>
+      </div>
+    </section>
+
+    <!-- Analytics Dashboard Section -->
+    <section id="analytics" class="analytics-section" style="display: none;">
+      <div class="section-header">
+        <h3><i class="fas fa-chart-bar"></i> Financial Analytics & Forecasting</h3>
+        <div class="analytics-actions">
+          <select id="trends-period" class="period-select">
+            <option value="monthly">Monthly</option>
+            <option value="weekly">Weekly</option>
+            <option value="daily">Daily</option>
+          </select>
+          <button id="refresh-analytics" class="refresh-btn">
+            <i class="fas fa-sync-alt"></i> Refresh
+          </button>
         </div>
-      </section>
+      </div>
 
-      <!-- Analytics Dashboard Section -->
-      <section id="analytics" class="analytics-section" style="display: none;">
-        <div class="section-header">
-          <h3><i class="fas fa-chart-bar"></i> Financial Analytics & Forecasting</h3>
-          <div class="analytics-actions">
-            <select id="trends-period" class="period-select">
-              <option value="monthly">Monthly</option>
-              <option value="weekly">Weekly</option>
-              <option value="daily">Daily</option>
-            </select>
-            <button id="refresh-analytics" class="refresh-btn">
-              <i class="fas fa-sync-alt"></i> Refresh
-            </button>
-          </div>
-        </div>
-
-        <div id="analytics-dashboard" class="analytics-grid">
-          <!-- Top Row: Velocity and Forecast -->
-          <div class="analytics-row top-row">
-            <div id="velocity-widget" class="analytics-card velocity-card">
-              <div class="widget-loading">
-                <i class="fas fa-spinner fa-spin"></i>
-                <span>Calculating velocity...</span>
-              </div>
-            </div>
-            <div id="forecast-widget" class="analytics-card forecast-card">
-              <div class="widget-loading">
-                <i class="fas fa-spinner fa-spin"></i>
-                <span>Generating forecast...</span>
-              </div>
+      <div id="analytics-dashboard" class="analytics-grid">
+        <!-- Top Row: Velocity and Forecast -->
+        <div class="analytics-row top-row">
+          <div id="velocity-widget" class="analytics-card velocity-card">
+            <div class="widget-loading">
+              <i class="fas fa-spinner fa-spin"></i>
+              <span>Calculating velocity...</span>
             </div>
           </div>
-
-          <!-- Middle Row: Trends and Category Breakdown -->
-          <div class="analytics-row main-charts">
-            <div id="trends-chart" class="analytics-card trends-card">
-              <div class="widget-loading">
-                <i class="fas fa-spinner fa-spin"></i>
-                <span>Loading trends...</span>
-              </div>
-            </div>
-            <div id="category-chart" class="analytics-card category-card">
-              <div class="widget-loading">
-                <i class="fas fa-spinner fa-spin"></i>
-                <span>Loading distribution...</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Bottom Row: Insights and Predictions -->
-          <div class="analytics-row details-row">
-            <div id="insights-container" class="analytics-card insights-card">
-              <div class="widget-loading">
-                <i class="fas fa-spinner fa-spin"></i>
-                <span>Gathering insights...</span>
-              </div>
-            </div>
-            <div id="predictions-widget" class="analytics-card predictions-card">
-              <div class="widget-loading">
-                <i class="fas fa-spinner fa-spin"></i>
-                <span>Predicting spending...</span>
-              </div>
+          <div id="forecast-widget" class="analytics-card forecast-card">
+            <div class="widget-loading">
+              <i class="fas fa-spinner fa-spin"></i>
+              <span>Generating forecast...</span>
             </div>
           </div>
         </div>
-      </section>
+
+        <!-- Middle Row: Trends and Category Breakdown -->
+        <div class="analytics-row main-charts">
+          <div id="trends-chart" class="analytics-card trends-card">
+            <div class="widget-loading">
+              <i class="fas fa-spinner fa-spin"></i>
+              <span>Loading trends...</span>
+            </div>
+          </div>
+          <div id="category-chart" class="analytics-card category-card">
+            <div class="widget-loading">
+              <i class="fas fa-spinner fa-spin"></i>
+              <span>Loading distribution...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Row: Insights and Predictions -->
+        <div class="analytics-row details-row">
+          <div id="insights-container" class="analytics-card insights-card">
+            <div class="widget-loading">
+              <i class="fas fa-spinner fa-spin"></i>
+              <span>Gathering insights...</span>
+            </div>
+          </div>
+          <div id="predictions-widget" class="analytics-card predictions-card">
+            <div class="widget-loading">
+              <i class="fas fa-spinner fa-spin"></i>
+              <span>Predicting spending...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
     </div>
 
     <!-- Health & Achievements Section (Issue #421) -->
@@ -1841,52 +1707,32 @@
           <span>ExpenseFlow</span>
         </div>
 
-  <p class="footer-description">
-    Smart money management made simple. Track, analyze, and optimize your financial habits.
-  </p>
+        <p class="footer-description">
+          Smart money management made simple. Track, analyze, and optimize your financial habits.
+        </p>
 
-  <div class="social-links">
-    <a
-      href="https://x.com/9504_renu"
-      class="social-link"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="X (Twitter)"
-    >
-      <i class="fab fa-x-twitter"></i>
-    </a>
+        <div class="social-links">
+          <a href="https://x.com/9504_renu" class="social-link" target="_blank" rel="noopener noreferrer"
+            aria-label="X (Twitter)">
+            <i class="fab fa-x-twitter"></i>
+          </a>
 
-    <a
-      href="https://github.com/Renu-code123/ExpenseFlow"
-      class="social-link"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Github"
-    >
-      <i class="fab fa-github"></i>
-    </a>
+          <a href="https://github.com/Renu-code123/ExpenseFlow" class="social-link" target="_blank"
+            rel="noopener noreferrer" aria-label="Github">
+            <i class="fab fa-github"></i>
+          </a>
 
-    <a
-      href="mailto:renu89857@gmail.com"
-      class="social-link"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Email"
-    >
-      <i class="far fa-envelope"></i>
-    </a>
+          <a href="mailto:renu89857@gmail.com" class="social-link" target="_blank" rel="noopener noreferrer"
+            aria-label="Email">
+            <i class="far fa-envelope"></i>
+          </a>
 
-    <a
-      href="https://www.linkedin.com/in/renu-kumari-prajapati"
-      class="social-link"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="LinkedIn"
-    >
-      <i class="fab fa-linkedin-in"></i>
-    </a>
-  </div>
-</div>
+          <a href="https://www.linkedin.com/in/renu-kumari-prajapati" class="social-link" target="_blank"
+            rel="noopener noreferrer" aria-label="LinkedIn">
+            <i class="fab fa-linkedin-in"></i>
+          </a>
+        </div>
+      </div>
 
 
       <div class="footer-section">
@@ -1922,106 +1768,6 @@
       </div>
     </div>
   </footer>
-
-  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="trackerscript.js"></script>
-  <script src="api-integration.js"></script>
-  <script src="realtime-sync.js"></script>
-  <script src="analytics-dashboard.js"></script>
-  <script>
-    // Recurring Modal Control
-    function openRecurringModal() {
-      const modal = document.getElementById('recurring-modal');
-      if (modal) {
-        modal.style.display = 'flex';
-        modal.classList.add('active');
-        document.getElementById('recurring-modal-title').textContent = 'Add Recurring Expense';
-        document.getElementById('recurring-form').reset();
-      }
-    }
-
-    function closeRecurringModal() {
-      const modal = document.getElementById('recurring-modal');
-      if (modal) {
-        modal.style.display = 'none';
-        modal.classList.remove('active');
-      }
-    }
-
-    // Initialize recurring button
-    document.addEventListener('DOMContentLoaded', function() {
-      const addBtn = document.getElementById('add-recurring-btn');
-      if (addBtn) {
-        addBtn.addEventListener('click', openRecurringModal);
-      }
-
-      const closeBtn = document.getElementById('recurring-modal-close');
-      if (closeBtn) {
-        closeBtn.addEventListener('click', closeRecurringModal);
-      }
-
-      const cancelBtn = document.getElementById('recurring-cancel-btn');
-      if (cancelBtn) {
-        cancelBtn.addEventListener('click', closeRecurringModal);
-      }
-
-      // Close modal when clicking outside
-      const modal = document.getElementById('recurring-modal');
-      if (modal) {
-        modal.addEventListener('click', (e) => {
-          if (e.target === modal) {
-            closeRecurringModal();
-          }
-        });
-      }
-    });
-  </script>
-  <script>
-   
-
-    // Load supported currencies on page load
-    async function loadSupportedCurrencies() {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
-
-        const response = await fetch('/api/currency/supported', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        const data = await response.json();
-        if (data.success) {
-          supportedCurrencies = data.data.currencies;
-          populateCurrencySelects();
-        }
-      } catch (error) {
-        console.error('Error loading currencies:', error);
-      }
-    }
-    </script>
-
-  <style>
-    @keyframes spin {
-      100% {
-        transform: rotate(360deg);
-      }
-    }
-
-    .progress-fill.high {
-      background: #4caf50 !important;
-    }
-
-    .progress-fill.medium {
-      background: #ffc107 !important;
-    }
-
-    .progress-fill.low {
-      background: #f44336 !important;
-    }
-  </style>
 
   <!-- Workspace Modal -->
   <div id="workspace-modal" class="modal">
@@ -2090,465 +1836,222 @@
         </div>
       </form>
     </div>
-  </section>
+    </section>
 
-  <!-- PWA Installation Prompt -->
-  <div id="install-prompt" class="install-prompt" style="display: none;">
-    <div class="install-prompt-content">
-      <div class="install-prompt-header">
-        <i class="fas fa-download"></i>
-        <h3 data-i18n="install.title">Install ExpenseFlow</h3>
-      </div>
-      <p data-i18n="install.text">Install ExpenseFlow for quick access and offline functionality!</p>
-      <div class="install-prompt-actions">
-        <button id="install-button" class="install-btn">
-          <i class="fas fa-plus"></i> <span data-i18n="install.install">Install</span>
-        </button>
-        <button id="install-dismiss" class="dismiss-btn">
-          <i class="fas fa-times"></i> <span data-i18n="install.dismiss">Not now</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ADD TRANSACTION -->
-  <section class="form-section">
-    <h3>Add Transaction</h3>
-
-    <form id="form" class="transaction-form">
-      <input id="text" type="text" placeholder="Description" required />
-      <input id="amount" type="number" placeholder="Amount" required />
-      <select id="type" required>
-        <option value="">Select Type</option>
-        <option value="income">Income</option>
-        <option value="expense">Expense</option>
-      </select>
-      <button type="submit">Add</button>
-    </form>
-  </section>
-
-</main>
-
-<!-- FOOTER -->
-<footer class="footer">
-  <div class="footer-container">
-
-    <!-- Brand -->
-    <div class="footer-section">
-      <div class="footer-logo">
-        <i class="fas fa-wallet"></i>
-        <span>ExpenseFlow</span>
-      </div>
-      <p>
-        Smart money management made simple.
-        Track, analyze, and optimize your finances with confidence.
-      </p>
-
-      <div class="social-links">
-        <a href="#" class="social-link" aria-label="Github">
-          <i class="fab fa-github"></i>
-        </a>
-        <a href="#" class="social-link" aria-label="LinkedIn">
-          <i class="fab fa-linkedin-in"></i>
-        </a>
-        <a href="#" class="social-link" aria-label="Twitter">
-          <i class="fab fa-x-twitter"></i>
-        </a>
+    <!-- PWA Installation Prompt -->
+    <div id="install-prompt" class="install-prompt" style="display: none;">
+      <div class="install-prompt-content">
+        <div class="install-prompt-header">
+          <i class="fas fa-download"></i>
+          <h3 data-i18n="install.title">Install ExpenseFlow</h3>
+        </div>
+        <p data-i18n="install.text">Install ExpenseFlow for quick access and offline functionality!</p>
+        <div class="install-prompt-actions">
+          <button id="install-button" class="install-btn">
+            <i class="fas fa-plus"></i> <span data-i18n="install.install">Install</span>
+          </button>
+          <button id="install-dismiss" class="dismiss-btn">
+            <i class="fas fa-times"></i> <span data-i18n="install.dismiss">Not now</span>
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- Product -->
-    <div class="footer-section">
-      <h4>Product</h4>
-      <ul class="footer-links">
-        <li><a href="#">Dashboard</a></li>
-        <li><a href="#">Analytics</a></li>
-        <li><a href="#">Budget Goals</a></li>
-        <li><a href="#">Reports</a></li>
-      </ul>
-    </div>
+    <!-- ADD TRANSACTION -->
+    <section class="form-section">
+      <h3>Add Transaction</h3>
 
-    <!-- Company -->
-    <div class="footer-section">
-      <h4>Company</h4>
-      <ul class="footer-links">
-        <li><a href="#">About Us</a></li>
-        <li><a href="#">Contributors</a></li>
-        <li><a href="#">Privacy Policy</a></li>
-        <li><a href="#">Terms of Service</a></li>
-      </ul>
-    </div>
+      <form id="form" class="transaction-form">
+        <input id="text" type="text" placeholder="Description" required />
+        <input id="amount" type="number" placeholder="Amount" required />
+        <select id="type" required>
+          <option value="">Select Type</option>
+          <option value="income">Income</option>
+          <option value="expense">Expense</option>
+        </select>
+        <button type="submit">Add</button>
+      </form>
+    </section>
 
-    <!-- Support -->
-    <div class="footer-section">
-      <h4>Support</h4>
-      <ul class="footer-links">
-        <li><a href="#">Help Center</a></li>
-        <li><a href="#">Contact</a></li>
-        <li><a href="#">Report Bug</a></li>
-      </ul>
-    </div>
+    </main>
 
-  </div>
+    <!-- FOOTER -->
+    <footer class="footer">
+      <div class="footer-container">
 
-  <!-- Bottom bar -->
-  <div class="footer-bottom">
-    <p>© 2026 ExpenseFlow. All rights reserved.</p>
-  </div>
-  <div class="footer-container">
+        <!-- Brand -->
+        <div class="footer-section">
+          <div class="footer-logo">
+            <i class="fas fa-wallet"></i>
+            <span>ExpenseFlow</span>
+          </div>
+          <p>
+            Smart money management made simple.
+            Track, analyze, and optimize your finances with confidence.
+          </p>
 
-    <!-- Brand -->
-    <div class="footer-section">
-      <div class="footer-logo">
-        <i class="fas fa-wallet"></i>
-        <span>ExpenseFlow</span>
+          <div class="social-links">
+            <a href="#" class="social-link" aria-label="Github">
+              <i class="fab fa-github"></i>
+            </a>
+            <a href="#" class="social-link" aria-label="LinkedIn">
+              <i class="fab fa-linkedin-in"></i>
+            </a>
+            <a href="#" class="social-link" aria-label="Twitter">
+              <i class="fab fa-x-twitter"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Product -->
+        <div class="footer-section">
+          <h4>Product</h4>
+          <ul class="footer-links">
+            <li><a href="#">Dashboard</a></li>
+            <li><a href="#">Analytics</a></li>
+            <li><a href="#">Budget Goals</a></li>
+            <li><a href="#">Reports</a></li>
+          </ul>
+        </div>
+
+        <!-- Company -->
+        <div class="footer-section">
+          <h4>Company</h4>
+          <ul class="footer-links">
+            <li><a href="#">About Us</a></li>
+            <li><a href="#">Contributors</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Terms of Service</a></li>
+          </ul>
+        </div>
+
+        <!-- Support -->
+        <div class="footer-section">
+          <h4>Support</h4>
+          <ul class="footer-links">
+            <li><a href="#">Help Center</a></li>
+            <li><a href="#">Contact</a></li>
+            <li><a href="#">Report Bug</a></li>
+          </ul>
+        </div>
+
       </div>
-      <p>
-        Smart money management made simple.
-        Track, analyze, and optimize your finances with confidence.
-      </p>
 
-      <div class="social-links">
-        <a href="#" class="social-link" aria-label="Github">
-          <i class="fab fa-github"></i>
-        </a>
-        <a href="#" class="social-link" aria-label="LinkedIn">
-          <i class="fab fa-linkedin-in"></i>
-        </a>
-        <a href="#" class="social-link" aria-label="Twitter">
-          <i class="fab fa-x-twitter"></i>
-        </a>
+      <!-- Bottom bar -->
+      <div class="footer-bottom">
+        <p>© 2026 ExpenseFlow. All rights reserved.</p>
       </div>
-    </div>
+      <div class="footer-container">
 
-    <!-- Product -->
-    <div class="footer-section">
-      <h4>Product</h4>
-      <ul class="footer-links">
-        <li><a href="#">Dashboard</a></li>
-        <li><a href="#">Analytics</a></li>
-        <li><a href="#">Budget Goals</a></li>
-        <li><a href="#">Reports</a></li>
-      </ul>
-    </div>
+        <!-- Brand -->
+        <div class="footer-section">
+          <div class="footer-logo">
+            <i class="fas fa-wallet"></i>
+            <span>ExpenseFlow</span>
+          </div>
+          <p>
+            Smart money management made simple.
+            Track, analyze, and optimize your finances with confidence.
+          </p>
 
-    <!-- Company -->
-    <div class="footer-section">
-      <h4>Company</h4>
-      <ul class="footer-links">
-        <li><a href="#">About Us</a></li>
-        <li><a href="#">Contributors</a></li>
-        <li><a href="#">Privacy Policy</a></li>
-        <li><a href="#">Terms of Service</a></li>
-      </ul>
-    </div>
+          <div class="social-links">
+            <a href="#" class="social-link" aria-label="Github">
+              <i class="fab fa-github"></i>
+            </a>
+            <a href="#" class="social-link" aria-label="LinkedIn">
+              <i class="fab fa-linkedin-in"></i>
+            </a>
+            <a href="#" class="social-link" aria-label="Twitter">
+              <i class="fab fa-x-twitter"></i>
+            </a>
+          </div>
+        </div>
 
-    <!-- Support -->
-    <div class="footer-section">
-      <h4>Support</h4>
-      <ul class="footer-links">
-        <li><a href="#">Help Center</a></li>
-        <li><a href="#">Contact</a></li>
-        <li><a href="#">Report Bug</a></li>
-      </ul>
-    </div>
+        <!-- Product -->
+        <div class="footer-section">
+          <h4>Product</h4>
+          <ul class="footer-links">
+            <li><a href="#">Dashboard</a></li>
+            <li><a href="#">Analytics</a></li>
+            <li><a href="#">Budget Goals</a></li>
+            <li><a href="#">Reports</a></li>
+          </ul>
+        </div>
 
-  </div>
+        <!-- Company -->
+        <div class="footer-section">
+          <h4>Company</h4>
+          <ul class="footer-links">
+            <li><a href="#">About Us</a></li>
+            <li><a href="#">Contributors</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Terms of Service</a></li>
+          </ul>
+        </div>
 
-  <!-- Bottom bar -->
-  <div class="footer-bottom">
-    <p>© 2026 ExpenseFlow. All rights reserved.</p>
-  </div>
-</footer>
-<script src="protect.js"></script>
+        <!-- Support -->
+        <div class="footer-section">
+          <h4>Support</h4>
+          <ul class="footer-links">
+            <li><a href="#">Help Center</a></li>
+            <li><a href="#">Contact</a></li>
+            <li><a href="#">Report Bug</a></li>
+          </ul>
+        </div>
 
-<script src="trackerscript.js"></script>
-<script src="analytics-dashboard.js"></script>
-<script src="auth.js"></script>
-<script src="settings.js"></script>
-
-<!-- Cursor Trail Script -->
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const container = document.getElementById("cursor-trail");
-  for (let i = 0; i < 8; i++) {
-    const dot = document.createElement("div");
-    dot.className = "trail-dot";
-    container.appendChild(dot);
-  }
-});
-</script>
-  <script>
-    // Currency Management Functions
-    let supportedCurrencies = [];
-    let currentUserCurrency = (window.i18n?.getCurrency?.() && window.i18n.getCurrency()) || 'INR';
-    window.currentUserCurrency = currentUserCurrency;
-
-    // Load supported currencies on page load
-    async function loadSupportedCurrencies() {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
-
-        const response = await fetch('/api/currency/supported', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        const data = await response.json();
-        if (data.success) {
-          supportedCurrencies = data.data.currencies;
-          populateCurrencySelects();
-        }
-      } catch (error) {
-        console.error('Error loading currencies:', error);
-      }
-    }
-    const closeBtn = document.getElementById('recurring-modal-close');
-    if (closeBtn) {
-      closeBtn.addEventListener('click', closeRecurringModal);
-    }
-
-    const cancelBtn = document.getElementById('recurring-cancel-btn');
-    if (cancelBtn) {
-      cancelBtn.addEventListener('click', closeRecurringModal);
-    }
-
-    // Close modal when clicking outside
-    const modal = document.getElementById('recurring-modal');
-    if (modal) {
-      modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-          closeRecurringModal();
-        }
-      });
-    }
-</script>
-<script>
-
-
-  // Load supported currencies on page load
-  async function loadSupportedCurrencies() {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) return;
-
-      const response = await fetch('/api/currency/supported', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        supportedCurrencies = data.data.currencies;
-        populateCurrencySelects();
-      }
-    } catch (error) {
-      console.error('Error loading currencies:', error);
-    }
-  }
-
-  // Populate currency dropdowns
-  function populateCurrencySelects() {
-    const currencySelect = document.getElementById('currency');
-    const preferredCurrencySelect = document.getElementById('preferred-currency');
-
-    if (currencySelect && supportedCurrencies.length > 0) {
-      currencySelect.innerHTML = supportedCurrencies.map(curr =>
-        `<option value="${curr.code}">${curr.symbol} ${curr.code} - ${curr.name}</option>`
-      ).join('');
-      currencySelect.value = currentUserCurrency;
-    }
-
-    if (preferredCurrencySelect && supportedCurrencies.length > 0) {
-      preferredCurrencySelect.innerHTML = supportedCurrencies.map(curr =>
-        `<option value="${curr.code}">${curr.symbol} ${curr.code} - ${curr.name}</option>`
-      ).join('');
-      preferredCurrencySelect.value = currentUserCurrency;
-    }
-  }
-
-  // Load user's currency preference
-  async function loadUserCurrencyPreference() {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) return;
-
-        const data = await response.json();
-        if (data.success) {
-          currentUserCurrency = data.data.preferredCurrency;
-          window.currentUserCurrency = currentUserCurrency;
-          if (window.i18n?.setCurrency) {
-            window.i18n.setCurrency(currentUserCurrency);
-          }
-          document.getElementById('current-currency').textContent = currentUserCurrency;
-          populateCurrencySelects();
-        }
-      } catch (error) {
-      console.error('Error loading currency preference:', error);
-      }
-      const response = await fetch('/api/currency/preference', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        currentUserCurrency = data.data.preferredCurrency;
-        const currentCurrencyEl = document.getElementById('current-currency');
-        if (currentCurrencyEl) currentCurrencyEl.textContent = currentUserCurrency;
-        populateCurrencySelects();
-       } }
-    
-  
-
-  // Open currency settings modal
-  function openCurrencyModal() {
-    const modal = document.getElementById('currency-modal');
-    if (modal) {
-      modal.style.display = 'flex';
-      loadExchangeRateInfo();
-    }
-  }
-
-  // Close currency settings modal
-  function closeCurrencyModal() {
-    const modal = document.getElementById('currency-modal');
-    if (modal) {
-      modal.style.display = 'none';
-    }
-  }
-
-  // Load exchange rate information
-  async function loadExchangeRateInfo() {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`/api/currency/rates?base=${currentUserCurrency}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        const rateInfo = document.getElementById('exchange-rate-info');
-        if (!rateInfo) return;
-
-        const rates = data.data.rates;
-        const popularCurrencies = ['USD', 'EUR', 'GBP', 'JPY', 'AUD'];
-
-        let html = '<div class="rate-list">';
-        popularCurrencies.forEach(curr => {
-          if (rates[curr]) {
-            html += `<div class="rate-item">
-                <span class="rate-currency">${curr}</span>
-                <span class="rate-value">${rates[curr].toFixed(4)}</span>
-              </div>`;
-          }
-        });
-
-        const data = await response.json();
-        if (data.success) {
-          currentUserCurrency = newCurrency;
-          window.currentUserCurrency = newCurrency;
-          if (window.i18n?.setCurrency) {
-            window.i18n.setCurrency(newCurrency);
-          }
-          document.getElementById('current-currency').textContent = newCurrency;
-          closeCurrencyModal();
-          // Reload transactions to show in new currency
-          location.reload();
-        } else {
-          alert('Failed to update currency preference');
-        }
-      } else {
-        rateInfo.innerHTML = '<p>Failed to load exchange rates.</p>';
-      }
-    } catch (error) {
-      console.error('Error loading exchange rates:', error);
-    }
-  }
-
-  // Save currency preference
-  async function saveCurrencyPreference() {
-    try {
-      const token = localStorage.getItem('token');
-      const prefSelect = document.getElementById('preferred-currency');
-      if (!prefSelect) return;
-
-      const newCurrency = prefSelect.value;
-
-      const response = await fetch('/api/currency/preference', {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ currency: newCurrency })
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        currentUserCurrency = newCurrency;
-        const currentCurrencyEl = document.getElementById('current-currency');
-        if (currentCurrencyEl) currentCurrencyEl.textContent = newCurrency;
-        closeCurrencyModal();
-        // Reload transactions to show in new currency
-        location.reload();
-      } else {  
-        alert('Failed to update currency preference');
-      }
-    }
-
-   catch (error) {
-      console.error('Error saving currency preference:', error);
-      alert('Error saving currency preference');
-    }
-  };
-
-
-  </script>
-
-  <!-- PWA Installation Prompt -->
-  <div id="install-prompt" class="install-prompt" style="display: none;">
-    <div class="install-prompt-content">
-      <div class="install-prompt-header">
-        <i class="fas fa-download"></i>
-        <h3>Install ExpenseFlow</h3>
       </div>
-      <p>Install ExpenseFlow for quick access and offline functionality!</p>
-      <div class="install-prompt-actions">
-        <button id="install-button" class="install-btn">
-          <i class="fas fa-plus"></i> Install
-        </button>
-        <button id="install-dismiss" class="dismiss-btn">
-          <i class="fas fa-times"></i> Not now
-        </button>
+
+      <!-- Bottom bar -->
+      <div class="footer-bottom">
+        <p>© 2026 ExpenseFlow. All rights reserved.</p>
+      </div>
+    </footer>
+
+    <!-- Cursor Trail Script -->
+
+    <!-- PWA Installation Prompt -->
+    <div id="install-prompt" class="install-prompt" style="display: none;">
+      <div class="install-prompt-content">
+        <div class="install-prompt-header">
+          <i class="fas fa-download"></i>
+          <h3>Install ExpenseFlow</h3>
+        </div>
+        <p>Install ExpenseFlow for quick access and offline functionality!</p>
+        <div class="install-prompt-actions">
+          <button id="install-button" class="install-btn">
+            <i class="fas fa-plus"></i> Install
+          </button>
+          <button id="install-dismiss" class="dismiss-btn">
+            <i class="fas fa-times"></i> Not now
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-
-  <!-- Offline Indicator -->
-  <div id="offline-indicator" class="offline-indicator" style="display: none;">
-    <i class="fas fa-wifi-slash"></i>
-    <span data-i18n="offline.text">You're offline. Changes will be saved locally.</span>
-  </div>
-
-  <!-- Update Available Notification -->
-  <div id="update-notification" class="update-notification" style="display: none;">
-    <div class="update-content">
-      <i class="fas fa-sync-alt"></i>
-      <span data-i18n="update.text">A new version is available!</span>
-      <button id="update-button" class="update-btn" data-i18n="update.action">Update Now</button>
+    <!-- Offline Indicator -->
+    <div id="offline-indicator" class="offline-indicator" style="display: none;">
+      <i class="fas fa-wifi-slash"></i>
+      <span data-i18n="offline.text">You're offline. Changes will be saved locally.</span>
     </div>
-  </div>
 
-  <script src="trackerscript.js"></script>
-  <script src="analytics-dashboard.js"></script>
-  <script src="workspace-feature.js"></script>
-
+    <!-- Update Available Notification -->
+    <div id="update-notification" class="update-notification" style="display: none;">
+      <div class="update-content">
+        <i class="fas fa-sync-alt"></i>
+        <span data-i18n="update.text">A new version is available!</span>
+        <button id="update-button" class="update-btn" data-i18n="update.action">Update Now</button>
+      </div>
+    </div>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="api-integration.js"></script>
+    <script src="realtime-sync.js"></script>
+    <script src="analytics-dashboard.js"></script>
+    <script src="protect.js"></script>
+    <script src="trackerscript.js"></script>
+    <script src="auth.js"></script>
+    <script src="settings.js"></script>
+    <script src="workspace-feature.js"></script>
+    <script src="index.js"> </script>
 
 </body>
 
