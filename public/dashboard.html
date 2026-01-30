@@ -57,8 +57,9 @@
 </style>
 
 <div class="cursor-trail-container" id="cursor-trail"></div>
-
+<script src="protect.js"></script>
 <script>
+  
 (function() {
   // Hide default cursor
   document.body.style.cursor = 'none';
@@ -1826,7 +1827,7 @@
   // Load supported currencies on page load
   async function loadSupportedCurrencies() {
     try {
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem('token');
       if (!token) return;
 
       const response = await fetch('/api/currency/supported', {
@@ -1868,7 +1869,7 @@
   // Load user's currency preference
   async function loadUserCurrencyPreference() {
     try {
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem('token');
       if (!token) return;
 
         const data = await response.json();
@@ -1915,7 +1916,7 @@
   // Load exchange rate information
   async function loadExchangeRateInfo() {
     try {
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem('token');
       const response = await fetch(`/api/currency/rates?base=${currentUserCurrency}`, {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -1966,7 +1967,7 @@
   // Save currency preference
   async function saveCurrencyPreference() {
     try {
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem('token');
       const prefSelect = document.getElementById('preferred-currency');
       if (!prefSelect) return;
 
