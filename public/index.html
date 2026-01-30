@@ -1553,6 +1553,263 @@
     .progress-fill.low {
       background: #f44336 !important;
     }
+
+    /* Settlement Center Styles */
+    .settlement-center-card {
+      max-width: 100%;
+    }
+    .settlement-description {
+      color: var(--text-secondary);
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+    }
+    .loading-settlements {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-secondary);
+    }
+    .loading-settlements i {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+    .settlement-balance-card {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.5rem;
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+      background: rgba(100, 255, 218, 0.1);
+    }
+    .settlement-balance-card.owed {
+      background: rgba(76, 175, 80, 0.15);
+      border-left: 4px solid #4caf50;
+    }
+    .settlement-balance-card.owes {
+      background: rgba(244, 67, 54, 0.15);
+      border-left: 4px solid #f44336;
+    }
+    .settlement-balance-card.settled {
+      background: rgba(100, 255, 218, 0.15);
+      border-left: 4px solid var(--accent-primary, #64ffda);
+    }
+    .balance-icon {
+      font-size: 2rem;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+    }
+    .settlement-balance-card.owed .balance-icon { color: #4caf50; }
+    .settlement-balance-card.owes .balance-icon { color: #f44336; }
+    .settlement-balance-card.settled .balance-icon { color: var(--accent-primary, #64ffda); }
+    .balance-info h4 {
+      margin: 0 0 0.25rem;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+    .balance-amount {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 0;
+    }
+    .balance-status {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    .simplification-summary {
+      background: rgba(100, 255, 218, 0.05);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .simplification-summary h4 {
+      margin: 0 0 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .simplification-stats {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    .simplification-stats .stat {
+      text-align: center;
+      padding: 0.75rem 1rem;
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+    }
+    .simplification-stats .stat.highlight {
+      background: rgba(100, 255, 218, 0.2);
+    }
+    .simplification-stats .stat.saved {
+      background: rgba(76, 175, 80, 0.2);
+    }
+    .stat-value {
+      display: block;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent-primary, #64ffda);
+    }
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+    .stat-arrow {
+      color: var(--text-secondary);
+    }
+    .btn-simplify {
+      background: var(--accent-primary, #64ffda);
+      color: var(--bg-primary, #0a192f);
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s ease;
+    }
+    .btn-simplify:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(100, 255, 218, 0.3);
+    }
+    .member-balances, .settlements-list, .pending-settlements {
+      background: rgba(255,255,255,0.02);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .member-balances h4, .settlements-list h4, .pending-settlements h4 {
+      margin: 0 0 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .balances-list, .settlement-item, .pending-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .balance-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      background: rgba(255,255,255,0.03);
+      border-radius: 8px;
+    }
+    .member-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--accent-primary, #64ffda);
+      color: var(--bg-primary, #0a192f);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+    }
+    .member-name {
+      flex: 1;
+    }
+    .member-balance {
+      font-weight: 600;
+    }
+    .member-balance.positive { color: #4caf50; }
+    .member-balance.negative { color: #f44336; }
+    .settlement-item {
+      display: flex;
+      align-items: center;
+      padding: 1rem;
+      background: rgba(255,255,255,0.03);
+      border-radius: 8px;
+      gap: 1rem;
+    }
+    .settlement-parties {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex: 1;
+    }
+    .settlement-parties .from { color: #f44336; }
+    .settlement-parties .to { color: #4caf50; }
+    .settlement-amount {
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+    .btn-pay, .btn-confirm {
+      background: #4caf50;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    .btn-reject {
+      background: #f44336;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    .awaiting-badge, .status-badge {
+      background: rgba(255, 193, 7, 0.2);
+      color: #ffc107;
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.8rem;
+    }
+    .status-badge.verified {
+      background: rgba(76, 175, 80, 0.2);
+      color: #4caf50;
+    }
+    .status-badge.disputed {
+      background: rgba(244, 67, 54, 0.2);
+      color: #f44336;
+    }
+    .pending-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      background: rgba(255,255,255,0.03);
+      border-radius: 8px;
+    }
+    .pending-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .pending-info .amount {
+      margin-left: 0.5rem;
+      font-weight: 700;
+    }
+    .pending-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .no-settlements {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-secondary);
+    }
   </style>
 
   <!-- Workspace Modal -->

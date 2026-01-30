@@ -153,12 +153,52 @@ mongoose.connect(process.env.MONGODB_URI)
 // Socket.IO authentication
 io.use(socketAuth);
 
+// Initialize settlement service with Socket.IO
+const settlementService = require('./services/settlementService');
+settlementService.setSocketIO(io);
+
 // Socket.IO connection handling
 io.on('connection', (socket) => {
   console.log(`User ${socket.user.name} connected`);
 
   // Join user-specific room
   socket.join(`user_${socket.userId}`);
+
+  // Handle joining group/workspace rooms for real-time settlements
+  socket.on('join_group', (groupId) => {
+    socket.join(`group_${groupId}`);
+    console.log(`User ${socket.user.name} joined group room: ${groupId}`);
+  });
+
+  socket.on('leave_group', (groupId) => {
+    socket.leave(`group_${groupId}`);
+    console.log(`User ${socket.user.name} left group room: ${groupId}`);
+  });
+
+  // Handle settlement events
+  socket.on('settlement_action', async (data) => {
+    try {
+      const { action, settlementId, groupId, paymentDetails, reason } = data;
+      
+      switch (action) {
+        case 'request':
+          await settlementService.requestSettlement(settlementId, socket.userId, paymentDetails);
+          break;
+        case 'confirm':
+          await settlementService.confirmSettlement(settlementId, socket.userId);
+          break;
+        case 'reject':
+          await settlementService.rejectSettlement(settlementId, socket.userId, reason);
+          break;
+        case 'refresh_center':
+          const centerData = await settlementService.getSettlementCenter(groupId, socket.userId);
+          socket.emit('settlement_center_data', centerData);
+          break;
+      }
+    } catch (error) {
+      socket.emit('settlement_error', { error: error.message });
+    }
+  });
 
   // Handle sync requests
   socket.on('sync_request', async (data) => {
