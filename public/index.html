@@ -2625,6 +2625,131 @@
     </div>
     </section>
 
+    <!-- OCR Loading Overlay -->
+    <div id="ocr-loading-overlay" class="ocr-overlay">
+      <div class="ocr-overlay-content">
+        <div class="ocr-spinner"></div>
+        <p class="loading-text">Processing receipt...</p>
+      </div>
+    </div>
+
+    <!-- OCR Result Modal (Single Expense) -->
+    <div id="ocr-result-modal" class="modal ocr-modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3><i class="fas fa-receipt"></i> Receipt Scan Results</h3>
+          <span class="close-modal" onclick="closeOCRModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+          <div class="ocr-preview-section">
+            <img id="ocr-preview-img" src="" alt="Receipt Preview" class="ocr-preview-img">
+          </div>
+          <div class="ocr-form-section">
+            <div class="ocr-confidence">
+              <span>Confidence:</span>
+              <div class="progress-bar-container">
+                <div id="ocr-confidence-bar" class="progress-fill"></div>
+              </div>
+            </div>
+            <p id="ocr-item-count" class="ocr-item-count" style="display: none;"></p>
+            <div class="form-control">
+              <label for="ocr-merchant">Merchant</label>
+              <input type="text" id="ocr-merchant" placeholder="Store name">
+            </div>
+            <div class="form-control">
+              <label for="ocr-amount">Amount</label>
+              <input type="number" id="ocr-amount" step="0.01" placeholder="0.00">
+            </div>
+            <div class="form-control">
+              <label for="ocr-date">Date</label>
+              <input type="date" id="ocr-date">
+            </div>
+            <div class="form-control">
+              <label for="ocr-category">Category</label>
+              <select id="ocr-category">
+                <option value="food">🍽️ Food & Dining</option>
+                <option value="shopping">🛒 Shopping</option>
+                <option value="transport">🚗 Transportation</option>
+                <option value="entertainment">🎬 Entertainment</option>
+                <option value="bills">💡 Bills & Utilities</option>
+                <option value="healthcare">🏥 Healthcare</option>
+                <option value="other">📋 Other</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" onclick="closeOCRModal()">Cancel</button>
+          <button type="button" id="ocr-save-btn" class="btn-submit">
+            <i class="fas fa-save"></i> Save Expense
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- OCR Itemized Modal (Multi-Item Receipt) -->
+    <div id="ocr-itemized-modal" class="modal ocr-modal itemized-modal">
+      <div class="modal-content modal-wide">
+        <div class="modal-header">
+          <h3><i class="fas fa-list-alt"></i> Itemized Receipt</h3>
+          <span id="close-itemized-modal" class="close-modal">&times;</span>
+        </div>
+        <div class="modal-body">
+          <div class="itemized-header">
+            <div class="itemized-info">
+              <h4 id="itemized-merchant">Store Name</h4>
+              <p><i class="fas fa-calendar"></i> <span id="itemized-date">Date</span></p>
+              <p><i class="fas fa-receipt"></i> <span id="itemized-count">0 items</span></p>
+              <p class="itemized-total-original"><i class="fas fa-dollar-sign"></i> Total: <span id="itemized-total">$0.00</span></p>
+            </div>
+            <div class="itemized-preview">
+              <img id="itemized-preview-img" src="" alt="Receipt" class="itemized-preview-img">
+            </div>
+          </div>
+          
+          <div class="ocr-confidence">
+            <span>Confidence:</span>
+            <div class="progress-bar-container">
+              <div id="itemized-confidence-bar" class="progress-fill"></div>
+            </div>
+          </div>
+
+          <div class="itemized-actions-top">
+            <button type="button" id="select-all-items" class="btn-secondary btn-small">
+              <i class="fas fa-check-double"></i> Select All
+            </button>
+            <button type="button" id="deselect-all-items" class="btn-secondary btn-small">
+              <i class="fas fa-times"></i> Deselect All
+            </button>
+          </div>
+
+          <div class="itemized-table-header">
+            <div class="col-check"></div>
+            <div class="col-name">Item Name / Category</div>
+            <div class="col-qty">Qty</div>
+            <div class="col-price">Price</div>
+          </div>
+          
+          <div id="itemized-list" class="itemized-list">
+            <!-- Items will be populated here -->
+          </div>
+
+          <div class="itemized-summary">
+            <p><span id="itemized-selected-count">0 items</span> selected</p>
+            <p class="itemized-selected-total">Selected Total: <strong id="itemized-selected-total">$0.00</strong></p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" id="save-single-btn" class="btn-secondary">
+            <i class="fas fa-compress-alt"></i> Save as Single Expense
+          </button>
+          <button type="button" id="save-itemized-btn" class="btn-submit">
+            <i class="fas fa-layer-group"></i> Confirm All Items
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- PWA Installation Prompt -->
     <div id="install-prompt" class="install-prompt" style="display: none;">
       <div class="install-prompt-content">
@@ -2838,6 +2963,7 @@
     <script src="auth.js"></script>
     <script src="settings.js"></script>
     <script src="workspace-feature.js"></script>
+    <script src="receipt-ocr.js"></script>
     <script src="index.js"> </script>
 
 </body>

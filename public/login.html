@@ -570,10 +570,11 @@
 
         <div class="footer-bottom">
             <div class="footer-container">
-                <p>
-                    &copy; 2026 ExpenseFlow. All rights reserved. Made with ❤️ for
-                    better financial management.
-                </p>
+                  <p id="copyright" style="text-align:center;"></p>
+                  <script>
+                    document.getElementById("copyright").innerHTML =
+                      `&copy; ${new Date().getFullYear()} Expense Flow . All rights reserved.`;
+                  </script>
                 <div class="footer-stats">
                     <span>🏆 Trusted by 10,000+ users</span>
                     <span>💰 ₹50M+ tracked</span>
