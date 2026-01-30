@@ -518,7 +518,7 @@ html{
 </style>
 
 <div class="cursor-trail-container" id="cursor-trail"></div>
-
+<script src="protect.js"></script>
 <script>
 (function() {
   // Hide default cursor
@@ -870,8 +870,13 @@ html{
   </div>
 
   <div class="footer-bottom">
-    <div class="footer-container">
-      <p>&copy; 2026 ExpenseFlow. All rights reserved.</p>
+    <div class="footer-bottom">
+      <p id="copyright" style="text-align:center;"></p>
+      <script>
+        document.getElementById("copyright").innerHTML =
+          `&copy; ${new Date().getFullYear()} Expense Flow . All rights reserved.`;
+      </script>
+
     </div>
   </div>
 </footer>

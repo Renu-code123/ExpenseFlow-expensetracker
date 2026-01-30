@@ -1,3 +1,7 @@
+// Helper to get auth token
+function getAuthToken() {
+  return localStorage.getItem('token');
+}
 // Workspace and Settings Management
 let currentWorkspace = null;
 let currentUser = null;
@@ -44,7 +48,7 @@ function setupWorkspaceFormHandlers() {
 
 async function loadCurrentUser() {
   try {
-    const token = localStorage.getItem('authToken');
+    const token = getAuthToken();
     if (!token) return;
 
     const response = await fetch('/api/auth/me', {
@@ -81,7 +85,7 @@ function updateUserDisplay() {
 
 async function loadWorkspaceData() {
   try {
-    const token = localStorage.getItem('authToken');
+    const token = getAuthToken();
     if (!token) return;
 
     // Load current workspace
@@ -123,7 +127,7 @@ function updateWorkspaceDisplay() {
 
 async function loadMembers() {
   try {
-    const token = localStorage.getItem('authToken');
+    const token = getAuthToken();
     if (!token || !currentWorkspace) return;
 
     const response = await fetch(`/api/workspaces/${currentWorkspace._id}/members`, {
@@ -200,7 +204,7 @@ function canManageMember(member) {
 
 async function changeMemberRole(memberId, newRole) {
   try {
-    const token = localStorage.getItem('authToken');
+    const token = getAuthToken();
     if (!token || !currentWorkspace) return;
 
     const response = await fetch(`/api/workspaces/${currentWorkspace._id}/members/${memberId}`, {
@@ -231,7 +235,7 @@ async function removeMember(memberId) {
   }
 
   try {
-    const token = localStorage.getItem('authToken');
+    const token = getAuthToken();
     if (!token || !currentWorkspace) return;
 
     const response = await fetch(`/api/workspaces/${currentWorkspace._id}/members/${memberId}`, {
@@ -333,7 +337,7 @@ function openInviteModal() {
 // Approval Settings Functions
 async function loadApprovalSettings() {
   try {
-    const token = localStorage.getItem('authToken');
+    const token = getAuthToken();
     if (!token || !currentWorkspace) return;
 
     const response = await fetch(`/api/workspaces/${currentWorkspace._id}/settings`, {
@@ -356,7 +360,7 @@ async function loadApprovalSettings() {
 
 async function saveApprovalSettings() {
   try {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('token');
     if (!token || !currentWorkspace) return;
 
     const approvalRequired = document.getElementById('approval-required');
@@ -389,7 +393,7 @@ async function saveApprovalSettings() {
 
 async function loadPendingApprovals() {
   try {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('token');
     if (!token) return;
 
     const response = await fetch('/api/approvals/pending', {
@@ -409,7 +413,7 @@ async function loadPendingApprovals() {
 
 async function loadApprovalHistory() {
   try {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('token');
     if (!token) return;
 
     const response = await fetch('/api/approvals/history', {
@@ -480,7 +484,7 @@ async function rejectExpense(approvalId) {
 
 async function processApproval(approvalId, status) {
   try {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('token');
     if (!token) return;
 
     const response = await fetch(`/api/approvals/${approvalId}`, {
@@ -513,7 +517,7 @@ async function processApproval(approvalId, status) {
 // Profile Functions
 async function updateProfile() {
   try {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('token');
     if (!token) return;
 
     const nameInput = document.getElementById('profile-name');
