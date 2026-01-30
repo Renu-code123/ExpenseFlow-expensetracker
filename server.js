@@ -188,6 +188,7 @@ app.use('/api/currency', require('./routes/currency'));
 app.use('/api/user', protect, require('./routes/user'));
 app.use('/api/expenses', require('./middleware/rateLimiter').expenseLimiter, protect, expenseRoutes);
 app.use('/api/sync', protect, syncRoutes);
+app.use('/api/rules', protect, require('./routes/rules'));
 app.use('/api/notifications', protect, require('./routes/notifications'));
 app.use('/api/receipts', require('./middleware/rateLimiter').uploadLimiter, protect, require('./routes/receipts'));
 app.use('/api/budgets', protect, require('./routes/budgets'));
