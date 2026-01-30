@@ -76,9 +76,26 @@ const expenseSchema = new mongoose.Schema({
   syncedToAccounting: {
     type: Boolean,
     default: false
+  },
+  version: {
+    type: Number,
+    default: 1
+  },
+  lastSyncedAt: {
+    type: Date,
+    default: Date.now
   }
 }, {
   timestamps: true
+});
+
+// Middleware to increment version on save
+expenseSchema.pre('save', function (next) {
+  if (this.isModified()) {
+    this.version += 1;
+    this.lastSyncedAt = Date.now();
+  }
+  next();
 });
 
 // Indexes for performance optimization

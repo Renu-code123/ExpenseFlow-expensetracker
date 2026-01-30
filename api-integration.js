@@ -71,7 +71,7 @@ const formatAppCurrency = (value, { showPlus = false, absolute = false } = {}) =
   const numericValue = Number(absolute ? Math.abs(value) : value) || 0;
   const formatted = typeof formatter === 'function'
     ? formatter(numericValue)
-    : (function(){ const sym = window.i18n?.getCurrencySymbol?.(window.i18n?.getCurrency?.() || '') || ''; return `${sym}${numericValue.toFixed(2)}`; })();
+    : (function () { const sym = window.i18n?.getCurrencySymbol?.(window.i18n?.getCurrency?.() || '') || ''; return `${sym}${numericValue.toFixed(2)}`; })();
   if (showPlus && numericValue > 0 && !formatted.startsWith('+') && !formatted.startsWith('-')) {
     return `+${formatted}`;
   }
@@ -86,8 +86,15 @@ function getAuthToken() {
   return localStorage.getItem('token');
 }
 
-async function fetchExpenses(page = 1, limit = 50, workspaceId = null) {
+async function fetchExpenses(page = 1, limit = 50) {
   try {
+    // 1. Try to get from local DB first (Offline-First)
+    const localExpenses = await dbManager.getAll('expenses');
+    if (localExpenses.length > 0) {
+      return localExpenses;
+    }
+
+    // 2. Fallback to server if local is empty or we want to refresh
     const token = getAuthToken();
     if (!token) return [];
 
@@ -102,52 +109,47 @@ async function fetchExpenses(page = 1, limit = 50, workspaceId = null) {
     });
     if (!response.ok) throw new Error('Failed to fetch expenses');
     const result = await response.json();
-    return result.success ? result.data : result;
+
+    const data = result.success ? result.data : result;
+
+    // Save to local DB for future offline use
+    for (const expense of data) {
+      await dbManager.saveExpense(expense);
+    }
+
+    return data;
   } catch (error) {
     console.error('Error fetching expenses:', error);
-    showNotification('Failed to load expenses', 'error');
-    return [];
+    // If network fails, we already tried local, but maybe try again
+    return await dbManager.getAll('expenses');
   }
 }
 
 async function saveExpense(expense, workspaceId = null) {
-  try {
-    const payload = { ...expense };
-    const activeWs = workspaceId || localStorage.getItem('activeWorkspaceId');
-    if (activeWs && activeWs !== 'personal') {
-      payload.workspaceId = activeWs;
-    }
-
-    const response = await fetch(`${API_BASE_URL}/expenses`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${getAuthToken()}`
-      },
-      body: JSON.stringify(payload)
-    });
-    if (!response.ok) throw new Error('Failed to save expense');
-    return await response.json();
-  } catch (error) {
-    console.error('Error saving expense:', error);
-    showNotification('Failed to save expense', 'error');
-    throw error;
+  if (window.ExpenseSync) {
+    return await window.ExpenseSync.saveExpense(expense);
   }
+  // Fallback for safety (though ExpenseSync should be loaded)
+  const response = await fetch(`${API_BASE_URL}/expenses`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${getAuthToken()}`
+    },
+    body: JSON.stringify(expense)
+  });
+  return await response.json();
 }
 
 async function deleteExpense(id) {
-  try {
-    const response = await fetch(`${API_BASE_URL}/expenses/${id}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${getAuthToken()}` }
-    });
-    if (!response.ok) throw new Error('Failed to delete expense');
-    return await response.json();
-  } catch (error) {
-    console.error('Error deleting expense:', error);
-    showNotification('Failed to delete expense', 'error');
-    throw error;
+  if (window.ExpenseSync) {
+    return await window.ExpenseSync.deleteExpense(id);
   }
+  const response = await fetch(`${API_BASE_URL}/expenses/${id}`, {
+    method: 'DELETE',
+    headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+  });
+  return await response.json();
 }
 
 async function fetchCategorySuggestions(description) {
@@ -301,22 +303,22 @@ async function addTransaction(e) {
   };
 
   try {
-    const savedExpense = await saveExpense(expense);
+    const savedExpense = await window.ExpenseSync.saveExpense(expense);
 
     // Convert to local format for state
     const transaction = {
-      id: savedExpense.data ? savedExpense.data._id : savedExpense._id,
-      text: savedExpense.data ? savedExpense.data.description : savedExpense.description,
+      id: savedExpense.id, // Now uses the ID from saveExpense (local or server)
+      text: savedExpense.description,
       amount: transactionAmount,
       category: category.value,
       type: type.value,
-      date: new Date().toISOString()
+      date: new Date().toISOString(),
+      offline: savedExpense.status === 'pending'
     };
 
     transactions.push(transaction);
     displayTransactions();
     updateValues();
-    updateLocalStorage();
 
     // Clear form
     text.value = '';
@@ -327,56 +329,26 @@ async function addTransaction(e) {
     selectedSuggestion = null;
     hideSuggestions();
 
-    showNotification(`${type.value.charAt(0).toUpperCase() + type.value.slice(1)} added successfully!`, 'success');
+    const msg = transaction.offline ? 'Saved offline. Will sync when online.' : `${type.value.charAt(0).toUpperCase() + type.value.slice(1)} added successfully!`;
+    showNotification(msg, transaction.offline ? 'warning' : 'success');
   } catch (error) {
-    // Save offline
-    const transaction = {
-      id: generateID(),
-      text: text.value.trim(),
-      amount: transactionAmount,
-      category: category.value,
-      type: type.value,
-      date: new Date().toISOString(),
-      offline: true
-    };
-
-    transactions.push(transaction);
-    displayTransactions();
-    updateValues();
-    updateLocalStorage();
-
-    text.value = '';
-    amount.value = '';
-    category.value = '';
-    type.value = '';
-
-    showNotification('Saved offline. Will sync when online.', 'warning');
+    console.error('Add transaction error:', error);
+    showNotification('Failed to add transaction', 'error');
   }
 }
 
 async function removeTransaction(id) {
-  const transactionToRemove = transactions.find(t => t.id === id);
-  if (!transactionToRemove) return;
-
   try {
-    if (!transactionToRemove.offline) {
-      await deleteExpense(id);
-    }
+    await window.ExpenseSync.deleteExpense(id);
 
     transactions = transactions.filter(transaction => transaction.id !== id);
-    updateLocalStorage();
     displayTransactions();
     updateValues();
 
     showNotification('Transaction deleted successfully', 'success');
   } catch (error) {
-    if (transactionToRemove) {
-      transactionToRemove.pendingDelete = true;
-      updateLocalStorage();
-      displayTransactions();
-      updateValues();
-      showNotification('Marked for deletion. Will sync when online.', 'warning');
-    }
+    console.error('Delete transaction error:', error);
+    showNotification('Failed to delete transaction', 'error');
   }
 }
 
@@ -482,7 +454,7 @@ function showSuggestions(suggestions) {
     const confidenceLevel = suggestion.confidence >= 0.85 ? 'high' : suggestion.confidence >= 0.6 ? 'medium' : 'low';
 
     // Add "Suggested" badge for lower confidence suggestions
-    const badgeHTML = isHighConfidence 
+    const badgeHTML = isHighConfidence
       ? '<span class="auto-apply-badge"><i class="fas fa-check-circle"></i> Auto-apply</span>'
       : '<span class="suggested-badge"><i class="fas fa-lightbulb"></i> Suggested</span>';
 
