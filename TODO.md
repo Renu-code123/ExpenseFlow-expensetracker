@@ -1,14 +1,11 @@
-# Group Service Implementation TODO
+# Email Notifications for Invoices - Implementation Plan
 
 ## Tasks
-- [x] Create groupService.js file with all required methods
-- [x] Implement createGroup method
-- [x] Implement getUserGroups method
-- [x] Implement getGroupById method
-- [x] Implement addMember method
-- [x] Implement removeMember method
-- [x] Implement addExpenseToGroup method
-- [x] Implement updateGroupSettings method
-- [x] Implement deleteGroup method
-- [x] Implement getGroupStatistics method
-- [x] Test the service integration
+- [x] Add `sendInvoiceSentNotification` method to `services/emailService.js`
+- [x] Modify `services/invoiceService.js` to call email notification after `markAsSent()` in `generateRecurringInvoices`
+- [x] Add error handling and logging for email notifications
+- [x] Test email sending functionality with mock invoices
+
+## Status
+- Plan approved by user
+- Starting implementation
