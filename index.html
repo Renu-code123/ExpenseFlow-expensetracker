@@ -1,5 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#64ffda">
+    <meta name="description" content="Take control of your finances with our intuitive expense tracker">
+    <meta name="keywords" content="expense tracker, budget, finance, money management, PWA">
+    <meta name="author" content="ExpenseFlow">
 
     <!-- PWA Meta Tags -->
     <meta name="mobile-web-app-capable" content="yes">
@@ -16,6 +23,8 @@
     <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iNDIiIGZpbGw9InVybCgjZ3JhZGllbnQwX2xpbmVhclswXSkiLz4KPHBhdGggZD0iTTQ4IDY0SDQ4LjA0OEgxNDRWMTI4SDk2VjE0NEgxNDRDMTUyLjgzNyAxNDQgMTYwIDEzNi44MzcgMTYwIDEyOFY2NEM1OCA1Ni4xNjMgNTIuMDQzIDQ4IDQ4IEg0OEM0MC4wNzEgNDggMzIgNTYuMDcxIDMyIDY0VjEyOEMzMiAxMzUuOTI5IDQwLjA3MSAxNDQgNDggMTQ0SDgwVjEyOEg0OFY2NFoiIGZpbGw9IiM2NGZmZGEiLz4KPHBhdGggZD0iTTY0IDgwSDgwVjk2SDY0VjgwWiIgZmlsbD0iIzY0ZmZkYSIvPgo8cGF0aCBkPSJNOTYgODBIMTI4Vjk2SDk2VjgwWiIgZmlsbD0iIzY0ZmZkYSIvPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudDBfbGluZWFyWzBdIiB4MT0iMCIgeTE9IjAiIHgyPSIxOTIiIHkyPSIxOTIiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1jb2xvcj0iIzY2N2VlYSIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM3NjRiYTIiLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4K">
     
     <title>ExpenseFlow - Smart Money Management</title>
+    <link rel="stylesheet" href="expensetracker.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -1710,6 +1719,107 @@
         }
       }
 </style>
+
+<style>
+    /* =========================
+   MOBILE RESPONSIVE STYLES
+   ========================= */
+@media (max-width: 768px) {
+
+  /* General */
+  body {
+    overflow-x: hidden;
+  }
+
+  .container {
+    padding: 1rem;
+  }
+
+  /* Navbar */
+  .nav-menu {
+    position: absolute;
+    top: 70px;
+    left: 0;
+    width: 100%;
+    background: #0f0f23;
+    flex-direction: column;
+    align-items: center;
+    display: none;
+  }
+
+  .nav-menu.active {
+    display: flex;
+  }
+
+  .nav-link {
+    padding: 1rem;
+    width: 100%;
+    text-align: center;
+  }
+
+  .nav-toggle {
+    display: block;
+    cursor: pointer;
+  }
+
+  .user-profile {
+    display: none;
+  }
+
+  /* Hero */
+  .hero-title {
+    font-size: 1.8rem;
+    text-align: center;
+  }
+
+  .hero-subtitle {
+    text-align: center;
+    font-size: 1rem;
+  }
+
+  /* Balance & Cards */
+  /* Styles moved to expensetracker.css */
+
+
+  /* Filters */
+  .filter-controls {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .advanced-filters {
+    flex-direction: column;
+  }
+
+  .date-filters,
+  .amount-filters {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  /* Transaction Form */
+  .form-row {
+    flex-direction: column;
+  }
+
+  .form-control {
+    width: 100%;
+  }
+
+  /* Footer */
+  .footer-container {
+    flex-direction: column;
+    gap: 2rem;
+    text-align: center;
+  }
+
+  .footer-stats {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+</style>
+
 </head>
 <body>
   <!-- Header -->
@@ -1725,6 +1835,7 @@
           <a href="#analytics" class="nav-link">Analytics</a>
           <a href="#goals" class="nav-link">Goals</a>
           <a href="#settings" class="nav-link">Settings</a>
+          <a href="login-signup.html" class="nav-link">Login / Sign up</a>
         </div>
         <div class="nav-toggle" id="nav-toggle">
           <span class="bar"></span>
@@ -2078,138 +2189,6 @@
           max-width: 85%;
         }
       }
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#64ffda">
-  <meta name="description" content="Take control of your finances with our intuitive expense tracker">
-  <meta name="keywords" content="expense tracker, budget, finance, money management, PWA">
-  <meta name="author" content="ExpenseFlow">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-  <!-- PWA Meta Tags -->
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="ExpenseFlow">
-  <meta name="msapplication-TileColor" content="#0f0f23">
-  <meta name="msapplication-navbutton-color" content="#64ffda">
-
-  <!-- Manifest -->
-  <link rel="manifest" href="manifest.json">
-
-  <!-- Apple Touch Icons -->
-  <link rel="apple-touch-icon"
-    href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iNDIiIGZpbGw9InVybCgjZ3JhZGllbnQwX2xpbmVhclswXSkiLz4KPHBhdGggZD0iTTQ4IDY0SDQ4LjA0OEgxNDRWMTI4SDk2VjE0NEgxNDRDMTUyLjgzNyAxNDQgMTYwIDEzNi44MzcgMTYwIDEyOFY2NEM1OCA1Ni4xNjMgNTIuMDQzIDQ4IDQ4IEg0OEM0MC4wNzEgNDggMzIgNTYuMDcxIDMyIDY0VjEyOEMzMiAxMzUuOTI5IDQwLjA3MSAxNDQgNDggMTQ0SDgwVjEyOEg0OFY2NFoiIGZpbGw9IiM2NGZmZGEiLz4KPHBhdGggZD0iTTY0IDgwSDgwVjk2SDY0VjgwWiIgZmlsbD0iIzY0ZmZkYSIvPgo8cGF0aCBkPSJNOTYgODBIMTI4Vjk2SDk2VjgwWiIgZmlsbD0iIzY0ZmZkYSIvPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudDBfbGluZWFyWzBdIiB4MT0iMCIgeTE9IjAiIHgyPSIxOTIiIHkyPSIxOTIiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1jb2xvcj0iIzY2N2VlYSIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM3NjRiYTIiLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4K">
-
-  <title>ExpenseFlow - Smart Money Management</title>
-  <link rel="stylesheet" href="expensetracker.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    /* =========================
-   MOBILE RESPONSIVE STYLES
-   ========================= */
-@media (max-width: 768px) {
-
-  /* General */
-  body {
-    overflow-x: hidden;
-  }
-
-  .container {
-    padding: 1rem;
-  }
-
-  /* Navbar */
-  .nav-menu {
-    position: absolute;
-    top: 70px;
-    left: 0;
-    width: 100%;
-    background: #0f0f23;
-    flex-direction: column;
-    align-items: center;
-    display: none;
-  }
-
-  .nav-menu.active {
-    display: flex;
-  }
-
-  .nav-link {
-    padding: 1rem;
-    width: 100%;
-    text-align: center;
-  }
-
-  .nav-toggle {
-    display: block;
-    cursor: pointer;
-  }
-
-  .user-profile {
-    display: none;
-  }
-
-  /* Hero */
-  .hero-title {
-    font-size: 1.8rem;
-    text-align: center;
-  }
-
-  .hero-subtitle {
-    text-align: center;
-    font-size: 1rem;
-  }
-
-  /* Balance & Cards */
-  /* Styles moved to expensetracker.css */
-
-
-  /* Filters */
-  .filter-controls {
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .advanced-filters {
-    flex-direction: column;
-  }
-
-  .date-filters,
-  .amount-filters {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  /* Transaction Form */
-  .form-row {
-    flex-direction: column;
-  }
-
-  .form-control {
-    width: 100%;
-  }
-
-  /* Footer */
-  .footer-container {
-    flex-direction: column;
-    gap: 2rem;
-    text-align: center;
-  }
-
-  .footer-stats {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-}
-    </style>
-  </head>
-  <body>
-
 
       <!-- Smooth Cursor Trail -->
 <style>
@@ -2437,7 +2416,9 @@
             <a href="#analytics" class="nav-link">Analytics</a>
             <a href="goals.html" class="nav-link">Goals</a>
             <a href="#settings" class="nav-link">Settings</a>
+            <a href="login-signup.html" class="nav-link">Login-Signup</a>
           </div>
+          
           <div class="nav-actions">
             <div class="nav-search">
               <i class="fas fa-search"></i>
