@@ -1811,6 +1811,47 @@
           width: 100%;
         }
       }
+</style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <nav class="navbar">
+      <div class="nav-container">
+        <div class="nav-logo">
+          <i class="fas fa-wallet"></i>
+          <span>ExpenseFlow</span>
+        </div>
+        <div class="nav-menu" id="nav-menu">
+          <a href="#dashboard" class="nav-link active">Dashboard</a>
+          <a href="#analytics" class="nav-link">Analytics</a>
+          <a href="#goals" class="nav-link">Goals</a>
+          <a href="#settings" class="nav-link">Settings</a>
+        </div>
+        <div class="nav-toggle" id="nav-toggle">
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+        </div>
+        <div class="user-profile">
+          <button class="currency-btn" onclick="openCurrencyModal()" title="Currency Settings">
+            <i class="fas fa-coins"></i>
+            <span id="current-currency">INR</span>
+          </button>
+          <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face"
+            alt="User" class="profile-img">
+          <span class="username">John Doe</span>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="hero-section glass">
+      <h1 class="hero-title">Smart Money Management</h1>
+      <p class="hero-subtitle">Take control of your finances with our intuitive expense tracker</p>
+    </div>
   /* Authentication Styles - Premium UI */
   .auth-prompt {
     position: fixed;
