@@ -4,10 +4,204 @@ const auth = require('../middleware/auth');
 const { body, query, validationResult } = require('express-validator');
 const advancedAnalyticsService = require('../services/advancedAnalyticsService');
 const gamificationService = require('../services/scoreService');
+const discoveryService = require('../services/discoveryService');
+const forecastingService = require('../services/forecastingService');
 const DataWarehouse = require('../models/DataWarehouse');
 const CustomDashboard = require('../models/CustomDashboard');
 const FinancialHealthScore = require('../models/FinancialHealthScore');
 const Budget = require('../models/Budget');
+
+// ========================
+// SUBSCRIPTION DETECTION & RUNWAY ROUTES (Issue #444)
+// ========================
+
+/**
+ * GET /api/analytics/subscriptions/discover
+ * Scan past transactions to detect subscription patterns
+ */
+router.get('/subscriptions/discover', auth, async (req, res) => {
+  try {
+    const discoveries = await discoveryService.discoverSubscriptions(req.user.id);
+
+    res.json({
+      success: true,
+      data: discoveries
+    });
+  } catch (error) {
+    console.error('Subscription discovery error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to scan for subscriptions'
+    });
+  }
+});
+
+/**
+ * POST /api/analytics/subscriptions/confirm
+ * Confirm detected subscription and add to recurring expenses
+ */
+router.post('/subscriptions/confirm', auth, [
+  body('merchantKey').notEmpty().isString()
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    // Get current discoveries
+    const discoveries = await discoveryService.discoverSubscriptions(req.user.id);
+    const detection = discoveries.detected.find(d => d.merchantKey === req.body.merchantKey);
+
+    if (!detection) {
+      return res.status(404).json({
+        success: false,
+        message: 'Detection not found or already confirmed'
+      });
+    }
+
+    const recurring = await discoveryService.confirmSubscription(req.user.id, detection);
+
+    res.json({
+      success: true,
+      message: 'Subscription confirmed and tracked',
+      data: recurring
+    });
+  } catch (error) {
+    console.error('Confirm subscription error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to confirm subscription'
+    });
+  }
+});
+
+/**
+ * POST /api/analytics/subscriptions/confirm-multiple
+ * Confirm multiple detected subscriptions at once
+ */
+router.post('/subscriptions/confirm-multiple', auth, [
+  body('merchantKeys').isArray({ min: 1 }),
+  body('merchantKeys.*').isString()
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const discoveries = await discoveryService.discoverSubscriptions(req.user.id);
+    const results = await discoveryService.confirmMultiple(
+      req.user.id,
+      req.body.merchantKeys,
+      discoveries.detected
+    );
+
+    res.json({
+      success: true,
+      message: `Confirmed ${results.confirmed.length} subscriptions`,
+      data: results
+    });
+  } catch (error) {
+    console.error('Confirm multiple subscriptions error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to confirm subscriptions'
+    });
+  }
+});
+
+/**
+ * GET /api/analytics/subscriptions/burn-rate
+ * Get subscription burn rate calculation
+ */
+router.get('/subscriptions/burn-rate', auth, async (req, res) => {
+  try {
+    const burnRate = await discoveryService.calculateBurnRate(req.user.id);
+
+    res.json({
+      success: true,
+      data: burnRate
+    });
+  } catch (error) {
+    console.error('Get burn rate error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to calculate burn rate'
+    });
+  }
+});
+
+/**
+ * GET /api/analytics/subscriptions/upcoming
+ * Get upcoming subscription charges
+ */
+router.get('/subscriptions/upcoming', auth, [
+  query('days').optional().isInt({ min: 1, max: 90 })
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const days = parseInt(req.query.days) || 30;
+    const upcoming = await discoveryService.getUpcomingCharges(req.user.id, days);
+
+    res.json({
+      success: true,
+      data: upcoming
+    });
+  } catch (error) {
+    console.error('Get upcoming charges error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get upcoming charges'
+    });
+  }
+});
+
+/**
+ * GET /api/analytics/runway
+ * Get financial runway calculation
+ */
+router.get('/runway', auth, async (req, res) => {
+  try {
+    const runway = await forecastingService.calculateRunway(req.user.id);
+
+    res.json({
+      success: true,
+      data: runway
+    });
+  } catch (error) {
+    console.error('Get runway error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to calculate runway'
+    });
+  }
+});
+
+/**
+ * GET /api/analytics/runway/summary
+ * Get runway summary for dashboard
+ */
+router.get('/runway/summary', auth, async (req, res) => {
+  try {
+    const summary = await forecastingService.getRunwaySummary(req.user.id);
+
+    res.json({
+      success: true,
+      data: summary
+    });
+  } catch (error) {
+    console.error('Get runway summary error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get runway summary'
+    });
+  }
+});
 
 // ========================
 // Gamification & Health Score Routes (Issue #421)

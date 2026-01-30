@@ -2,6 +2,8 @@
  * AI-Driven Budget Intelligence Dashboard
  * Z-Score Anomaly Detection & Self-Healing Budgeting
  * Issue #339
+ * 
+ * Subscription Detection & Cashflow Runway - Issue #444
  */
 
 class IntelligenceDashboard {
@@ -13,11 +15,17 @@ class IntelligenceDashboard {
     this.charts = {};
     this.refreshInterval = null;
     this.API_BASE = '/api/analytics';
+    
+    // Issue #444: Subscription detection state
+    this.detectedSubscriptions = [];
+    this.runwayData = null;
+    this.burnRateData = null;
   }
 
   async init() {
     this.bindEvents();
     await this.loadDashboard();
+    await this.loadSubscriptionData(); // Issue #444
     this.startAutoRefresh();
   }
 
@@ -43,6 +51,18 @@ class IntelligenceDashboard {
         const { budgetId, toCategory } = e.target.dataset;
         this.rejectReallocation(budgetId, toCategory);
       }
+      // Issue #444: Subscription confirmation buttons
+      if (e.target.classList.contains('confirm-subscription-btn')) {
+        const { merchantKey } = e.target.dataset;
+        this.confirmSubscription(merchantKey);
+      }
+      if (e.target.classList.contains('dismiss-subscription-btn')) {
+        const { merchantKey } = e.target.dataset;
+        this.dismissSubscription(merchantKey);
+      }
+      if (e.target.classList.contains('confirm-all-subscriptions-btn')) {
+        this.confirmAllSubscriptions();
+      }
     });
 
     // Analyze transaction form
@@ -50,7 +70,370 @@ class IntelligenceDashboard {
     if (analyzeForm) {
       analyzeForm.addEventListener('submit', (e) => this.handleAnalyzeTransaction(e));
     }
+
+    // Issue #444: Scan for subscriptions button
+    const scanBtn = document.getElementById('scan-subscriptions-btn');
+    if (scanBtn) {
+      scanBtn.addEventListener('click', () => this.scanForSubscriptions());
+    }
   }
+
+  // ========================
+  // Issue #444: Subscription Detection & Runway Methods
+  // ========================
+
+  async loadSubscriptionData() {
+    try {
+      const [runway, burnRate, upcoming] = await Promise.all([
+        this.fetchAPI('/runway/summary'),
+        this.fetchAPI('/subscriptions/burn-rate'),
+        this.fetchAPI('/subscriptions/upcoming')
+      ]);
+
+      this.runwayData = runway.data;
+      this.burnRateData = burnRate.data;
+      this.upcomingCharges = upcoming.data;
+
+      this.renderRunwayWidget();
+      this.renderBurnRateWidget();
+      this.renderUpcomingCharges();
+    } catch (error) {
+      console.error('Failed to load subscription data:', error);
+    }
+  }
+
+  async scanForSubscriptions() {
+    try {
+      this.showLoading();
+      const discoveries = await this.fetchAPI('/subscriptions/discover');
+      this.detectedSubscriptions = discoveries.data.detected || [];
+      
+      this.renderDetectedSubscriptions();
+      this.showNotification(
+        `Found ${this.detectedSubscriptions.length} potential subscriptions`,
+        this.detectedSubscriptions.length > 0 ? 'success' : 'info'
+      );
+    } catch (error) {
+      console.error('Failed to scan for subscriptions:', error);
+      this.showError('Failed to scan for subscriptions');
+    } finally {
+      this.hideLoading();
+    }
+  }
+
+  async confirmSubscription(merchantKey) {
+    try {
+      await this.fetchAPI('/subscriptions/confirm', {
+        method: 'POST',
+        body: JSON.stringify({ merchantKey })
+      });
+
+      // Remove from detected list
+      this.detectedSubscriptions = this.detectedSubscriptions.filter(
+        s => s.merchantKey !== merchantKey
+      );
+      
+      this.renderDetectedSubscriptions();
+      await this.loadSubscriptionData(); // Refresh burn rate
+      this.showNotification('Subscription confirmed and tracked', 'success');
+    } catch (error) {
+      console.error('Failed to confirm subscription:', error);
+      this.showError('Failed to confirm subscription');
+    }
+  }
+
+  dismissSubscription(merchantKey) {
+    // Just remove from local list (doesn't persist)
+    this.detectedSubscriptions = this.detectedSubscriptions.filter(
+      s => s.merchantKey !== merchantKey
+    );
+    this.renderDetectedSubscriptions();
+    this.showNotification('Subscription dismissed', 'info');
+  }
+
+  async confirmAllSubscriptions() {
+    if (this.detectedSubscriptions.length === 0) return;
+
+    try {
+      const merchantKeys = this.detectedSubscriptions.map(s => s.merchantKey);
+      
+      await this.fetchAPI('/subscriptions/confirm-multiple', {
+        method: 'POST',
+        body: JSON.stringify({ merchantKeys })
+      });
+
+      this.detectedSubscriptions = [];
+      this.renderDetectedSubscriptions();
+      await this.loadSubscriptionData();
+      this.showNotification('All subscriptions confirmed', 'success');
+    } catch (error) {
+      console.error('Failed to confirm all subscriptions:', error);
+      this.showError('Failed to confirm subscriptions');
+    }
+  }
+
+  renderRunwayWidget() {
+    const container = document.getElementById('runway-widget');
+    if (!container || !this.runwayData) return;
+
+    const { days, status, message, progressPercent, burnRate, currentBalance, isPositiveCashFlow } = this.runwayData;
+    
+    const statusColors = {
+      positive: '#22c55e',
+      comfortable: '#22c55e',
+      moderate: '#eab308',
+      warning: '#f59e0b',
+      critical: '#ef4444',
+      depleted: '#dc2626'
+    };
+
+    const statusIcons = {
+      positive: 'fa-rocket',
+      comfortable: 'fa-smile',
+      moderate: 'fa-meh',
+      warning: 'fa-exclamation-triangle',
+      critical: 'fa-exclamation-circle',
+      depleted: 'fa-times-circle'
+    };
+
+    const displayDays = isPositiveCashFlow ? '∞' : (days || 0);
+
+    container.innerHTML = `
+      <div class="runway-card ${status}">
+        <div class="runway-header">
+          <div class="runway-icon" style="background: ${statusColors[status]}20; color: ${statusColors[status]}">
+            <i class="fas ${statusIcons[status]}"></i>
+          </div>
+          <div class="runway-title">
+            <h3>Financial Runway</h3>
+            <span class="runway-status-badge ${status}">${status.charAt(0).toUpperCase() + status.slice(1)}</span>
+          </div>
+        </div>
+        
+        <div class="runway-main">
+          <div class="runway-days">
+            <span class="days-number">${displayDays}</span>
+            <span class="days-label">${isPositiveCashFlow ? 'Positive Cash Flow' : 'Days'}</span>
+          </div>
+          
+          <div class="runway-progress-container">
+            <div class="runway-progress-bar">
+              <div class="runway-progress-fill" 
+                   style="width: ${progressPercent}%; background: ${statusColors[status]}">
+              </div>
+            </div>
+            <div class="runway-progress-labels">
+              <span>0</span>
+              <span>30</span>
+              <span>60+</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="runway-stats">
+          <div class="runway-stat">
+            <span class="stat-label">Current Balance</span>
+            <span class="stat-value">${this.formatCurrency(currentBalance)}</span>
+          </div>
+          <div class="runway-stat">
+            <span class="stat-label">Daily Burn Rate</span>
+            <span class="stat-value ${burnRate > 0 ? 'negative' : 'positive'}">
+              ${burnRate > 0 ? '-' : '+'}${this.formatCurrency(Math.abs(burnRate))}
+            </span>
+          </div>
+        </div>
+        
+        <div class="runway-message">
+          <i class="fas fa-info-circle"></i>
+          <span>${message}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  renderBurnRateWidget() {
+    const container = document.getElementById('burn-rate-widget');
+    if (!container || !this.burnRateData) return;
+
+    const { monthlyBurnRate, weeklyBurnRate, dailyBurnRate, annualProjection, totalSubscriptions, breakdown } = this.burnRateData;
+
+    container.innerHTML = `
+      <div class="burn-rate-card">
+        <div class="burn-rate-header">
+          <h3><i class="fas fa-fire"></i> Subscription Burn Rate</h3>
+          <span class="subscription-count">${totalSubscriptions} active subscriptions</span>
+        </div>
+        
+        <div class="burn-rate-totals">
+          <div class="burn-total">
+            <span class="burn-amount">${this.formatCurrency(dailyBurnRate)}</span>
+            <span class="burn-period">/ day</span>
+          </div>
+          <div class="burn-total">
+            <span class="burn-amount">${this.formatCurrency(weeklyBurnRate)}</span>
+            <span class="burn-period">/ week</span>
+          </div>
+          <div class="burn-total primary">
+            <span class="burn-amount">${this.formatCurrency(monthlyBurnRate)}</span>
+            <span class="burn-period">/ month</span>
+          </div>
+          <div class="burn-total">
+            <span class="burn-amount">${this.formatCurrency(annualProjection)}</span>
+            <span class="burn-period">/ year</span>
+          </div>
+        </div>
+        
+        ${breakdown && breakdown.length > 0 ? `
+          <div class="burn-breakdown">
+            <h4>Top Subscriptions</h4>
+            <div class="breakdown-list">
+              ${breakdown.slice(0, 5).map(item => `
+                <div class="breakdown-item">
+                  <div class="breakdown-info">
+                    <span class="breakdown-name">${item.description}</span>
+                    <span class="breakdown-freq">${item.frequency}</span>
+                  </div>
+                  <div class="breakdown-amount">
+                    ${this.formatCurrency(item.monthlyEquivalent)}/mo
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }
+
+  renderUpcomingCharges() {
+    const container = document.getElementById('upcoming-charges-widget');
+    if (!container || !this.upcomingCharges) return;
+
+    const { charges, totalAmount, count, period } = this.upcomingCharges;
+
+    container.innerHTML = `
+      <div class="upcoming-charges-card">
+        <div class="upcoming-header">
+          <h3><i class="fas fa-calendar-alt"></i> Upcoming Charges</h3>
+          <span class="upcoming-period">${period}</span>
+        </div>
+        
+        <div class="upcoming-total">
+          <span class="total-label">Total Expected</span>
+          <span class="total-amount">${this.formatCurrency(totalAmount)}</span>
+          <span class="total-count">${count} charges</span>
+        </div>
+        
+        ${charges && charges.length > 0 ? `
+          <div class="upcoming-list">
+            ${charges.slice(0, 6).map(charge => `
+              <div class="upcoming-item ${charge.daysUntilDue <= 3 ? 'due-soon' : ''}">
+                <div class="upcoming-info">
+                  <span class="upcoming-name">${charge.description}</span>
+                  <span class="upcoming-date">
+                    ${charge.daysUntilDue === 0 ? 'Today' : 
+                      charge.daysUntilDue === 1 ? 'Tomorrow' : 
+                      `In ${charge.daysUntilDue} days`}
+                  </span>
+                </div>
+                <span class="upcoming-amount">${this.formatCurrency(charge.amount)}</span>
+              </div>
+            `).join('')}
+          </div>
+        ` : `
+          <div class="empty-state small">
+            <i class="fas fa-check-circle"></i>
+            <p>No upcoming charges</p>
+          </div>
+        `}
+      </div>
+    `;
+  }
+
+  renderDetectedSubscriptions() {
+    const container = document.getElementById('detected-subscriptions');
+    if (!container) return;
+
+    if (this.detectedSubscriptions.length === 0) {
+      container.innerHTML = `
+        <div class="detected-subs-card">
+          <div class="detected-header">
+            <h3><i class="fas fa-search-dollar"></i> Detected Subscriptions</h3>
+            <button class="btn btn-outline scan-subscriptions-btn" id="scan-subscriptions-btn">
+              <i class="fas fa-sync"></i> Scan
+            </button>
+          </div>
+          <div class="empty-state">
+            <i class="fas fa-check-circle"></i>
+            <p>No new subscriptions detected</p>
+            <small>Click "Scan" to search for recurring patterns in your transactions</small>
+          </div>
+        </div>
+      `;
+      // Re-bind the scan button
+      document.getElementById('scan-subscriptions-btn')?.addEventListener('click', () => this.scanForSubscriptions());
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="detected-subs-card">
+        <div class="detected-header">
+          <h3><i class="fas fa-search-dollar"></i> Detected Subscriptions</h3>
+          <div class="detected-actions">
+            <button class="btn btn-outline scan-subscriptions-btn" id="scan-subscriptions-btn">
+              <i class="fas fa-sync"></i> Scan
+            </button>
+            <button class="btn btn-primary confirm-all-subscriptions-btn">
+              <i class="fas fa-check-double"></i> Confirm All
+            </button>
+          </div>
+        </div>
+        
+        <div class="detected-list">
+          ${this.detectedSubscriptions.map(sub => `
+            <div class="detected-item">
+              <div class="detected-main">
+                <div class="detected-icon ${sub.isLikelySubscription ? 'subscription' : ''}">
+                  <i class="fas ${sub.isLikelySubscription ? 'fa-credit-card' : 'fa-redo'}"></i>
+                </div>
+                <div class="detected-info">
+                  <span class="detected-name">${sub.merchantName}</span>
+                  <div class="detected-meta">
+                    <span class="detected-amount">${this.formatCurrency(sub.averageAmount)}</span>
+                    <span class="detected-freq">${sub.frequency}</span>
+                    <span class="detected-occurrences">${sub.occurrences} occurrences</span>
+                  </div>
+                </div>
+                <div class="detected-confidence">
+                  <div class="confidence-bar">
+                    <div class="confidence-fill" style="width: ${sub.confidence * 100}%"></div>
+                  </div>
+                  <span class="confidence-label">${Math.round(sub.confidence * 100)}% match</span>
+                </div>
+              </div>
+              <div class="detected-actions-row">
+                <button class="btn btn-sm btn-success confirm-subscription-btn" 
+                        data-merchant-key="${sub.merchantKey}">
+                  <i class="fas fa-check"></i> Confirm
+                </button>
+                <button class="btn btn-sm btn-outline dismiss-subscription-btn"
+                        data-merchant-key="${sub.merchantKey}">
+                  <i class="fas fa-times"></i> Dismiss
+                </button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+
+    // Re-bind the scan button
+    document.getElementById('scan-subscriptions-btn')?.addEventListener('click', () => this.scanForSubscriptions());
+  }
+
+  // ========================
+  // Original Dashboard Methods
+  // ========================
 
   async loadDashboard() {
     try {
