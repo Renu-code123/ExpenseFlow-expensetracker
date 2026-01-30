@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en"  favicon="favicon.ico">
+<html lang="en" favicon="favicon.ico">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -166,13 +167,168 @@
             display: grid;
             grid-template-columns: repeat(3, minmax(100px, 1fr));
         }
-  </style>
-</head>
 
-<body>
+    /* Auto-Categorize Button Styles */
+    .auto-categorize-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.2rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    }
 
-<!-- Cursor -->
-<div id="cursor-trail" class="cursor-trail-container"></div>
+    .auto-categorize-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .auto-categorize-btn:active {
+      transform: translateY(0);
+    }
+
+    .auto-categorize-btn.loading {
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .auto-categorize-btn.loading i {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* Suggested Badge Styles */
+    .suggested-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.2rem 0.5rem;
+      background: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 152, 0, 0.2));
+      color: #ffc107;
+      border: 1px solid rgba(255, 193, 7, 0.3);
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .auto-apply-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.2rem 0.5rem;
+      background: linear-gradient(135deg, rgba(76, 175, 80, 0.2), rgba(56, 142, 60, 0.2));
+      color: #4caf50;
+      border: 1px solid rgba(76, 175, 80, 0.3);
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Suggestion Item Enhancements */
+    .suggestion-item.high-confidence {
+      border-left: 3px solid #4caf50;
+    }
+
+    .suggestions-threshold-info {
+      padding: 0.5rem 1rem;
+      color: var(--text-secondary, #888);
+      font-size: 0.8rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .suggestions-threshold-info i {
+      margin-right: 0.3rem;
+      color: #64ffda;
+    }
+
+    /* Auto-Categorize Results Modal Styles */
+    .categorize-results-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .categorize-results-modal.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .categorize-results-content {
+      background: var(--card-bg, #1a1a2e);
+      border-radius: 16px;
+      padding: 2rem;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      border: 1px solid rgba(100, 255, 218, 0.2);
+    }
+
+    .categorize-results-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+
+    .categorize-results-header h3 {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #64ffda;
+      margin: 0;
+    }
+
+    .categorize-results-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+      text-align: center;
+      padding: 1rem;
+      background: rgba(100, 255, 218, 0.05);
+      border-radius: 8px;
+    }
+
+    .stat-card .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #64ffda;
+    }
+
+    .stat-card .stat-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary, #888);
+      text-transform: uppercase;
+    }
 
   <!-- Header -->
   <header class="header">
@@ -184,7 +340,11 @@
         </div>
         <div class="nav-menu" id="nav-menu">
           <a href="#dashboard" class="nav-link active">Dashboard</a>
+          <a href="analytics.html" class="nav-link">Analytics</a>
+          <a href="goals.html" class="nav-link">Goals</a>
+          <a href="settings.html" class="nav-link">Settings</a>
           <a href="#analytics" class="nav-link">Analytics</a>
+          <a href="#health" class="nav-link" id="health-tab">Health</a>
           <a href="#goals" class="nav-link">Goals</a>
           <a href="faq.html" class="nav-link">FAQ</a> 
           <a href="#settings" class="nav-link">Settings</a>
@@ -208,9 +368,10 @@
             <i class="fas fa-coins"></i>
             <span id="current-currency">INR</span>
           </button>
-         <a href="profile.html"> <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face"
-            alt="User" class="profile-img">
-          <span class="username" id="navUsername"></span>
+          <a href="profile.html"> <img
+              src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face" alt="User"
+              class="profile-img">
+            <span class="username" id="navUsername"></span>
           </a>
           <div id="redirect">
             <a href="#" id="logoutLink" onclick="logout()">Logout</a>
@@ -278,7 +439,8 @@
       <div class="container">
         <div class="section-header-center">
           <h2 class="section-title" data-i18n="feature.heading">Powerful Features for Smart Finance</h2>
-          <p class="section-subtitle" data-i18n="feature.subheading">Everything you need to manage your money effectively</p>
+          <p class="section-subtitle" data-i18n="feature.subheading">Everything you need to manage your money
+            effectively</p>
         </div>
         <div class="features-grid">
           <div class="feature-card">
@@ -339,9 +501,9 @@
       <div class="nav-toggle" id="nav-toggle">
         <span></span><span></span><span></span>
       </div>
-    </div>
-  </nav>
-</header>
+      </div>
+      </nav>
+      </header>
 
       <!-- Balance Card -->
       <div class="balance-card">
@@ -356,6 +518,7 @@
         </div>
       </div>
 
+      
       <!-- Income & Expense Cards -->
       <div class="inc-exp-container">
         <div class="income-card">
@@ -386,7 +549,12 @@
       <div class="history-section">
         <div class="section-header">
           <h3><i class="fas fa-history"></i> <span data-i18n="history.title">Transaction History</span></h3>
-          <div class="filter-controls">
+          <button id="auto-categorize-btn" class="auto-categorize-btn" title="Auto-categorize uncategorized transactions">
+            <i class="fas fa-magic"></i>
+            <span>Auto-Categorize</span>
+          </button>
+        </div>
+        <div class="filter-controls">
             <div class="search-container">
               <input type="text" id="search-input" placeholder="Search transactions..." class="search-input"
                 data-i18n-placeholder="history.search">
@@ -474,9 +642,9 @@
           </div>
         </div>
       </div>
-    </div>
-  </nav>
-</header>
+      </div>
+      </nav>
+      </header>
 
       <!-- Export Modal -->
       <div class="export-modal" id="export-modal">
@@ -558,7 +726,8 @@
           </div>
 
           <div class="export-modal-footer">
-            <button type="button" class="btn-cancel" id="export-cancel-btn" data-i18n="export.actions.cancel">Cancel</button>
+            <button type="button" class="btn-cancel" id="export-cancel-btn"
+              data-i18n="export.actions.cancel">Cancel</button>
             <button type="button" class="btn-submit" id="export-submit-btn">
               <i class="fas fa-download"></i> <span data-i18n="export.actions.export">Export</span>
             </button>
@@ -648,7 +817,8 @@
       <!-- Recurring Expenses Section -->
       <div class="recurring-section" id="recurring-section">
         <div class="section-header">
-          <h3><i class="fas fa-sync-alt"></i> <span data-i18n="recurring.title">Recurring Expenses & Subscriptions</span></h3>
+          <h3><i class="fas fa-sync-alt"></i> <span data-i18n="recurring.title">Recurring Expenses &
+              Subscriptions</span></h3>
           <button class="add-recurring-btn" id="add-recurring-btn">
             <i class="fas fa-plus"></i> <span data-i18n="recurring.add">Add Recurring</span>
           </button>
@@ -770,91 +940,829 @@
             </div>
           </form>
         </div>
-      </section>
+    </section>
 
-      <!-- Goals Section -->
-      <section id="goals" class="goals-section" style="display: none;">
-        <div class="section-header">
-          <h3><i class="fas fa-bullseye"></i> Financial Goals</h3>
+    <!-- Goals Section -->
+    <section id="goals" class="goals-section" style="display: none;">
+      <div class="section-header">
+        <h3><i class="fas fa-bullseye"></i> Financial Goals</h3>
+      </div>
+      <div id="goals-content" class="goals-content">
+        <!-- Goals content will be loaded here -->
+        <div class="goals-placeholder">
+          <i class="fas fa-bullseye" style="font-size: 3rem; color: var(--accent-primary); margin-bottom: 1rem;"></i>
+          <h4>Set Your Financial Goals</h4>
+          <p>Create and track your savings goals, budget targets, and financial milestones.</p>
+          <button class="btn btn-primary" onclick="initializeGoals()">Get Started</button>
         </div>
-        <div id="goals-content" class="goals-content">
-          <!-- Goals content will be loaded here -->
-          <div class="goals-placeholder">
-            <i class="fas fa-bullseye" style="font-size: 3rem; color: var(--accent-primary); margin-bottom: 1rem;"></i>
-            <h4>Set Your Financial Goals</h4>
-            <p>Create and track your savings goals, budget targets, and financial milestones.</p>
-            <button class="btn btn-primary" onclick="initializeGoals()">Get Started</button>
-          </div>
+      </div>
+    </section>
+
+    <!-- Analytics Dashboard Section -->
+    <section id="analytics" class="analytics-section" style="display: none;">
+      <div class="section-header">
+        <h3><i class="fas fa-chart-bar"></i> Financial Analytics & Forecasting</h3>
+        <div class="analytics-actions">
+          <select id="trends-period" class="period-select">
+            <option value="monthly">Monthly</option>
+            <option value="weekly">Weekly</option>
+            <option value="daily">Daily</option>
+          </select>
+          <button id="refresh-analytics" class="refresh-btn">
+            <i class="fas fa-sync-alt"></i> Refresh
+          </button>
         </div>
-      </section>
+      </div>
 
-      <!-- Analytics Dashboard Section -->
-      <section id="analytics" class="analytics-section" style="display: none;">
-        <div class="section-header">
-          <h3><i class="fas fa-chart-bar"></i> Financial Analytics & Forecasting</h3>
-          <div class="analytics-actions">
-            <select id="trends-period" class="period-select">
-              <option value="monthly">Monthly</option>
-              <option value="weekly">Weekly</option>
-              <option value="daily">Daily</option>
-            </select>
-            <button id="refresh-analytics" class="refresh-btn">
-              <i class="fas fa-sync-alt"></i> Refresh
-            </button>
-          </div>
-        </div>
-
-        <div id="analytics-dashboard" class="analytics-grid">
-          <!-- Top Row: Velocity and Forecast -->
-          <div class="analytics-row top-row">
-            <div id="velocity-widget" class="analytics-card velocity-card">
-              <div class="widget-loading">
-                <i class="fas fa-spinner fa-spin"></i>
-                <span>Calculating velocity...</span>
-              </div>
-            </div>
-            <div id="forecast-widget" class="analytics-card forecast-card">
-              <div class="widget-loading">
-                <i class="fas fa-spinner fa-spin"></i>
-                <span>Generating forecast...</span>
-              </div>
+      <div id="analytics-dashboard" class="analytics-grid">
+        <!-- Top Row: Velocity and Forecast -->
+        <div class="analytics-row top-row">
+          <div id="velocity-widget" class="analytics-card velocity-card">
+            <div class="widget-loading">
+              <i class="fas fa-spinner fa-spin"></i>
+              <span>Calculating velocity...</span>
             </div>
           </div>
-
-          <!-- Middle Row: Trends and Category Breakdown -->
-          <div class="analytics-row main-charts">
-            <div id="trends-chart" class="analytics-card trends-card">
-              <div class="widget-loading">
-                <i class="fas fa-spinner fa-spin"></i>
-                <span>Loading trends...</span>
-              </div>
-            </div>
-            <div id="category-chart" class="analytics-card category-card">
-              <div class="widget-loading">
-                <i class="fas fa-spinner fa-spin"></i>
-                <span>Loading distribution...</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Bottom Row: Insights and Predictions -->
-          <div class="analytics-row details-row">
-            <div id="insights-container" class="analytics-card insights-card">
-              <div class="widget-loading">
-                <i class="fas fa-spinner fa-spin"></i>
-                <span>Gathering insights...</span>
-              </div>
-            </div>
-            <div id="predictions-widget" class="analytics-card predictions-card">
-              <div class="widget-loading">
-                <i class="fas fa-spinner fa-spin"></i>
-                <span>Predicting spending...</span>
-              </div>
+          <div id="forecast-widget" class="analytics-card forecast-card">
+            <div class="widget-loading">
+              <i class="fas fa-spinner fa-spin"></i>
+              <span>Generating forecast...</span>
             </div>
           </div>
         </div>
-      </section>
+
+        <!-- Middle Row: Trends and Category Breakdown -->
+        <div class="analytics-row main-charts">
+          <div id="trends-chart" class="analytics-card trends-card">
+            <div class="widget-loading">
+              <i class="fas fa-spinner fa-spin"></i>
+              <span>Loading trends...</span>
+            </div>
+          </div>
+          <div id="category-chart" class="analytics-card category-card">
+            <div class="widget-loading">
+              <i class="fas fa-spinner fa-spin"></i>
+              <span>Loading distribution...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Row: Insights and Predictions -->
+        <div class="analytics-row details-row">
+          <div id="insights-container" class="analytics-card insights-card">
+            <div class="widget-loading">
+              <i class="fas fa-spinner fa-spin"></i>
+              <span>Gathering insights...</span>
+            </div>
+          </div>
+          <div id="predictions-widget" class="analytics-card predictions-card">
+            <div class="widget-loading">
+              <i class="fas fa-spinner fa-spin"></i>
+              <span>Predicting spending...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
     </div>
+
+    <!-- Health & Achievements Section (Issue #421) -->
+    <section id="health" class="health-section" style="display: none;">
+      <div class="section-header">
+        <h3><i class="fas fa-heartbeat"></i> Financial Health & Achievements</h3>
+        <div class="health-actions">
+          <button id="refresh-health-btn" class="refresh-btn">
+            <i class="fas fa-sync-alt"></i> Refresh
+          </button>
+          <button id="share-health-btn" class="share-btn">
+            <i class="fas fa-share-alt"></i> Share
+          </button>
+        </div>
+      </div>
+
+      <div id="health-achievements-section" class="health-container">
+        <!-- Gamification Profile: Level, XP, Streak -->
+        <div id="gamification-profile" class="gamification-profile-card">
+          <div class="widget-loading">
+            <i class="fas fa-spinner fa-spin"></i>
+            <span>Loading profile...</span>
+          </div>
+        </div>
+
+        <!-- Main Health Score Dashboard -->
+        <div id="health-score-dashboard" class="health-score-card">
+          <div class="widget-loading">
+            <i class="fas fa-spinner fa-spin"></i>
+            <span>Calculating health score...</span>
+          </div>
+        </div>
+
+        <!-- Badges Grid -->
+        <div id="badges-grid" class="badges-card">
+          <div class="widget-loading">
+            <i class="fas fa-spinner fa-spin"></i>
+            <span>Loading badges...</span>
+          </div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div id="leaderboard" class="leaderboard-card">
+          <div class="widget-loading">
+            <i class="fas fa-spinner fa-spin"></i>
+            <span>Loading leaderboard...</span>
+          </div>
+        </div>
+
+        <!-- Financial Profile Form -->
+        <div id="financial-profile-form" class="financial-profile-card">
+          <div class="widget-loading">
+            <i class="fas fa-spinner fa-spin"></i>
+            <span>Loading form...</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Health Section Styles -->
+      <style>
+        .health-section {
+          padding: 2rem;
+          max-width: 1400px;
+          margin: 0 auto;
+        }
+
+        .health-container {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 1.5rem;
+          padding: 1rem 0;
+        }
+
+        .health-container.loading {
+          opacity: 0.6;
+          pointer-events: none;
+        }
+
+        /* Health Score Card */
+        .health-score-card {
+          background: linear-gradient(135deg, rgba(15, 15, 35, 0.95), rgba(30, 30, 60, 0.9));
+          border-radius: 16px;
+          padding: 2rem;
+          grid-column: span 2;
+          border: 1px solid rgba(100, 255, 218, 0.2);
+        }
+
+        .health-score-main {
+          display: flex;
+          gap: 2rem;
+          flex-wrap: wrap;
+        }
+
+        .score-circle-container {
+          flex: 0 0 200px;
+          text-align: center;
+        }
+
+        .score-circle {
+          position: relative;
+          width: 160px;
+          height: 160px;
+          margin: 0 auto;
+        }
+
+        .score-ring {
+          width: 100%;
+          height: 100%;
+          transform: rotate(-90deg);
+        }
+
+        .score-ring-bg {
+          fill: none;
+          stroke: rgba(255, 255, 255, 0.1);
+          stroke-width: 8;
+        }
+
+        .score-ring-progress {
+          fill: none;
+          stroke-width: 8;
+          stroke-linecap: round;
+          transition: stroke-dasharray 1s ease;
+        }
+
+        .score-value {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          text-align: center;
+        }
+
+        .score-number {
+          font-size: 3rem;
+          font-weight: 700;
+          color: var(--accent-primary, #64ffda);
+          display: block;
+        }
+
+        .score-grade {
+          font-size: 1.5rem;
+          font-weight: 600;
+          color: #fff;
+        }
+
+        .score-title {
+          margin-top: 1rem;
+          color: #fff;
+          font-size: 1.2rem;
+        }
+
+        .score-subtitle {
+          color: #b4b4b4;
+          font-size: 0.9rem;
+        }
+
+        /* Score Components */
+        .score-components {
+          flex: 1;
+          min-width: 250px;
+        }
+
+        .score-components h4 {
+          color: #fff;
+          margin-bottom: 1rem;
+        }
+
+        .component-item {
+          margin-bottom: 1rem;
+          background: rgba(255, 255, 255, 0.05);
+          padding: 0.75rem;
+          border-radius: 8px;
+        }
+
+        .component-header {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          margin-bottom: 0.5rem;
+        }
+
+        .component-icon {
+          font-size: 1.2rem;
+        }
+
+        .component-name {
+          flex: 1;
+          color: #fff;
+          font-size: 0.9rem;
+        }
+
+        .component-weight {
+          color: #b4b4b4;
+          font-size: 0.8rem;
+        }
+
+        .component-bar {
+          height: 8px;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 4px;
+          overflow: hidden;
+        }
+
+        .component-progress {
+          height: 100%;
+          border-radius: 4px;
+          transition: width 0.5s ease;
+        }
+
+        .component-footer {
+          display: flex;
+          justify-content: space-between;
+          margin-top: 0.3rem;
+          font-size: 0.8rem;
+        }
+
+        .component-score {
+          color: #64ffda;
+        }
+
+        .component-status {
+          color: #b4b4b4;
+          text-transform: capitalize;
+        }
+
+        /* Community Comparison */
+        .community-comparison {
+          margin-top: 1.5rem;
+          padding-top: 1.5rem;
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .community-comparison h4 {
+          color: #fff;
+          margin-bottom: 1rem;
+        }
+
+        .comparison-cards {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.75rem;
+        }
+
+        .comparison-card {
+          background: rgba(100, 255, 218, 0.1);
+          padding: 0.75rem 1rem;
+          border-radius: 8px;
+          border-left: 3px solid #64ffda;
+        }
+
+        .comparison-card.negative {
+          background: rgba(255, 87, 34, 0.1);
+          border-left-color: #ff5722;
+        }
+
+        .comparison-component {
+          display: block;
+          font-size: 0.8rem;
+          color: #b4b4b4;
+        }
+
+        .comparison-message {
+          color: #fff;
+          font-size: 0.9rem;
+        }
+
+        /* Health Insights */
+        .health-insights {
+          margin-top: 1.5rem;
+          padding-top: 1.5rem;
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .health-insights h4,
+        .health-insights h5 {
+          color: #fff;
+          margin-bottom: 0.75rem;
+        }
+
+        .insights-section {
+          margin-bottom: 1.5rem;
+        }
+
+        .insight-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 0.75rem;
+          padding: 0.75rem;
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 8px;
+          margin-bottom: 0.5rem;
+        }
+
+        .insight-item.strength {
+          border-left: 3px solid #00e676;
+        }
+
+        .insight-item.improvement {
+          border-left: 3px solid #ffc107;
+        }
+
+        .insight-item.improvement.priority-high {
+          border-left-color: #ff5722;
+        }
+
+        .insight-icon {
+          font-size: 1.2rem;
+        }
+
+        .insight-content {
+          flex: 1;
+        }
+
+        .insight-text {
+          color: #fff;
+          font-size: 0.9rem;
+        }
+
+        .priority-badge {
+          display: inline-block;
+          font-size: 0.7rem;
+          padding: 0.2rem 0.5rem;
+          border-radius: 4px;
+          margin-left: 0.5rem;
+          text-transform: uppercase;
+        }
+
+        .priority-badge.high {
+          background: rgba(255, 87, 34, 0.2);
+          color: #ff5722;
+        }
+
+        .priority-badge.medium {
+          background: rgba(255, 193, 7, 0.2);
+          color: #ffc107;
+        }
+
+        .priority-badge.low {
+          background: rgba(76, 175, 80, 0.2);
+          color: #4caf50;
+        }
+
+        /* Health History Chart */
+        .health-history {
+          margin-top: 1.5rem;
+          padding-top: 1.5rem;
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .health-history h4 {
+          color: #fff;
+          margin-bottom: 1rem;
+        }
+
+        #health-history-chart {
+          height: 200px !important;
+        }
+
+        /* Gamification Profile Card */
+        .gamification-profile-card {
+          background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+          border-radius: 16px;
+          padding: 1.5rem;
+          border: 1px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .profile-header {
+          display: flex;
+          gap: 2rem;
+          flex-wrap: wrap;
+          align-items: center;
+        }
+
+        .level-display {
+          display: flex;
+          gap: 1rem;
+          align-items: center;
+        }
+
+        .level-badge {
+          width: 60px;
+          height: 60px;
+          background: linear-gradient(135deg, #667eea, #764ba2);
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .level-number {
+          color: #fff;
+          font-weight: 700;
+          font-size: 1rem;
+        }
+
+        .level-info {
+          flex: 1;
+        }
+
+        .level-name {
+          color: #fff;
+          font-size: 1.1rem;
+          margin: 0 0 0.5rem 0;
+        }
+
+        .xp-bar {
+          height: 8px;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 4px;
+          overflow: hidden;
+          width: 150px;
+        }
+
+        .xp-progress {
+          height: 100%;
+          background: linear-gradient(90deg, #667eea, #764ba2);
+          border-radius: 4px;
+          transition: width 0.5s ease;
+        }
+
+        .xp-text {
+          font-size: 0.8rem;
+          color: #b4b4b4;
+        }
+
+        .profile-stats {
+          display: flex;
+          gap: 1.5rem;
+        }
+
+        .stat-item {
+          text-align: center;
+        }
+
+        .stat-value {
+          display: block;
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: #64ffda;
+        }
+
+        .stat-label {
+          font-size: 0.8rem;
+          color: #b4b4b4;
+        }
+
+        /* Badges Card */
+        .badges-card {
+          background: linear-gradient(135deg, rgba(15, 15, 35, 0.95), rgba(30, 30, 60, 0.9));
+          border-radius: 16px;
+          padding: 1.5rem;
+          border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .badges-section h4 {
+          color: #fff;
+          margin-bottom: 1rem;
+        }
+
+        .badges-list {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.75rem;
+        }
+
+        .badge-card {
+          background: rgba(255, 255, 255, 0.05);
+          padding: 0.75rem;
+          border-radius: 8px;
+          text-align: center;
+          min-width: 80px;
+          border: 2px solid transparent;
+          transition: transform 0.2s;
+        }
+
+        .badge-card.earned:hover {
+          transform: scale(1.05);
+        }
+
+        .badge-card.locked {
+          opacity: 0.5;
+        }
+
+        .badge-icon {
+          font-size: 1.5rem;
+          display: block;
+          margin-bottom: 0.25rem;
+        }
+
+        .locked-icon {
+          filter: grayscale(100%);
+        }
+
+        .badge-name {
+          font-size: 0.75rem;
+          color: #fff;
+          display: block;
+        }
+
+        .badge-tier {
+          font-size: 0.65rem;
+          text-transform: capitalize;
+        }
+
+        .badge-date {
+          font-size: 0.65rem;
+          color: #b4b4b4;
+          display: block;
+        }
+
+        .no-badges {
+          color: #b4b4b4;
+          font-style: italic;
+        }
+
+        /* Leaderboard Card */
+        .leaderboard-card {
+          background: linear-gradient(135deg, rgba(15, 15, 35, 0.95), rgba(30, 30, 60, 0.9));
+          border-radius: 16px;
+          padding: 1.5rem;
+          border: 1px solid rgba(100, 255, 218, 0.2);
+        }
+
+        .leaderboard-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 1rem;
+          flex-wrap: wrap;
+          gap: 0.5rem;
+        }
+
+        .leaderboard-header h4 {
+          color: #fff;
+          margin: 0;
+        }
+
+        .leaderboard-tabs {
+          display: flex;
+          gap: 0.5rem;
+        }
+
+        .lb-tab {
+          background: rgba(255, 255, 255, 0.1);
+          border: none;
+          padding: 0.4rem 0.8rem;
+          border-radius: 4px;
+          color: #b4b4b4;
+          cursor: pointer;
+          font-size: 0.8rem;
+          transition: all 0.2s;
+        }
+
+        .lb-tab.active {
+          background: #64ffda;
+          color: #0f0f23;
+        }
+
+        .leaderboard-list {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+
+        .lb-item {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 0.75rem;
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 8px;
+        }
+
+        .lb-item.top-1 {
+          background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0.1));
+          border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .lb-item.top-2 {
+          background: linear-gradient(135deg, rgba(192, 192, 192, 0.2), rgba(192, 192, 192, 0.1));
+          border: 1px solid rgba(192, 192, 192, 0.3);
+        }
+
+        .lb-item.top-3 {
+          background: linear-gradient(135deg, rgba(205, 127, 50, 0.2), rgba(205, 127, 50, 0.1));
+          border: 1px solid rgba(205, 127, 50, 0.3);
+        }
+
+        .lb-rank {
+          font-size: 1.2rem;
+          min-width: 30px;
+        }
+
+        .lb-name {
+          flex: 1;
+          color: #fff;
+        }
+
+        .lb-score {
+          font-weight: 700;
+          color: #64ffda;
+        }
+
+        .lb-grade {
+          background: rgba(100, 255, 218, 0.2);
+          padding: 0.2rem 0.5rem;
+          border-radius: 4px;
+          font-size: 0.8rem;
+          color: #64ffda;
+        }
+
+        /* Financial Profile Form */
+        .financial-profile-card {
+          background: linear-gradient(135deg, rgba(15, 15, 35, 0.95), rgba(30, 30, 60, 0.9));
+          border-radius: 16px;
+          padding: 1.5rem;
+          border: 1px solid rgba(100, 255, 218, 0.2);
+          grid-column: span 2;
+        }
+
+        .financial-profile-card h4 {
+          color: #fff;
+          margin-bottom: 0.5rem;
+        }
+
+        .form-subtitle {
+          color: #b4b4b4;
+          font-size: 0.9rem;
+          margin-bottom: 1.5rem;
+        }
+
+        .profile-form {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+        }
+
+        .form-row {
+          display: flex;
+          gap: 1rem;
+          flex-wrap: wrap;
+        }
+
+        .form-group {
+          flex: 1;
+          min-width: 200px;
+        }
+
+        .form-group label {
+          display: block;
+          color: #b4b4b4;
+          font-size: 0.9rem;
+          margin-bottom: 0.5rem;
+        }
+
+        .form-group input {
+          width: 100%;
+          padding: 0.75rem;
+          background: rgba(255, 255, 255, 0.1);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          border-radius: 8px;
+          color: #fff;
+          font-size: 1rem;
+        }
+
+        .form-group input:focus {
+          outline: none;
+          border-color: #64ffda;
+        }
+
+        .btn-update-profile {
+          background: linear-gradient(135deg, #667eea, #764ba2);
+          border: none;
+          padding: 0.75rem 1.5rem;
+          border-radius: 8px;
+          color: #fff;
+          font-weight: 600;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          align-self: flex-start;
+          transition: transform 0.2s;
+        }
+
+        .btn-update-profile:hover {
+          transform: scale(1.02);
+        }
+
+        /* Share Button */
+        .share-btn {
+          background: linear-gradient(135deg, #667eea, #764ba2);
+          border: none;
+          padding: 0.5rem 1rem;
+          border-radius: 8px;
+          color: #fff;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+
+        /* Widget Loading State */
+        .widget-loading {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 2rem;
+          color: #b4b4b4;
+          gap: 0.5rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+          .health-score-card {
+            grid-column: span 1;
+          }
+
+          .financial-profile-card {
+            grid-column: span 1;
+          }
+
+          .health-score-main {
+            flex-direction: column;
+            align-items: center;
+          }
+
+          .profile-header {
+            flex-direction: column;
+            text-align: center;
+          }
+
+          .profile-stats {
+            justify-content: center;
+          }
+        }
+      </style>
+    </section>
 
     <!-- Settings Section -->
     <section id="settings" class="settings-section" style="display: none;">
@@ -1097,52 +2005,32 @@
           <span>ExpenseFlow</span>
         </div>
 
-  <p class="footer-description">
-    Smart money management made simple. Track, analyze, and optimize your financial habits.
-  </p>
+        <p class="footer-description">
+          Smart money management made simple. Track, analyze, and optimize your financial habits.
+        </p>
 
-  <div class="social-links">
-    <a
-      href="https://x.com/9504_renu"
-      class="social-link"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="X (Twitter)"
-    >
-      <i class="fab fa-x-twitter"></i>
-    </a>
+        <div class="social-links">
+          <a href="https://x.com/9504_renu" class="social-link" target="_blank" rel="noopener noreferrer"
+            aria-label="X (Twitter)">
+            <i class="fab fa-x-twitter"></i>
+          </a>
 
-    <a
-      href="https://github.com/Renu-code123/ExpenseFlow"
-      class="social-link"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Github"
-    >
-      <i class="fab fa-github"></i>
-    </a>
+          <a href="https://github.com/Renu-code123/ExpenseFlow" class="social-link" target="_blank"
+            rel="noopener noreferrer" aria-label="Github">
+            <i class="fab fa-github"></i>
+          </a>
 
-    <a
-      href="mailto:renu89857@gmail.com"
-      class="social-link"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Email"
-    >
-      <i class="far fa-envelope"></i>
-    </a>
+          <a href="mailto:renu89857@gmail.com" class="social-link" target="_blank" rel="noopener noreferrer"
+            aria-label="Email">
+            <i class="far fa-envelope"></i>
+          </a>
 
-    <a
-      href="https://www.linkedin.com/in/renu-kumari-prajapati"
-      class="social-link"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="LinkedIn"
-    >
-      <i class="fab fa-linkedin-in"></i>
-    </a>
-  </div>
-</div>
+          <a href="https://www.linkedin.com/in/renu-kumari-prajapati" class="social-link" target="_blank"
+            rel="noopener noreferrer" aria-label="LinkedIn">
+            <i class="fab fa-linkedin-in"></i>
+          </a>
+        </div>
+      </div>
 
 
       <div class="footer-section">
@@ -1231,10 +2119,122 @@
           }
         });
       }
+
+      // Auto-Categorize Button Handler
+      const autoCategorizeBtn = document.getElementById('auto-categorize-btn');
+      if (autoCategorizeBtn) {
+        autoCategorizeBtn.addEventListener('click', handleAutoCategorize);
+      }
     });
+
+    // Auto-Categorize Handler Function
+    async function handleAutoCategorize() {
+      const btn = document.getElementById('auto-categorize-btn');
+      if (!btn || btn.classList.contains('loading')) return;
+
+      const icon = btn.querySelector('i');
+      const originalIcon = icon.className;
+      
+      // Set loading state
+      btn.classList.add('loading');
+      icon.className = 'fas fa-spinner';
+
+      try {
+        const result = await window.autoCategorizeAllUncategorized();
+        
+        if (result.success) {
+          showAutoCategorizeResults(result.data);
+          
+          // Refresh the transaction list
+          if (typeof window.updateAllData === 'function') {
+            await window.updateAllData();
+          }
+        }
+      } catch (error) {
+        console.error('Auto-categorize error:', error);
+        if (typeof showNotification === 'function') {
+          showNotification('Failed to auto-categorize expenses', 'error');
+        }
+      } finally {
+        // Reset button state
+        btn.classList.remove('loading');
+        icon.className = originalIcon;
+      }
+    }
+
+    // Show Auto-Categorize Results Modal
+    function showAutoCategorizeResults(data) {
+      // Remove existing modal if any
+      const existingModal = document.querySelector('.categorize-results-modal');
+      if (existingModal) existingModal.remove();
+
+      const modal = document.createElement('div');
+      modal.className = 'categorize-results-modal';
+      modal.innerHTML = `
+        <div class="categorize-results-content">
+          <div class="categorize-results-header">
+            <h3><i class="fas fa-magic"></i> Auto-Categorization Results</h3>
+            <button class="categorize-results-close">&times;</button>
+          </div>
+          <div class="categorize-results-stats">
+            <div class="stat-card auto">
+              <div class="stat-value">${data.categorized}</div>
+              <div class="stat-label">Auto-Applied</div>
+            </div>
+            <div class="stat-card suggested">
+              <div class="stat-value">${data.suggested}</div>
+              <div class="stat-label">Suggested</div>
+            </div>
+            <div class="stat-card unchanged">
+              <div class="stat-value">${data.unchanged}</div>
+              <div class="stat-label">No Match</div>
+            </div>
+          </div>
+          <p style="text-align: center; color: var(--text-secondary, #888); font-size: 0.9rem;">
+            ${data.categorized > 0 
+              ? `<i class="fas fa-check-circle" style="color: #4caf50;"></i> ${data.categorized} expenses were automatically categorized with high confidence.` 
+              : 'No expenses were auto-categorized.'}
+            ${data.suggested > 0 
+              ? `<br><i class="fas fa-lightbulb" style="color: #ffc107;"></i> ${data.suggested} expenses have suggestions available.` 
+              : ''}
+          </p>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+
+      // Show modal with animation
+      requestAnimationFrame(() => {
+        modal.classList.add('active');
+      });
+
+      // Close handlers
+      const closeBtn = modal.querySelector('.categorize-results-close');
+      closeBtn.addEventListener('click', () => {
+        modal.classList.remove('active');
+        setTimeout(() => modal.remove(), 300);
+      });
+
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.classList.remove('active');
+          setTimeout(() => modal.remove(), 300);
+        }
+      });
+
+      // Show notification
+      if (typeof showNotification === 'function') {
+        const message = data.categorized > 0 
+          ? `Auto-categorized ${data.categorized} expenses!` 
+          : `Processed ${data.total} expenses`;
+        showNotification(message, data.categorized > 0 ? 'success' : 'info');
+      }
+    }
   </script>
   <script>
-   
+    // Currency Management Functions
+    let supportedCurrencies = [];
+    let currentUserCurrency = 'INR';
 
     // Load supported currencies on page load
     async function loadSupportedCurrencies() {
@@ -1257,7 +2257,11 @@
         console.error('Error loading currencies:', error);
       }
     }
-    </script>
+
+    // Populate currency dropdowns
+    function populateCurrencySelects() {
+      const currencySelect = document.getElementById('currency');
+      const preferredCurrencySelect = document.getElementById('preferred-currency');
 
   <style>
     @keyframes spin {
@@ -1346,465 +2350,222 @@
         </div>
       </form>
     </div>
-  </section>
+    </section>
 
-  <!-- PWA Installation Prompt -->
-  <div id="install-prompt" class="install-prompt" style="display: none;">
-    <div class="install-prompt-content">
-      <div class="install-prompt-header">
-        <i class="fas fa-download"></i>
-        <h3 data-i18n="install.title">Install ExpenseFlow</h3>
-      </div>
-      <p data-i18n="install.text">Install ExpenseFlow for quick access and offline functionality!</p>
-      <div class="install-prompt-actions">
-        <button id="install-button" class="install-btn">
-          <i class="fas fa-plus"></i> <span data-i18n="install.install">Install</span>
-        </button>
-        <button id="install-dismiss" class="dismiss-btn">
-          <i class="fas fa-times"></i> <span data-i18n="install.dismiss">Not now</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ADD TRANSACTION -->
-  <section class="form-section">
-    <h3>Add Transaction</h3>
-
-    <form id="form" class="transaction-form">
-      <input id="text" type="text" placeholder="Description" required />
-      <input id="amount" type="number" placeholder="Amount" required />
-      <select id="type" required>
-        <option value="">Select Type</option>
-        <option value="income">Income</option>
-        <option value="expense">Expense</option>
-      </select>
-      <button type="submit">Add</button>
-    </form>
-  </section>
-
-</main>
-
-<!-- FOOTER -->
-<footer class="footer">
-  <div class="footer-container">
-
-    <!-- Brand -->
-    <div class="footer-section">
-      <div class="footer-logo">
-        <i class="fas fa-wallet"></i>
-        <span>ExpenseFlow</span>
-      </div>
-      <p>
-        Smart money management made simple.
-        Track, analyze, and optimize your finances with confidence.
-      </p>
-
-      <div class="social-links">
-        <a href="#" class="social-link" aria-label="Github">
-          <i class="fab fa-github"></i>
-        </a>
-        <a href="#" class="social-link" aria-label="LinkedIn">
-          <i class="fab fa-linkedin-in"></i>
-        </a>
-        <a href="#" class="social-link" aria-label="Twitter">
-          <i class="fab fa-x-twitter"></i>
-        </a>
+    <!-- PWA Installation Prompt -->
+    <div id="install-prompt" class="install-prompt" style="display: none;">
+      <div class="install-prompt-content">
+        <div class="install-prompt-header">
+          <i class="fas fa-download"></i>
+          <h3 data-i18n="install.title">Install ExpenseFlow</h3>
+        </div>
+        <p data-i18n="install.text">Install ExpenseFlow for quick access and offline functionality!</p>
+        <div class="install-prompt-actions">
+          <button id="install-button" class="install-btn">
+            <i class="fas fa-plus"></i> <span data-i18n="install.install">Install</span>
+          </button>
+          <button id="install-dismiss" class="dismiss-btn">
+            <i class="fas fa-times"></i> <span data-i18n="install.dismiss">Not now</span>
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- Product -->
-    <div class="footer-section">
-      <h4>Product</h4>
-      <ul class="footer-links">
-        <li><a href="#">Dashboard</a></li>
-        <li><a href="#">Analytics</a></li>
-        <li><a href="#">Budget Goals</a></li>
-        <li><a href="#">Reports</a></li>
-      </ul>
-    </div>
+    <!-- ADD TRANSACTION -->
+    <section class="form-section">
+      <h3>Add Transaction</h3>
 
-    <!-- Company -->
-    <div class="footer-section">
-      <h4>Company</h4>
-      <ul class="footer-links">
-        <li><a href="#">About Us</a></li>
-        <li><a href="#">Contributors</a></li>
-        <li><a href="#">Privacy Policy</a></li>
-        <li><a href="#">Terms of Service</a></li>
-      </ul>
-    </div>
+      <form id="form" class="transaction-form">
+        <input id="text" type="text" placeholder="Description" required />
+        <input id="amount" type="number" placeholder="Amount" required />
+        <select id="type" required>
+          <option value="">Select Type</option>
+          <option value="income">Income</option>
+          <option value="expense">Expense</option>
+        </select>
+        <button type="submit">Add</button>
+      </form>
+    </section>
 
-    <!-- Support -->
-    <div class="footer-section">
-      <h4>Support</h4>
-      <ul class="footer-links">
-        <li><a href="#">Help Center</a></li>
-        <li><a href="#">Contact</a></li>
-        <li><a href="#">Report Bug</a></li>
-      </ul>
-    </div>
+    </main>
 
-  </div>
+    <!-- FOOTER -->
+    <footer class="footer">
+      <div class="footer-container">
 
-  <!-- Bottom bar -->
-  <div class="footer-bottom">
-    <p>© 2026 ExpenseFlow. All rights reserved.</p>
-  </div>
-  <div class="footer-container">
+        <!-- Brand -->
+        <div class="footer-section">
+          <div class="footer-logo">
+            <i class="fas fa-wallet"></i>
+            <span>ExpenseFlow</span>
+          </div>
+          <p>
+            Smart money management made simple.
+            Track, analyze, and optimize your finances with confidence.
+          </p>
 
-    <!-- Brand -->
-    <div class="footer-section">
-      <div class="footer-logo">
-        <i class="fas fa-wallet"></i>
-        <span>ExpenseFlow</span>
+          <div class="social-links">
+            <a href="#" class="social-link" aria-label="Github">
+              <i class="fab fa-github"></i>
+            </a>
+            <a href="#" class="social-link" aria-label="LinkedIn">
+              <i class="fab fa-linkedin-in"></i>
+            </a>
+            <a href="#" class="social-link" aria-label="Twitter">
+              <i class="fab fa-x-twitter"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Product -->
+        <div class="footer-section">
+          <h4>Product</h4>
+          <ul class="footer-links">
+            <li><a href="#">Dashboard</a></li>
+            <li><a href="#">Analytics</a></li>
+            <li><a href="#">Budget Goals</a></li>
+            <li><a href="#">Reports</a></li>
+          </ul>
+        </div>
+
+        <!-- Company -->
+        <div class="footer-section">
+          <h4>Company</h4>
+          <ul class="footer-links">
+            <li><a href="#">About Us</a></li>
+            <li><a href="#">Contributors</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Terms of Service</a></li>
+          </ul>
+        </div>
+
+        <!-- Support -->
+        <div class="footer-section">
+          <h4>Support</h4>
+          <ul class="footer-links">
+            <li><a href="#">Help Center</a></li>
+            <li><a href="#">Contact</a></li>
+            <li><a href="#">Report Bug</a></li>
+          </ul>
+        </div>
+
       </div>
-      <p>
-        Smart money management made simple.
-        Track, analyze, and optimize your finances with confidence.
-      </p>
 
-      <div class="social-links">
-        <a href="#" class="social-link" aria-label="Github">
-          <i class="fab fa-github"></i>
-        </a>
-        <a href="#" class="social-link" aria-label="LinkedIn">
-          <i class="fab fa-linkedin-in"></i>
-        </a>
-        <a href="#" class="social-link" aria-label="Twitter">
-          <i class="fab fa-x-twitter"></i>
-        </a>
+      <!-- Bottom bar -->
+      <div class="footer-bottom">
+        <p>© 2026 ExpenseFlow. All rights reserved.</p>
       </div>
-    </div>
+      <div class="footer-container">
 
-    <!-- Product -->
-    <div class="footer-section">
-      <h4>Product</h4>
-      <ul class="footer-links">
-        <li><a href="#">Dashboard</a></li>
-        <li><a href="#">Analytics</a></li>
-        <li><a href="#">Budget Goals</a></li>
-        <li><a href="#">Reports</a></li>
-      </ul>
-    </div>
+        <!-- Brand -->
+        <div class="footer-section">
+          <div class="footer-logo">
+            <i class="fas fa-wallet"></i>
+            <span>ExpenseFlow</span>
+          </div>
+          <p>
+            Smart money management made simple.
+            Track, analyze, and optimize your finances with confidence.
+          </p>
 
-    <!-- Company -->
-    <div class="footer-section">
-      <h4>Company</h4>
-      <ul class="footer-links">
-        <li><a href="#">About Us</a></li>
-        <li><a href="#">Contributors</a></li>
-        <li><a href="#">Privacy Policy</a></li>
-        <li><a href="#">Terms of Service</a></li>
-      </ul>
-    </div>
+          <div class="social-links">
+            <a href="#" class="social-link" aria-label="Github">
+              <i class="fab fa-github"></i>
+            </a>
+            <a href="#" class="social-link" aria-label="LinkedIn">
+              <i class="fab fa-linkedin-in"></i>
+            </a>
+            <a href="#" class="social-link" aria-label="Twitter">
+              <i class="fab fa-x-twitter"></i>
+            </a>
+          </div>
+        </div>
 
-    <!-- Support -->
-    <div class="footer-section">
-      <h4>Support</h4>
-      <ul class="footer-links">
-        <li><a href="#">Help Center</a></li>
-        <li><a href="#">Contact</a></li>
-        <li><a href="#">Report Bug</a></li>
-      </ul>
-    </div>
+        <!-- Product -->
+        <div class="footer-section">
+          <h4>Product</h4>
+          <ul class="footer-links">
+            <li><a href="#">Dashboard</a></li>
+            <li><a href="#">Analytics</a></li>
+            <li><a href="#">Budget Goals</a></li>
+            <li><a href="#">Reports</a></li>
+          </ul>
+        </div>
 
-  </div>
+        <!-- Company -->
+        <div class="footer-section">
+          <h4>Company</h4>
+          <ul class="footer-links">
+            <li><a href="#">About Us</a></li>
+            <li><a href="#">Contributors</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Terms of Service</a></li>
+          </ul>
+        </div>
 
-  <!-- Bottom bar -->
-  <div class="footer-bottom">
-    <p>© 2026 ExpenseFlow. All rights reserved.</p>
-  </div>
-</footer>
-<script src="protect.js"></script>
+        <!-- Support -->
+        <div class="footer-section">
+          <h4>Support</h4>
+          <ul class="footer-links">
+            <li><a href="#">Help Center</a></li>
+            <li><a href="#">Contact</a></li>
+            <li><a href="#">Report Bug</a></li>
+          </ul>
+        </div>
 
-<script src="trackerscript.js"></script>
-<script src="analytics-dashboard.js"></script>
-<script src="auth.js"></script>
-<script src="settings.js"></script>
-
-<!-- Cursor Trail Script -->
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const container = document.getElementById("cursor-trail");
-  for (let i = 0; i < 8; i++) {
-    const dot = document.createElement("div");
-    dot.className = "trail-dot";
-    container.appendChild(dot);
-  }
-});
-</script>
-  <script>
-    // Currency Management Functions
-    let supportedCurrencies = [];
-    let currentUserCurrency = (window.i18n?.getCurrency?.() && window.i18n.getCurrency()) || 'INR';
-    window.currentUserCurrency = currentUserCurrency;
-
-    // Load supported currencies on page load
-    async function loadSupportedCurrencies() {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
-
-        const response = await fetch('/api/currency/supported', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        const data = await response.json();
-        if (data.success) {
-          supportedCurrencies = data.data.currencies;
-          populateCurrencySelects();
-        }
-      } catch (error) {
-        console.error('Error loading currencies:', error);
-      }
-    }
-    const closeBtn = document.getElementById('recurring-modal-close');
-    if (closeBtn) {
-      closeBtn.addEventListener('click', closeRecurringModal);
-    }
-
-    const cancelBtn = document.getElementById('recurring-cancel-btn');
-    if (cancelBtn) {
-      cancelBtn.addEventListener('click', closeRecurringModal);
-    }
-
-    // Close modal when clicking outside
-    const modal = document.getElementById('recurring-modal');
-    if (modal) {
-      modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-          closeRecurringModal();
-        }
-      });
-    }
-</script>
-<script>
-
-
-  // Load supported currencies on page load
-  async function loadSupportedCurrencies() {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) return;
-
-      const response = await fetch('/api/currency/supported', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        supportedCurrencies = data.data.currencies;
-        populateCurrencySelects();
-      }
-    } catch (error) {
-      console.error('Error loading currencies:', error);
-    }
-  }
-
-  // Populate currency dropdowns
-  function populateCurrencySelects() {
-    const currencySelect = document.getElementById('currency');
-    const preferredCurrencySelect = document.getElementById('preferred-currency');
-
-    if (currencySelect && supportedCurrencies.length > 0) {
-      currencySelect.innerHTML = supportedCurrencies.map(curr =>
-        `<option value="${curr.code}">${curr.symbol} ${curr.code} - ${curr.name}</option>`
-      ).join('');
-      currencySelect.value = currentUserCurrency;
-    }
-
-    if (preferredCurrencySelect && supportedCurrencies.length > 0) {
-      preferredCurrencySelect.innerHTML = supportedCurrencies.map(curr =>
-        `<option value="${curr.code}">${curr.symbol} ${curr.code} - ${curr.name}</option>`
-      ).join('');
-      preferredCurrencySelect.value = currentUserCurrency;
-    }
-  }
-
-  // Load user's currency preference
-  async function loadUserCurrencyPreference() {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) return;
-
-        const data = await response.json();
-        if (data.success) {
-          currentUserCurrency = data.data.preferredCurrency;
-          window.currentUserCurrency = currentUserCurrency;
-          if (window.i18n?.setCurrency) {
-            window.i18n.setCurrency(currentUserCurrency);
-          }
-          document.getElementById('current-currency').textContent = currentUserCurrency;
-          populateCurrencySelects();
-        }
-      } catch (error) {
-      console.error('Error loading currency preference:', error);
-      }
-      const response = await fetch('/api/currency/preference', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        currentUserCurrency = data.data.preferredCurrency;
-        const currentCurrencyEl = document.getElementById('current-currency');
-        if (currentCurrencyEl) currentCurrencyEl.textContent = currentUserCurrency;
-        populateCurrencySelects();
-       } }
-    
-  
-
-  // Open currency settings modal
-  function openCurrencyModal() {
-    const modal = document.getElementById('currency-modal');
-    if (modal) {
-      modal.style.display = 'flex';
-      loadExchangeRateInfo();
-    }
-  }
-
-  // Close currency settings modal
-  function closeCurrencyModal() {
-    const modal = document.getElementById('currency-modal');
-    if (modal) {
-      modal.style.display = 'none';
-    }
-  }
-
-  // Load exchange rate information
-  async function loadExchangeRateInfo() {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`/api/currency/rates?base=${currentUserCurrency}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        const rateInfo = document.getElementById('exchange-rate-info');
-        if (!rateInfo) return;
-
-        const rates = data.data.rates;
-        const popularCurrencies = ['USD', 'EUR', 'GBP', 'JPY', 'AUD'];
-
-        let html = '<div class="rate-list">';
-        popularCurrencies.forEach(curr => {
-          if (rates[curr]) {
-            html += `<div class="rate-item">
-                <span class="rate-currency">${curr}</span>
-                <span class="rate-value">${rates[curr].toFixed(4)}</span>
-              </div>`;
-          }
-        });
-
-        const data = await response.json();
-        if (data.success) {
-          currentUserCurrency = newCurrency;
-          window.currentUserCurrency = newCurrency;
-          if (window.i18n?.setCurrency) {
-            window.i18n.setCurrency(newCurrency);
-          }
-          document.getElementById('current-currency').textContent = newCurrency;
-          closeCurrencyModal();
-          // Reload transactions to show in new currency
-          location.reload();
-        } else {
-          alert('Failed to update currency preference');
-        }
-      } else {
-        rateInfo.innerHTML = '<p>Failed to load exchange rates.</p>';
-      }
-    } catch (error) {
-      console.error('Error loading exchange rates:', error);
-    }
-  }
-
-  // Save currency preference
-  async function saveCurrencyPreference() {
-    try {
-      const token = localStorage.getItem('token');
-      const prefSelect = document.getElementById('preferred-currency');
-      if (!prefSelect) return;
-
-      const newCurrency = prefSelect.value;
-
-      const response = await fetch('/api/currency/preference', {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ currency: newCurrency })
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        currentUserCurrency = newCurrency;
-        const currentCurrencyEl = document.getElementById('current-currency');
-        if (currentCurrencyEl) currentCurrencyEl.textContent = newCurrency;
-        closeCurrencyModal();
-        // Reload transactions to show in new currency
-        location.reload();
-      } else {  
-        alert('Failed to update currency preference');
-      }
-    }
-
-   catch (error) {
-      console.error('Error saving currency preference:', error);
-      alert('Error saving currency preference');
-    }
-  };
-
-
-  </script>
-
-  <!-- PWA Installation Prompt -->
-  <div id="install-prompt" class="install-prompt" style="display: none;">
-    <div class="install-prompt-content">
-      <div class="install-prompt-header">
-        <i class="fas fa-download"></i>
-        <h3>Install ExpenseFlow</h3>
       </div>
-      <p>Install ExpenseFlow for quick access and offline functionality!</p>
-      <div class="install-prompt-actions">
-        <button id="install-button" class="install-btn">
-          <i class="fas fa-plus"></i> Install
-        </button>
-        <button id="install-dismiss" class="dismiss-btn">
-          <i class="fas fa-times"></i> Not now
-        </button>
+
+      <!-- Bottom bar -->
+      <div class="footer-bottom">
+        <p>© 2026 ExpenseFlow. All rights reserved.</p>
+      </div>
+    </footer>
+
+    <!-- Cursor Trail Script -->
+
+    <!-- PWA Installation Prompt -->
+    <div id="install-prompt" class="install-prompt" style="display: none;">
+      <div class="install-prompt-content">
+        <div class="install-prompt-header">
+          <i class="fas fa-download"></i>
+          <h3>Install ExpenseFlow</h3>
+        </div>
+        <p>Install ExpenseFlow for quick access and offline functionality!</p>
+        <div class="install-prompt-actions">
+          <button id="install-button" class="install-btn">
+            <i class="fas fa-plus"></i> Install
+          </button>
+          <button id="install-dismiss" class="dismiss-btn">
+            <i class="fas fa-times"></i> Not now
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-
-  <!-- Offline Indicator -->
-  <div id="offline-indicator" class="offline-indicator" style="display: none;">
-    <i class="fas fa-wifi-slash"></i>
-    <span data-i18n="offline.text">You're offline. Changes will be saved locally.</span>
-  </div>
-
-  <!-- Update Available Notification -->
-  <div id="update-notification" class="update-notification" style="display: none;">
-    <div class="update-content">
-      <i class="fas fa-sync-alt"></i>
-      <span data-i18n="update.text">A new version is available!</span>
-      <button id="update-button" class="update-btn" data-i18n="update.action">Update Now</button>
+    <!-- Offline Indicator -->
+    <div id="offline-indicator" class="offline-indicator" style="display: none;">
+      <i class="fas fa-wifi-slash"></i>
+      <span data-i18n="offline.text">You're offline. Changes will be saved locally.</span>
     </div>
-  </div>
 
-  <script src="trackerscript.js"></script>
-  <script src="analytics-dashboard.js"></script>
-  <script src="workspace-feature.js"></script>
-
+    <!-- Update Available Notification -->
+    <div id="update-notification" class="update-notification" style="display: none;">
+      <div class="update-content">
+        <i class="fas fa-sync-alt"></i>
+        <span data-i18n="update.text">A new version is available!</span>
+        <button id="update-button" class="update-btn" data-i18n="update.action">Update Now</button>
+      </div>
+    </div>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="api-integration.js"></script>
+    <script src="realtime-sync.js"></script>
+    <script src="analytics-dashboard.js"></script>
+    <script src="protect.js"></script>
+    <script src="trackerscript.js"></script>
+    <script src="auth.js"></script>
+    <script src="settings.js"></script>
+    <script src="workspace-feature.js"></script>
+    <script src="index.js"> </script>
 
 </body>
 
