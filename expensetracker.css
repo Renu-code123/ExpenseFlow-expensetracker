@@ -3415,3 +3415,50 @@ button {
     margin-right: 50px;
   }
 }
+/* Theme Toggle Button */
+.theme-toggle-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-color);
+  margin-left: auto;
+}
+
+/* Default Light Theme Variables */
+:root {
+  --bg-color: #f3f6f9;
+  --text-color: #0f0f23;
+  --card-bg: #42779b;
+  --nav-bg: #0f0f23;
+}
+
+/* Dark Theme Variables */
+.dark-theme {
+  --bg-color: #121212;
+  --text-color: #e0e0e0;
+  --card-bg: #1e1e1e;
+  --nav-bg: #0a0a0a;
+}
+
+/* Apply Variables */
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* Example component styling */
+.header,
+.navbar {
+  background-color: var(--nav-bg);
+}
+
+.balance-card,
+.income-card,
+.expense-card,
+.footer {
+  background-color: var(--card-bg);
+}
+
+
