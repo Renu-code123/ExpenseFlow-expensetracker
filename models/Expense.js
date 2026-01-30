@@ -76,6 +76,29 @@ const expenseSchema = new mongoose.Schema({
   syncedToAccounting: {
     type: Boolean,
     default: false
+  },
+  // Receipt OCR fields
+  source: {
+    type: String,
+    enum: ['manual', 'receipt_scan', 'receipt_itemized', 'import', 'recurring', 'api'],
+    default: 'manual'
+  },
+  receiptId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Receipt',
+    default: null
+  },
+  itemDetails: {
+    quantity: {
+      type: Number,
+      default: 1
+    },
+    unitPrice: {
+      type: Number
+    },
+    receiptItemIndex: {
+      type: Number
+    }
   }
 }, {
   timestamps: true
@@ -88,5 +111,7 @@ expenseSchema.index({ user: 1, type: 1, date: -1 });
 expenseSchema.index({ workspace: 1, type: 1, date: -1 });
 expenseSchema.index({ user: 1, category: 1, date: -1 });
 expenseSchema.index({ workspace: 1, category: 1, date: -1 });
+expenseSchema.index({ receiptId: 1 });
+expenseSchema.index({ source: 1, user: 1 });
 
 module.exports = mongoose.model('Expense', expenseSchema);
