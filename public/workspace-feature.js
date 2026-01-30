@@ -517,3 +517,329 @@ function showNotification(message, type = 'info') {
     setTimeout(() => document.body.removeChild(notification), 300);
   }, 3000);
 }
+
+// ==========================================
+// SETTLEMENT CENTER - Debt Simplification
+// ==========================================
+
+let settlementCenterData = null;
+let settlementSocket = null;
+
+/**
+ * Initialize Settlement Center
+ */
+function initSettlementCenter() {
+  // Initialize socket connection for real-time updates
+  if (typeof io !== 'undefined' && currentWorkspace) {
+    settlementSocket = io();
+    settlementSocket.on('connect', () => {
+      settlementSocket.emit('join_group', currentWorkspace._id);
+    });
+    
+    settlementSocket.on('settlement_update', (data) => {
+      console.log('Settlement update:', data);
+      loadSettlementCenter();
+    });
+    
+    settlementSocket.on('settlement_request', (data) => {
+      showNotification(`${data.settlement.from.name} has sent you a payment of ${formatCurrency(data.settlement.amount)}`, 'info');
+      loadSettlementCenter();
+    });
+  }
+}
+
+/**
+ * Load Settlement Center data
+ */
+async function loadSettlementCenter() {
+  try {
+    const token = getAuthToken();
+    if (!token || !currentWorkspace) return;
+
+    const response = await fetch(`/api/splits/settlements/center/${currentWorkspace._id}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    const data = await response.json();
+    if (data.success) {
+      settlementCenterData = data.data;
+      renderSettlementCenter();
+    }
+  } catch (error) {
+    console.error('Error loading settlement center:', error);
+  }
+}
+
+/**
+ * Render Settlement Center UI
+ */
+function renderSettlementCenter() {
+  const container = document.getElementById('settlement-center');
+  if (!container || !settlementCenterData) return;
+
+  const { simplification, balances, userBalance, pendingSettlements, summary } = settlementCenterData;
+
+  container.innerHTML = `
+    <!-- User Balance Card -->
+    <div class="settlement-balance-card ${userBalance.balance > 0 ? 'owed' : userBalance.balance < 0 ? 'owes' : 'settled'}">
+      <div class="balance-icon">
+        <i class="fas ${userBalance.balance > 0 ? 'fa-arrow-down' : userBalance.balance < 0 ? 'fa-arrow-up' : 'fa-check-circle'}"></i>
+      </div>
+      <div class="balance-info">
+        <h4>Your Balance</h4>
+        <p class="balance-amount">${userBalance.balance > 0 ? '+' : ''}${formatCurrency(Math.abs(userBalance.balance))}</p>
+        <span class="balance-status">${userBalance.balance > 0 ? "You're owed money" : userBalance.balance < 0 ? "You owe money" : "All settled!"}</span>
+      </div>
+    </div>
+
+    <!-- Debt Simplification Summary -->
+    <div class="simplification-summary">
+      <h4><i class="fas fa-magic"></i> Debt Simplification</h4>
+      <div class="simplification-stats">
+        <div class="stat">
+          <span class="stat-value">${simplification.original.count}</span>
+          <span class="stat-label">Original Debts</span>
+        </div>
+        <div class="stat-arrow">
+          <i class="fas fa-arrow-right"></i>
+        </div>
+        <div class="stat highlight">
+          <span class="stat-value">${simplification.simplified.count}</span>
+          <span class="stat-label">Optimized</span>
+        </div>
+        <div class="stat saved">
+          <span class="stat-value">${simplification.savings.percentageReduction}%</span>
+          <span class="stat-label">Reduced</span>
+        </div>
+      </div>
+      <button class="btn-simplify" onclick="createOptimizedSettlements()">
+        <i class="fas fa-compress-arrows-alt"></i> Apply Simplification
+      </button>
+    </div>
+
+    <!-- Member Balances -->
+    <div class="member-balances">
+      <h4><i class="fas fa-users"></i> Member Balances</h4>
+      <div class="balances-list">
+        ${balances.map(b => `
+          <div class="balance-item ${b.status}">
+            <div class="member-avatar">${b.user.name ? b.user.name.charAt(0).toUpperCase() : '?'}</div>
+            <div class="member-name">${b.user.name || 'Unknown'}</div>
+            <div class="member-balance ${b.balance > 0 ? 'positive' : b.balance < 0 ? 'negative' : ''}">
+              ${b.balance > 0 ? '+' : ''}${formatCurrency(b.balance)}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- Simplified Settlements -->
+    <div class="settlements-list">
+      <h4><i class="fas fa-exchange-alt"></i> Simplified Payments</h4>
+      ${simplification.simplified.settlements.length === 0 
+        ? '<p class="no-settlements">All debts are settled! 🎉</p>'
+        : simplification.simplified.settlements.map((s, i) => `
+          <div class="settlement-item">
+            <div class="settlement-parties">
+              <span class="from">${s.from.name}</span>
+              <i class="fas fa-long-arrow-alt-right"></i>
+              <span class="to">${s.to.name}</span>
+            </div>
+            <div class="settlement-amount">${formatCurrency(s.amount)}</div>
+            ${s.from.id === currentUser?._id ? `
+              <button class="btn-pay" onclick="initiatePayment('${i}', '${s.to.id}', ${s.amount})">
+                <i class="fas fa-paper-plane"></i> Pay
+              </button>
+            ` : s.to.id === currentUser?._id ? `
+              <span class="awaiting-badge">Awaiting</span>
+            ` : ''}
+          </div>
+        `).join('')
+      }
+    </div>
+
+    <!-- Pending Settlements -->
+    ${pendingSettlements.length > 0 ? `
+      <div class="pending-settlements">
+        <h4><i class="fas fa-clock"></i> Pending Confirmations</h4>
+        ${pendingSettlements.map(s => `
+          <div class="pending-item">
+            <div class="pending-info">
+              <strong>${s.paidBy.name || s.paidBy.email}</strong>
+              <i class="fas fa-arrow-right"></i>
+              <strong>${s.paidTo.name || s.paidTo.email}</strong>
+              <span class="amount">${formatCurrency(s.amount)}</span>
+            </div>
+            <div class="pending-actions">
+              ${s.paidTo.user?.toString() === currentUser?._id?.toString() || s.paidTo.user === currentUser?._id ? `
+                <button class="btn-confirm" onclick="confirmSettlement('${s._id}')">
+                  <i class="fas fa-check"></i> Confirm
+                </button>
+                <button class="btn-reject" onclick="rejectSettlement('${s._id}')">
+                  <i class="fas fa-times"></i> Reject
+                </button>
+              ` : `
+                <span class="status-badge ${s.status}">${s.status}</span>
+              `}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    ` : ''}
+  `;
+}
+
+/**
+ * Create optimized settlements from simplified debts
+ */
+async function createOptimizedSettlements() {
+  try {
+    const token = getAuthToken();
+    if (!token || !currentWorkspace) return;
+
+    const response = await fetch(`/api/splits/settlements/create-optimized/${currentWorkspace._id}`, {
+      method: 'POST',
+      headers: { 
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const data = await response.json();
+    if (data.success) {
+      showNotification(`Created ${data.data.settlements.length} optimized settlements`, 'success');
+      loadSettlementCenter();
+    } else {
+      showNotification(data.error || 'Failed to create settlements', 'error');
+    }
+  } catch (error) {
+    console.error('Error creating optimized settlements:', error);
+    showNotification('Error creating settlements', 'error');
+  }
+}
+
+/**
+ * Initiate payment for a settlement
+ */
+async function initiatePayment(index, toUserId, amount) {
+  const method = prompt('Payment method (cash, upi, bank_transfer, paypal):', 'upi');
+  if (!method) return;
+
+  const reference = prompt('Payment reference/transaction ID (optional):');
+  
+  try {
+    const token = getAuthToken();
+    if (!token || !currentWorkspace) return;
+
+    // First create the settlement if not exists, then request
+    const { simplified } = settlementCenterData.simplification;
+    const settlement = simplified.settlements[index];
+    
+    // Create the settlement record first
+    const createResponse = await fetch(`/api/splits/settlements/create-optimized/${currentWorkspace._id}`, {
+      method: 'POST',
+      headers: { 
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const createData = await createResponse.json();
+    if (!createData.success) {
+      throw new Error(createData.error || 'Failed to create settlement');
+    }
+
+    showNotification('Payment request sent!', 'success');
+    loadSettlementCenter();
+  } catch (error) {
+    console.error('Error initiating payment:', error);
+    showNotification('Error initiating payment', 'error');
+  }
+}
+
+/**
+ * Confirm a settlement
+ */
+async function confirmSettlement(settlementId) {
+  try {
+    const token = getAuthToken();
+    if (!token) return;
+
+    const response = await fetch(`/api/splits/settlements/${settlementId}/confirm`, {
+      method: 'POST',
+      headers: { 
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const data = await response.json();
+    if (data.success) {
+      showNotification('Payment confirmed!', 'success');
+      loadSettlementCenter();
+    } else {
+      showNotification(data.error || 'Failed to confirm', 'error');
+    }
+  } catch (error) {
+    console.error('Error confirming settlement:', error);
+    showNotification('Error confirming settlement', 'error');
+  }
+}
+
+/**
+ * Reject a settlement
+ */
+async function rejectSettlement(settlementId) {
+  const reason = prompt('Reason for rejection:');
+  if (!reason) return;
+
+  try {
+    const token = getAuthToken();
+    if (!token) return;
+
+    const response = await fetch(`/api/splits/settlements/${settlementId}/reject`, {
+      method: 'POST',
+      headers: { 
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ reason })
+    });
+
+    const data = await response.json();
+    if (data.success) {
+      showNotification('Settlement rejected', 'info');
+      loadSettlementCenter();
+    } else {
+      showNotification(data.error || 'Failed to reject', 'error');
+    }
+  } catch (error) {
+    console.error('Error rejecting settlement:', error);
+    showNotification('Error rejecting settlement', 'error');
+  }
+}
+
+/**
+ * Format currency helper
+ */
+function formatCurrency(amount) {
+  if (window.i18n?.formatCurrency) {
+    return window.i18n.formatCurrency(amount);
+  }
+  return `$${parseFloat(amount || 0).toFixed(2)}`;
+}
+
+// Export settlement functions
+window.loadSettlementCenter = loadSettlementCenter;
+window.createOptimizedSettlements = createOptimizedSettlements;
+window.initiatePayment = initiatePayment;
+window.confirmSettlement = confirmSettlement;
+window.rejectSettlement = rejectSettlement;
+
+// Initialize settlement center when workspace loads
+const originalLoadWorkspaceData = loadWorkspaceData;
+loadWorkspaceData = async function() {
+  await originalLoadWorkspaceData();
+  initSettlementCenter();
+  loadSettlementCenter();
+};
