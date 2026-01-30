@@ -1,10 +1,11 @@
-# TODO: Feature Implementation Audit and Completion
+# Email Notifications for Invoices - Implementation Plan
 
 ## Tasks
-- [x] Analyze codebase and identify gaps
-- [x] Complete Currency Routes implementation
-- [x] Implement Groups Feature (service, routes, models)
-- [x] Implement Expense Splitting Feature (service, routes, models)
-- [x] Verify End-to-End Integration of all features
-- [x] Update Documentation (README.md, BACKEND.md) to reflect current status
-- [x] Test all implemented features
+- [x] Add `sendInvoiceSentNotification` method to `services/emailService.js`
+- [x] Modify `services/invoiceService.js` to call email notification after `markAsSent()` in `generateRecurringInvoices`
+- [x] Add error handling and logging for email notifications
+- [x] Test email sending functionality with mock invoices
+
+## Status
+- Plan approved by user
+- Starting implementation
