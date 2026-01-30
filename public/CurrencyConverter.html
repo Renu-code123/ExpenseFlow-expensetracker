@@ -819,7 +819,12 @@ body.light .converter-grid input[disabled] {
     </div>
   </div>
   <div class="footer-bottom">
-    &copy; 2026 ExpenseFlow. All rights reserved. | Rates are updated daily
+      <p id="copyright" style="text-align:center;"></p>
+      <script>
+        document.getElementById("copyright").innerHTML =
+          `&copy; ${new Date().getFullYear()} Expense Flow . All rights reserved.`;
+      </script>
+
   </div>
 </footer>
 
