@@ -20,6 +20,7 @@ const CronJobs = require('./services/cronJobs');
 const { generalLimiter } = require('./middleware/rateLimiter');
 const { sanitizeInput, mongoSanitizeMiddleware } = require('./middleware/sanitization');
 const securityMonitor = require('./services/securityMonitor');
+const AuditMiddleware = require('./middleware/auditMiddleware');
 const protect = require("./middleware/authMiddleware");
 require('dotenv').config();
 
@@ -40,6 +41,9 @@ const io = socketIo(server, {
 });
 
 const PORT = process.env.PORT || 3000;
+
+// Global audit interceptor (Issue #469)
+app.use(AuditMiddleware.auditInterceptor());
 
 // Security middleware
 app.use(helmet({
@@ -247,6 +251,7 @@ app.use('/api/tax', protect, require('./routes/tax'));
 app.use('/api/bills', protect, require('./routes/bills'));
 app.use('/api/calendar', protect, require('./routes/calendar'));
 app.use('/api/reminders', protect, require('./routes/reminders'));
+app.use('/api/audit', protect, require('./routes/audit'));
 
 // Root route to serve the UI
 app.get('/', (req, res) => {
