@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.message || "Login failed");
+        alert(data.error || data.message || "Login failed");
         return;
       }
 

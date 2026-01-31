@@ -1,3 +1,5 @@
+// ...existing code...
+// ...existing code...
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
@@ -168,6 +170,14 @@ const userSchema = new mongoose.Schema({
     }
   },
 
+
+  // Security fields for account lockout and password management
+  security: {
+    failedLoginAttempts: { type: Number, default: 0 },
+    lockoutUntil: { type: Number, default: null },
+    passwordChangedAt: { type: Date }
+  },
+
   // Financial Profile for calculations
   financialProfile: {
     monthlyIncome: {
@@ -194,6 +204,26 @@ const userSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+// ...existing code...
+// Account lockout check method
+userSchema.methods.isLocked = function() {
+  if (this.security && this.security.lockoutUntil) {
+    return this.security.lockoutUntil > Date.now();
+  }
+  return false;
+};
+
+// Record login method for audit and lockout reset
+userSchema.methods.recordLogin = async function(ip) {
+  // Reset failed login attempts and lockout
+  if (this.security) {
+    this.security.failedLoginAttempts = 0;
+    this.security.lockoutUntil = null;
+  }
+  this.lastLogin = new Date();
+  // Optionally store IP if desired: this.lastLoginIp = ip;
+  await this.save();
+};
 
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
