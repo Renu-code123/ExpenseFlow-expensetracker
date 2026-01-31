@@ -6,6 +6,7 @@ const advancedAnalyticsService = require('../services/advancedAnalyticsService')
 const gamificationService = require('../services/scoreService');
 const discoveryService = require('../services/discoveryService');
 const forecastingService = require('../services/forecastingService');
+const intelligenceService = require('../services/intelligenceService');
 const DataWarehouse = require('../models/DataWarehouse');
 const CustomDashboard = require('../models/CustomDashboard');
 const FinancialHealthScore = require('../models/FinancialHealthScore');
@@ -1119,6 +1120,197 @@ router.post('/intelligence/recalculate', auth, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to recalculate budgets'
+    });
+  }
+});
+
+// ========================
+// PREDICTIVE BURN RATE INTELLIGENCE ROUTES (Issue #470)
+// ========================
+
+/**
+ * GET /api/analytics/burn-rate
+ * Calculate daily/weekly spending velocity (burn rate)
+ */
+router.get('/burn-rate', auth, async (req, res) => {
+  try {
+    const { categoryId, workspaceId, startDate, endDate } = req.query;
+    
+    const burnRate = await intelligenceService.calculateBurnRate(req.user.id, {
+      categoryId,
+      workspaceId,
+      startDate,
+      endDate
+    });
+    
+    res.json({
+      success: true,
+      data: burnRate
+    });
+  } catch (error) {
+    console.error('Burn rate calculation error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to calculate burn rate'
+    });
+  }
+});
+
+/**
+ * GET /api/analytics/forecast
+ * Predict future expenses using linear regression
+ */
+router.get('/forecast', auth, async (req, res) => {
+  try {
+    const { categoryId, workspaceId, daysToPredict } = req.query;
+    
+    const forecast = await intelligenceService.predictExpenses(req.user.id, {
+      categoryId,
+      workspaceId,
+      daysToPredict: daysToPredict ? parseInt(daysToPredict) : 30
+    });
+    
+    res.json({
+      success: true,
+      data: forecast
+    });
+  } catch (error) {
+    console.error('Forecast error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to generate forecast'
+    });
+  }
+});
+
+/**
+ * GET /api/analytics/forecast/moving-average
+ * Calculate weighted moving average for smoother predictions
+ */
+router.get('/forecast/moving-average', auth, async (req, res) => {
+  try {
+    const { categoryId, workspaceId, period } = req.query;
+    
+    const wma = await intelligenceService.calculateWeightedMovingAverage(req.user.id, {
+      categoryId,
+      workspaceId,
+      period: period ? parseInt(period) : 7
+    });
+    
+    res.json({
+      success: true,
+      data: wma
+    });
+  } catch (error) {
+    console.error('Moving average error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to calculate moving average'
+    });
+  }
+});
+
+/**
+ * GET /api/analytics/budget/:budgetId/exhaustion
+ * Predict when a budget will be exhausted based on burn rate
+ */
+router.get('/budget/:budgetId/exhaustion', auth, async (req, res) => {
+  try {
+    const { budgetId } = req.params;
+    
+    const exhaustion = await intelligenceService.predictBudgetExhaustion(req.user.id, budgetId);
+    
+    res.json({
+      success: true,
+      data: exhaustion
+    });
+  } catch (error) {
+    console.error('Budget exhaustion prediction error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to predict budget exhaustion'
+    });
+  }
+});
+
+/**
+ * GET /api/analytics/category-patterns
+ * Analyze spending patterns by category with predictions
+ */
+router.get('/category-patterns', auth, async (req, res) => {
+  try {
+    const { workspaceId, daysToAnalyze } = req.query;
+    
+    const patterns = await intelligenceService.analyzeCategoryPatterns(req.user.id, {
+      workspaceId,
+      daysToAnalyze: daysToAnalyze ? parseInt(daysToAnalyze) : 30
+    });
+    
+    res.json({
+      success: true,
+      data: patterns
+    });
+  } catch (error) {
+    console.error('Category patterns error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to analyze category patterns'
+    });
+  }
+});
+
+/**
+ * GET /api/analytics/insights
+ * Generate intelligent insights and recommendations
+ */
+router.get('/insights', auth, async (req, res) => {
+  try {
+    const insights = await intelligenceService.generateInsights(req.user.id);
+    
+    res.json({
+      success: true,
+      data: insights
+    });
+  } catch (error) {
+    console.error('Generate insights error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to generate insights'
+    });
+  }
+});
+
+/**
+ * GET /api/analytics/forecast/complete
+ * Get complete forecast data including predictions, burn rate, and category analysis
+ */
+router.get('/forecast/complete', auth, async (req, res) => {
+  try {
+    const { categoryId, workspaceId } = req.query;
+    
+    // Run all analyses in parallel
+    const [burnRate, forecast, categoryPatterns, insights] = await Promise.all([
+      intelligenceService.calculateBurnRate(req.user.id, { categoryId, workspaceId }),
+      intelligenceService.predictExpenses(req.user.id, { categoryId, workspaceId, daysToPredict: 30 }),
+      intelligenceService.analyzeCategoryPatterns(req.user.id, { workspaceId }),
+      intelligenceService.generateInsights(req.user.id)
+    ]);
+    
+    res.json({
+      success: true,
+      data: {
+        burnRate,
+        forecast,
+        categoryPatterns,
+        insights,
+        generatedAt: new Date()
+      }
+    });
+  } catch (error) {
+    console.error('Complete forecast error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to generate complete forecast'
     });
   }
 });

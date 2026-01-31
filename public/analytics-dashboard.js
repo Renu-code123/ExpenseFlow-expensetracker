@@ -20,12 +20,19 @@ class IntelligenceDashboard {
     this.detectedSubscriptions = [];
     this.runwayData = null;
     this.burnRateData = null;
+    
+    // Issue #470: Predictive burn rate intelligence
+    this.forecastData = null;
+    this.categoryPatterns = null;
+    this.insights = null;
+    this.forecastChart = null;
   }
 
   async init() {
     this.bindEvents();
     await this.loadDashboard();
     await this.loadSubscriptionData(); // Issue #444
+    await this.loadForecastData(); // Issue #470
     this.startAutoRefresh();
   }
 
@@ -1053,6 +1060,334 @@ document.addEventListener('DOMContentLoaded', () => {
     window.intelligenceDashboard.init();
   }
 });
+
+// ========================
+// PREDICTIVE BURN RATE INTELLIGENCE (Issue #470)
+// ========================
+
+IntelligenceDashboard.prototype.loadForecastData = async function() {
+  try {
+    const response = await fetch(`${this.API_BASE}/forecast/complete`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+    
+    if (!response.ok) throw new Error('Failed to load forecast data');
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      this.forecastData = result.data.forecast;
+      this.burnRateData = result.data.burnRate;
+      this.categoryPatterns = result.data.categoryPatterns;
+      this.insights = result.data.insights;
+      
+      this.renderForecastDashboard();
+      this.renderBurnRateMetrics();
+      this.renderInsights();
+      this.renderCategoryPatterns();
+    }
+  } catch (error) {
+    console.error('Error loading forecast data:', error);
+  }
+};
+
+IntelligenceDashboard.prototype.renderForecastDashboard = function() {
+  if (!this.forecastData || !this.forecastData.success) return;
+  
+  const forecastContainer = document.getElementById('forecast-container');
+  if (!forecastContainer) return;
+  
+  // Create forecast chart
+  const chartCanvas = document.createElement('canvas');
+  chartCanvas.id = 'forecast-chart';
+  chartCanvas.style.maxHeight = '400px';
+  
+  forecastContainer.innerHTML = `
+    <div class="forecast-header">
+      <h3>30-Day Expense Forecast</h3>
+      <div class="forecast-accuracy">
+        <span class="accuracy-label">Model Accuracy:</span>
+        <span class="accuracy-value">${this.forecastData.model.accuracy.toFixed(1)}%</span>
+      </div>
+    </div>
+    <div class="chart-container"></div>
+    <div class="forecast-summary">
+      <div class="summary-card">
+        <h4>Predicted Spending</h4>
+        <p class="amount">$${this.forecastData.cumulativePredictions[29]?.cumulativeAmount.toFixed(2) || 0}</p>
+        <span class="period">Next 30 days</span>
+      </div>
+      <div class="summary-card">
+        <h4>Daily Burn Rate</h4>
+        <p class="amount">$${this.burnRateData?.dailyBurnRate.toFixed(2) || 0}</p>
+        <span class="trend ${this.burnRateData?.trend}">${this.burnRateData?.trend || 'stable'}</span>
+      </div>
+      <div class="summary-card">
+        <h4>Trend</h4>
+        <p class="percentage ${this.burnRateData?.trendPercentage >= 0 ? 'negative' : 'positive'}">
+          ${this.burnRateData?.trendPercentage >= 0 ? '+' : ''}${this.burnRateData?.trendPercentage.toFixed(1) || 0}%
+        </p>
+        <span class="period">vs. previous period</span>
+      </div>
+    </div>
+  `;
+  
+  const chartContainer = forecastContainer.querySelector('.chart-container');
+  chartContainer.appendChild(chartCanvas);
+  
+  // Prepare chart data
+  const historicalDates = this.forecastData.historicalData.map(d => d.date);
+  const historicalAmounts = this.forecastData.historicalData.map(d => d.amount);
+  const forecastDates = this.forecastData.predictions.map(p => p.date);
+  const forecastAmounts = this.forecastData.predictions.map(p => p.predictedAmount);
+  
+  // Create chart
+  const ctx = chartCanvas.getContext('2d');
+  this.forecastChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: [...historicalDates, ...forecastDates],
+      datasets: [
+        {
+          label: 'Historical Spending',
+          data: [...historicalAmounts, ...Array(forecastDates.length).fill(null)],
+          borderColor: '#3b82f6',
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          fill: true,
+          tension: 0.4
+        },
+        {
+          label: 'Predicted Spending',
+          data: [...Array(historicalDates.length).fill(null), ...forecastAmounts],
+          borderColor: '#f59e0b',
+          backgroundColor: 'rgba(245, 158, 11, 0.1)',
+          borderDash: [5, 5],
+          fill: true,
+          tension: 0.4
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        mode: 'index',
+        intersect: false
+      },
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top'
+        },
+        tooltip: {
+          callbacks: {
+            label: (context) => {
+              return `${context.dataset.label}: $${context.parsed.y.toFixed(2)}`;
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: (value) => `$${value}`
+          }
+        }
+      }
+    }
+  });
+};
+
+IntelligenceDashboard.prototype.renderBurnRateMetrics = function() {
+  if (!this.burnRateData) return;
+  
+  const metricsContainer = document.getElementById('burn-rate-metrics');
+  if (!metricsContainer) return;
+  
+  metricsContainer.innerHTML = `
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-icon">🔥</div>
+        <div class="metric-content">
+          <h4>Daily Burn Rate</h4>
+          <p class="metric-value">$${this.burnRateData.dailyBurnRate.toFixed(2)}</p>
+          <span class="metric-subtitle">${this.burnRateData.daysAnalyzed} days analyzed</span>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon">📊</div>
+        <div class="metric-content">
+          <h4>Weekly Burn Rate</h4>
+          <p class="metric-value">$${this.burnRateData.weeklyBurnRate.toFixed(2)}</p>
+          <span class="metric-subtitle">Projected weekly spend</span>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon">${this.burnRateData.trend === 'increasing' ? '📈' : this.burnRateData.trend === 'decreasing' ? '📉' : '➡️'}</div>
+        <div class="metric-content">
+          <h4>Spending Trend</h4>
+          <p class="metric-value ${this.burnRateData.trend}">${this.burnRateData.trend}</p>
+          <span class="metric-subtitle">${this.burnRateData.trendPercentage >= 0 ? '+' : ''}${this.burnRateData.trendPercentage.toFixed(1)}%</span>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon">🎯</div>
+        <div class="metric-content">
+          <h4>Confidence Score</h4>
+          <p class="metric-value">${this.burnRateData.confidence.toFixed(0)}%</p>
+          <span class="metric-subtitle">Based on ${this.burnRateData.dataPoints} transactions</span>
+        </div>
+      </div>
+    </div>
+  `;
+};
+
+IntelligenceDashboard.prototype.renderInsights = function() {
+  if (!this.insights || !this.insights.insights) return;
+  
+  const insightsContainer = document.getElementById('insights-container');
+  if (!insightsContainer) return;
+  
+  const insights = this.insights.insights;
+  
+  if (insights.length === 0) {
+    insightsContainer.innerHTML = `
+      <div class="no-insights">
+        <div class="icon">✨</div>
+        <p>All looking good! No concerns at the moment.</p>
+      </div>
+    `;
+    return;
+  }
+  
+  const insightIcons = {
+    alert: '🚨',
+    warning: '⚠️',
+    info: 'ℹ️',
+    success: '✅'
+  };
+  
+  const insightHTML = insights.map(insight => `
+    <div class="insight-card ${insight.type} priority-${insight.priority}">
+      <div class="insight-header">
+        <span class="insight-icon">${insightIcons[insight.type] || 'ℹ️'}</span>
+        <h4>${insight.title}</h4>
+        <span class="insight-priority">${insight.priority}</span>
+      </div>
+      <p class="insight-message">${insight.message}</p>
+      <span class="insight-category">${insight.category.replace('_', ' ')}</span>
+    </div>
+  `).join('');
+  
+  insightsContainer.innerHTML = `
+    <div class="insights-header">
+      <h3>Intelligent Insights</h3>
+      <span class="insights-count">${insights.length} insight${insights.length !== 1 ? 's' : ''}</span>
+    </div>
+    <div class="insights-list">${insightHTML}</div>
+  `;
+};
+
+IntelligenceDashboard.prototype.renderCategoryPatterns = function() {
+  if (!this.categoryPatterns || !this.categoryPatterns.categories) return;
+  
+  const patternsContainer = document.getElementById('category-patterns-container');
+  if (!patternsContainer) return;
+  
+  const topCategories = this.categoryPatterns.categories.slice(0, 5);
+  
+  const patternsHTML = topCategories.map(category => {
+    const hasPrediction = category.prediction && category.prediction.accuracy > 0;
+    const trendIcon = category.burnRate.trend === 'increasing' ? '📈' : 
+                       category.burnRate.trend === 'decreasing' ? '📉' : '➡️';
+    
+    return `
+      <div class="category-pattern-card">
+        <div class="pattern-header">
+          <h4>${category.categoryName}</h4>
+          <span class="trend-icon">${trendIcon}</span>
+        </div>
+        <div class="pattern-stats">
+          <div class="stat">
+            <span class="stat-label">Total Spent</span>
+            <span class="stat-value">$${category.totalSpent.toFixed(2)}</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Transactions</span>
+            <span class="stat-value">${category.transactionCount}</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Daily Rate</span>
+            <span class="stat-value">$${category.burnRate.dailyBurnRate.toFixed(2)}</span>
+          </div>
+        </div>
+        ${hasPrediction ? `
+          <div class="pattern-prediction">
+            <span class="prediction-label">30-Day Forecast:</span>
+            <span class="prediction-value">$${category.prediction.next30Days.toFixed(2)}</span>
+            <span class="prediction-accuracy">${category.prediction.accuracy.toFixed(0)}% accuracy</span>
+          </div>
+        ` : ''}
+        <div class="pattern-trend ${category.burnRate.trend}">
+          ${category.burnRate.trend} ${category.burnRate.trendPercentage >= 0 ? '+' : ''}${category.burnRate.trendPercentage.toFixed(1)}%
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  patternsContainer.innerHTML = `
+    <div class="patterns-header">
+      <h3>Category Spending Patterns</h3>
+      <span class="patterns-period">Last 30 days</span>
+    </div>
+    <div class="patterns-grid">${patternsHTML}</div>
+  `;
+};
+
+// Cache forecast data in IndexedDB
+IntelligenceDashboard.prototype.cacheForecastData = async function() {
+  if (!this.forecastData || typeof DBManager === 'undefined') return;
+  
+  try {
+    await DBManager.saveForecast({
+      timestamp: new Date(),
+      burnRate: this.burnRateData,
+      forecast: this.forecastData,
+      categoryPatterns: this.categoryPatterns,
+      insights: this.insights
+    });
+  } catch (error) {
+    console.error('Error caching forecast data:', error);
+  }
+};
+
+// Load cached forecast for offline viewing
+IntelligenceDashboard.prototype.loadCachedForecast = async function() {
+  if (typeof DBManager === 'undefined') return null;
+  
+  try {
+    const cached = await DBManager.getForecast();
+    if (cached && cached.timestamp) {
+      const age = Date.now() - new Date(cached.timestamp).getTime();
+      const maxAge = 24 * 60 * 60 * 1000; // 24 hours
+      
+      if (age < maxAge) {
+        this.forecastData = cached.forecast;
+        this.burnRateData = cached.burnRate;
+        this.categoryPatterns = cached.categoryPatterns;
+        this.insights = cached.insights;
+        return cached;
+      }
+    }
+  } catch (error) {
+    console.error('Error loading cached forecast:', error);
+  }
+  
+  return null;
+};
 
 // Export for module usage
 if (typeof module !== 'undefined' && module.exports) {

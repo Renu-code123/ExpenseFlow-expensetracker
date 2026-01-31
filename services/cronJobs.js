@@ -9,6 +9,7 @@ const emailService = require('../services/emailService');
 const currencyService = require('../services/currencyService');
 const InvoiceService = require('../services/invoiceService');
 const ReminderService = require('../services/reminderService');
+const intelligenceService = require('../services/intelligenceService');
 
 class CronJobs {
   static init() {
@@ -46,6 +47,12 @@ class CronJobs {
     cron.schedule('0 9 * * 0', async () => {
       console.log('[CronJobs] Sending weekly reports...');
       await this.sendWeeklyReports();
+    });
+    
+    // Daily intelligence analysis and insights - Every day at 8 AM
+    cron.schedule('0 8 * * *', async () => {
+      console.log('[CronJobs] Running daily intelligence analysis...');
+      await this.runIntelligenceAnalysis();
     });
 
     // Monthly report - 1st day of month at 10 AM
@@ -739,6 +746,50 @@ class CronJobs {
       console.log(`[CronJobs] Reminders processed: ${result.success.length} sent, ${result.failed.length} failed`);
     } catch (error) {
       console.error('[CronJobs] Pending reminders error:', error);
+    }
+  }
+  
+  static async runIntelligenceAnalysis() {
+    try {
+      const users = await User.find({ 
+        intelligencePreferences: { $exists: true },
+        'intelligencePreferences.enablePredictiveAnalysis': true 
+      });
+      
+      let analyzed = 0;
+      let alertsSent = 0;
+      
+      for (const user of users) {
+        try {
+          // Generate insights
+          const insights = await intelligenceService.generateInsights(user._id);
+          
+          // Send email for critical alerts
+          const criticalInsights = insights.insights.filter(i => i.priority === 'critical' || i.priority === 'high');
+          
+          if (criticalInsights.length > 0 && user.intelligencePreferences.emailAlerts) {
+            await emailService.sendEmail({
+              to: user.email,
+              subject: `⚠️ ExpenseFlow: ${criticalInsights.length} Important Financial Alert${criticalInsights.length > 1 ? 's' : ''}`,
+              template: 'intelligence-alert',
+              data: {
+                userName: user.name,
+                insights: criticalInsights,
+                insightCount: criticalInsights.length
+              }
+            });
+            alertsSent++;
+          }
+          
+          analyzed++;
+        } catch (userError) {
+          console.error(`[CronJobs] Intelligence analysis error for user ${user._id}:`, userError);
+        }
+      }
+      
+      console.log(`[CronJobs] Intelligence analysis complete: ${analyzed} users analyzed, ${alertsSent} alerts sent`);
+    } catch (error) {
+      console.error('[CronJobs] Intelligence analysis error:', error);
     }
   }
 }

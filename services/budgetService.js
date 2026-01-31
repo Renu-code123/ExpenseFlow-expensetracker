@@ -6,6 +6,7 @@
 const Budget = require('../models/Budget');
 const Expense = require('../models/Expense');
 const budgetIntelligenceService = require('./budgetIntelligenceService');
+const intelligenceService = require('./intelligenceService');
 const mongoose = require('mongoose');
 
 class BudgetService {
@@ -46,6 +47,32 @@ class BudgetService {
             usagePercent: Math.round(usagePercent * 10) / 10,
             message: `Budget "${budget.name}" is at ${Math.round(usagePercent)}% usage`
           });
+        }
+        
+        // Predictive burn rate alerts (Early Warning System)
+        try {
+          const exhaustionPrediction = await intelligenceService.predictBudgetExhaustion(userId, budget._id);
+          
+          if (exhaustionPrediction.willExceedBudget && exhaustionPrediction.status !== 'safe') {
+            alerts.push({
+              type: 'predictive',
+              severity: exhaustionPrediction.severity,
+              budgetId: budget._id,
+              category: budget.category,
+              name: budget.name,
+              amount: budget.amount,
+              spent: exhaustionPrediction.spent,
+              remaining: exhaustionPrediction.remaining,
+              usagePercent: exhaustionPrediction.percentage,
+              dailyBurnRate: exhaustionPrediction.dailyBurnRate,
+              predictedExhaustionDate: exhaustionPrediction.predictedExhaustionDate,
+              daysUntilExhaustion: exhaustionPrediction.daysUntilExhaustion,
+              projectedEndAmount: exhaustionPrediction.projectedEndAmount,
+              message: exhaustionPrediction.message
+            });
+          }
+        } catch (predictionError) {
+          console.error(`[BudgetService] Prediction error for budget ${budget._id}:`, predictionError);
         }
 
         // AI-driven anomaly alerts
