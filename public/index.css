@@ -153,3 +153,12 @@
     .progress-fill.low {
       background: #f44336 !important;
     }
+
+
+    .features-showcase {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      margin-top: 3rem;
+      
+    }
