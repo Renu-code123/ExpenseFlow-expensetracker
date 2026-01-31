@@ -195,6 +195,83 @@ const workspaceSchema = new mongoose.Schema({
     totalExpenses: { type: Number, default: 0 },
     totalAmount: { type: Number, default: 0 },
     lastActivityAt: Date
+  },
+
+  // Real-time collaboration features (#471)
+  activeUsers: [{
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    socketId: String,
+    status: { 
+      type: String, 
+      enum: ['online', 'busy', 'viewing', 'away'], 
+      default: 'online' 
+    },
+    currentView: String, // Current page/expense they're viewing
+    lastSeen: { type: Date, default: Date.now },
+    device: {
+      type: String,
+      platform: String,
+      browser: String
+    }
+  }],
+
+  // Distributed locks for conflict prevention
+  locks: [{
+    resourceType: { 
+      type: String, 
+      enum: ['expense', 'budget', 'workspace'], 
+      required: true 
+    },
+    resourceId: { type: String, required: true },
+    lockedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    lockedAt: { type: Date, default: Date.now },
+    expiresAt: { type: Date, required: true },
+    socketId: String
+  }],
+
+  // Discussion threads
+  discussions: [{
+    parentType: { type: String, enum: ['workspace', 'expense'], required: true },
+    parentId: { type: String }, // Optional, null for workspace-level discussions
+    title: String,
+    messages: [{
+      user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+      text: { type: String, required: true },
+      timestamp: { type: Date, default: Date.now },
+      edited: Boolean,
+      editedAt: Date,
+      reactions: [{
+        emoji: String,
+        users: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
+      }],
+      mentions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
+    }],
+    status: { type: String, enum: ['open', 'resolved', 'archived'], default: 'open' },
+    resolvedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    resolvedAt: Date,
+    createdAt: { type: Date, default: Date.now },
+    lastMessageAt: { type: Date, default: Date.now }
+  }],
+
+  // Typing indicators
+  typingUsers: [{
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    resourceType: String, // 'expense', 'discussion'
+    resourceId: String,
+    startedAt: { type: Date, default: Date.now },
+    expiresAt: { type: Date, required: true }
+  }],
+
+  // Collaboration settings
+  collaborationSettings: {
+    enableRealTimeSync: { type: Boolean, default: true },
+    lockTimeout: { type: Number, default: 300 }, // seconds
+    typingIndicatorTimeout: { type: Number, default: 10 }, // seconds
+    presenceUpdateInterval: { type: Number, default: 30 }, // seconds
+    maxConcurrentEditors: { type: Number, default: 10 },
+    enableDiscussions: { type: Boolean, default: true },
+    notifyOnMention: { type: Boolean, default: true },
+    notifyOnLock: { type: Boolean, default: true }
   }
 }, { 
   timestamps: true,
@@ -308,6 +385,209 @@ workspaceSchema.statics.checkPermission = async function(workspaceId, userId, pe
     workspace,
     role: workspace.getUserRole(userId)
   };
+};
+
+// Instance method: Add user to active users (#471)
+workspaceSchema.methods.addActiveUser = function(userId, socketId, device = {}) {
+  // Remove existing entry for this user
+  this.activeUsers = this.activeUsers.filter(
+    u => u.user.toString() !== userId.toString()
+  );
+  
+  this.activeUsers.push({
+    user: userId,
+    socketId,
+    status: 'online',
+    lastSeen: new Date(),
+    device
+  });
+  
+  return this.save();
+};
+
+// Instance method: Remove user from active users
+workspaceSchema.methods.removeActiveUser = function(userId) {
+  this.activeUsers = this.activeUsers.filter(
+    u => u.user.toString() !== userId.toString()
+  );
+  return this.save();
+};
+
+// Instance method: Update user status
+workspaceSchema.methods.updateUserStatus = function(userId, status, currentView = null) {
+  const activeUser = this.activeUsers.find(
+    u => u.user.toString() === userId.toString()
+  );
+  
+  if (activeUser) {
+    activeUser.status = status;
+    activeUser.lastSeen = new Date();
+    if (currentView !== null) {
+      activeUser.currentView = currentView;
+    }
+  }
+  
+  return this.save();
+};
+
+// Instance method: Acquire lock
+workspaceSchema.methods.acquireLock = async function(resourceType, resourceId, userId, socketId, lockDuration = 300) {
+  // Check if already locked by another user
+  const existingLock = this.locks.find(
+    lock => lock.resourceType === resourceType && 
+            lock.resourceId === resourceId &&
+            lock.expiresAt > new Date()
+  );
+  
+  if (existingLock && existingLock.lockedBy.toString() !== userId.toString()) {
+    return { 
+      success: false, 
+      lockedBy: existingLock.lockedBy,
+      expiresAt: existingLock.expiresAt 
+    };
+  }
+  
+  // Remove expired or existing locks for this resource
+  this.locks = this.locks.filter(
+    lock => !(lock.resourceType === resourceType && lock.resourceId === resourceId) &&
+            lock.expiresAt > new Date()
+  );
+  
+  // Add new lock
+  const expiresAt = new Date(Date.now() + lockDuration * 1000);
+  this.locks.push({
+    resourceType,
+    resourceId,
+    lockedBy: userId,
+    lockedAt: new Date(),
+    expiresAt,
+    socketId
+  });
+  
+  await this.save();
+  return { success: true, expiresAt };
+};
+
+// Instance method: Release lock
+workspaceSchema.methods.releaseLock = async function(resourceType, resourceId, userId) {
+  this.locks = this.locks.filter(
+    lock => !(lock.resourceType === resourceType && 
+              lock.resourceId === resourceId &&
+              lock.lockedBy.toString() === userId.toString())
+  );
+  
+  return await this.save();
+};
+
+// Instance method: Check if resource is locked
+workspaceSchema.methods.isLocked = function(resourceType, resourceId, userId = null) {
+  const lock = this.locks.find(
+    lock => lock.resourceType === resourceType && 
+            lock.resourceId === resourceId &&
+            lock.expiresAt > new Date()
+  );
+  
+  if (!lock) return { locked: false };
+  
+  // If userId provided, check if it's locked by someone else
+  if (userId && lock.lockedBy.toString() === userId.toString()) {
+    return { locked: false, ownLock: true };
+  }
+  
+  return { 
+    locked: true, 
+    lockedBy: lock.lockedBy,
+    expiresAt: lock.expiresAt 
+  };
+};
+
+// Instance method: Clean expired locks
+workspaceSchema.methods.cleanExpiredLocks = function() {
+  const before = this.locks.length;
+  this.locks = this.locks.filter(lock => lock.expiresAt > new Date());
+  return before - this.locks.length; // Return number of locks removed
+};
+
+// Instance method: Add typing indicator
+workspaceSchema.methods.setTyping = function(userId, resourceType, resourceId, duration = 10) {
+  // Remove existing typing indicator for this user/resource
+  this.typingUsers = this.typingUsers.filter(
+    t => !(t.user.toString() === userId.toString() && 
+           t.resourceType === resourceType && 
+           t.resourceId === resourceId)
+  );
+  
+  const expiresAt = new Date(Date.now() + duration * 1000);
+  this.typingUsers.push({
+    user: userId,
+    resourceType,
+    resourceId,
+    startedAt: new Date(),
+    expiresAt
+  });
+  
+  return this.save();
+};
+
+// Instance method: Remove typing indicator
+workspaceSchema.methods.clearTyping = function(userId, resourceType, resourceId) {
+  this.typingUsers = this.typingUsers.filter(
+    t => !(t.user.toString() === userId.toString() && 
+           t.resourceType === resourceType && 
+           t.resourceId === resourceId)
+  );
+  
+  return this.save();
+};
+
+// Instance method: Get active typing users for resource
+workspaceSchema.methods.getTypingUsers = function(resourceType, resourceId) {
+  // Clean expired indicators
+  this.typingUsers = this.typingUsers.filter(t => t.expiresAt > new Date());
+  
+  return this.typingUsers.filter(
+    t => t.resourceType === resourceType && t.resourceId === resourceId
+  );
+};
+
+// Instance method: Create discussion
+workspaceSchema.methods.createDiscussion = function(parentType, parentId, title, userId, initialMessage) {
+  const discussion = {
+    parentType,
+    parentId,
+    title,
+    messages: [],
+    status: 'open',
+    createdAt: new Date(),
+    lastMessageAt: new Date()
+  };
+  
+  if (initialMessage) {
+    discussion.messages.push({
+      user: userId,
+      text: initialMessage,
+      timestamp: new Date()
+    });
+  }
+  
+  this.discussions.push(discussion);
+  return this.save();
+};
+
+// Instance method: Add message to discussion
+workspaceSchema.methods.addMessage = function(discussionId, userId, text, mentions = []) {
+  const discussion = this.discussions.id(discussionId);
+  if (!discussion) return null;
+  
+  discussion.messages.push({
+    user: userId,
+    text,
+    timestamp: new Date(),
+    mentions
+  });
+  
+  discussion.lastMessageAt = new Date();
+  return this.save();
 };
 
 // Export role definitions for use in middleware
