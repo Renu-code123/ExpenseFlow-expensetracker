@@ -46,15 +46,16 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com","https://api.github.com"],
       scriptSrc: [
         "'self'",
         "'unsafe-inline'",
         "https://cdn.socket.io",
-        "https://cdn.jsdelivr.net"
+        "https://cdn.jsdelivr.net",
+        "https://api.github.com"
       ],
       scriptSrcAttr: ["'unsafe-inline'"],
-      imgSrc: ["'self'", "data:", "https:", "https://res.cloudinary.com"],
+      imgSrc: ["'self'", "data:", "https:", "https://res.cloudinary.com","https://api.github.com"],
       connectSrc: [
         "'self'",
         "http://localhost:3000",
@@ -63,6 +64,7 @@ app.use(helmet({
         // APIs
         "https://api.exchangerate-api.com",
         "https://api.frankfurter.app",
+        "https://api.github.com",
 
         // Media
         "https://res.cloudinary.com",
