@@ -190,6 +190,52 @@ const userSchema = new mongoose.Schema({
       default: 0,
       min: 0
     }
+  },
+  
+  // ========================
+  // Intelligence Preferences (Issue #470)
+  // ========================
+  intelligencePreferences: {
+    enablePredictiveAnalysis: {
+      type: Boolean,
+      default: true
+    },
+    emailAlerts: {
+      type: Boolean,
+      default: true
+    },
+    alertThresholds: {
+      burnRateIncrease: {
+        type: Number,
+        default: 20, // Percentage
+        min: 0,
+        max: 100
+      },
+      budgetExhaustionDays: {
+        type: Number,
+        default: 7, // Days until exhaustion to trigger alert
+        min: 1,
+        max: 30
+      }
+    },
+    forecastPeriod: {
+      type: Number,
+      default: 30, // Days to forecast
+      min: 7,
+      max: 90
+    },
+    analysisFrequency: {
+      type: String,
+      enum: ['daily', 'weekly', 'monthly'],
+      default: 'daily'
+    },
+    cacheForecasts: {
+      type: Boolean,
+      default: true
+    },
+    lastAnalysisRun: {
+      type: Date
+    }
   }
 }, {
   timestamps: true

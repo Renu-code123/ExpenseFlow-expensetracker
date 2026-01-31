@@ -4,6 +4,7 @@ const User = require('../models/User');
 const currencyService = require('./currencyService');
 const budgetService = require('./budgetService');
 const approvalService = require('./approvalService');
+const intelligenceService = require('./intelligenceService');
 
 class ExpenseService {
     async createExpense(rawData, userId, io) {
@@ -62,7 +63,30 @@ class ExpenseService {
         }
         await budgetService.updateGoalProgress(userId, finalData.type === 'expense' ? -amountForBudget : amountForBudget, finalData.category);
 
-        // 7. Emit WebSocket
+        // 7. Trigger Intelligence Analysis (async, non-blocking)
+        setImmediate(async () => {
+            try {
+                const burnRate = await intelligenceService.calculateBurnRate(userId, {
+                    categoryId: finalData.category,
+                    workspaceId: finalData.workspace
+                });
+                
+                // Emit burn rate update to client
+                if (io && burnRate.trend === 'increasing' && burnRate.trendPercentage > 15) {
+                    io.to(`user_${userId}`).emit('burn_rate_alert', {
+                        type: 'warning',
+                        category: finalData.category,
+                        burnRate: burnRate.dailyBurnRate,
+                        trend: burnRate.trend,
+                        trendPercentage: burnRate.trendPercentage
+                    });
+                }
+            } catch (intelligenceError) {
+                console.error('[ExpenseService] Intelligence analysis error:', intelligenceError);
+            }
+        });
+
+        // 8. Emit WebSocket
         if (io) {
             const socketData = expense.toObject();
             socketData.displayAmount = finalData.convertedAmount || expense.amount;

@@ -4,7 +4,7 @@
 class DBManager {
     constructor() {
         this.dbName = 'ExpenseFlowDB';
-        this.dbVersion = 1;
+        this.dbVersion = 2; // Increment version for new store
         this.db = null;
     }
 
@@ -30,6 +30,12 @@ class DBManager {
                 // Store for app metadata (lastSyncTime, etc)
                 if (!db.objectStoreNames.contains('metadata')) {
                     db.createObjectStore('metadata', { keyPath: 'key' });
+                }
+                
+                // Store for forecast data (Issue #470)
+                if (!db.objectStoreNames.contains('forecasts')) {
+                    const forecastStore = db.createObjectStore('forecasts', { keyPath: 'id' });
+                    forecastStore.createIndex('timestamp', 'timestamp', { unique: false });
                 }
             };
 
@@ -146,6 +152,27 @@ class DBManager {
             request.onsuccess = () => resolve();
             request.onerror = () => reject(request.error);
         });
+    }
+    
+    // ========================
+    // FORECAST DATA METHODS (Issue #470)
+    // ========================
+    
+    async saveForecast(forecastData) {
+        const data = {
+            id: 'latest',
+            timestamp: new Date(),
+            ...forecastData
+        };
+        return this.put('forecasts', data);
+    }
+    
+    async getForecast() {
+        return this.get('forecasts', 'latest');
+    }
+    
+    async clearForecast() {
+        return this.delete('forecasts', 'latest');
     }
 }
 
