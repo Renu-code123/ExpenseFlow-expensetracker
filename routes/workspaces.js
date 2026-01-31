@@ -708,4 +708,215 @@ router.get('/:id/activity', auth, checkPermission('audit:view'), async (req, res
   }
 });
 
+// ============================================
+// Collaboration Features (#471)
+// ============================================
+
+const workspaceService = require('../services/workspaceService');
+
+/**
+ * Get workspace with collaboration state
+ * GET /api/workspaces/:workspaceId/collaboration
+ */
+router.get('/:workspaceId/collaboration', auth, workspaceAccess, async (req, res) => {
+  try {
+    const workspace = await workspaceService.getWorkspaceWithCollaboration(
+      req.params.workspaceId,
+      req.user._id
+    );
+
+    res.json({
+      success: true,
+      data: {
+        id: workspace._id,
+        name: workspace.name,
+        activeUsers: workspace.activeUsers,
+        locks: workspace.locks.filter(l => l.expiresAt > new Date()),
+        discussions: workspace.discussions,
+        settings: workspace.collaborationSettings
+      }
+    });
+  } catch (error) {
+    console.error('Get collaboration state error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * Get collaboration statistics
+ * GET /api/workspaces/:workspaceId/collaboration/stats
+ */
+router.get('/:workspaceId/collaboration/stats', auth, workspaceAccess, async (req, res) => {
+  try {
+    const stats = await workspaceService.getCollaborationStats(req.params.workspaceId);
+    res.json({ success: true, data: stats });
+  } catch (error) {
+    console.error('Get collaboration stats error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * Acquire lock on resource
+ * POST /api/workspaces/:workspaceId/locks
+ */
+router.post('/:workspaceId/locks', auth, workspaceAccess, async (req, res) => {
+  try {
+    const { resourceType, resourceId, lockDuration } = req.body;
+
+    if (!resourceType || !resourceId) {
+      return res.status(400).json({ error: 'Missing resourceType or resourceId' });
+    }
+
+    const result = await workspaceService.acquireLock(
+      req.params.workspaceId,
+      req.user._id,
+      resourceType,
+      resourceId,
+      lockDuration
+    );
+
+    res.json({ success: result.success, expiresAt: result.expiresAt, lockedBy: result.lockedBy });
+  } catch (error) {
+    console.error('Acquire lock error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * Release lock on resource
+ * DELETE /api/workspaces/:workspaceId/locks/:resourceType/:resourceId
+ */
+router.delete('/:workspaceId/locks/:resourceType/:resourceId', auth, workspaceAccess, async (req, res) => {
+  try {
+    const result = await workspaceService.releaseLock(
+      req.params.workspaceId,
+      req.user._id,
+      req.params.resourceType,
+      req.params.resourceId
+    );
+
+    res.json(result);
+  } catch (error) {
+    console.error('Release lock error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * Check lock status
+ * GET /api/workspaces/:workspaceId/locks/:resourceType/:resourceId
+ */
+router.get('/:workspaceId/locks/:resourceType/:resourceId', auth, workspaceAccess, async (req, res) => {
+  try {
+    const lockStatus = await workspaceService.checkLock(
+      req.params.workspaceId,
+      req.params.resourceType,
+      req.params.resourceId,
+      req.user._id
+    );
+
+    res.json({ success: true, ...lockStatus });
+  } catch (error) {
+    console.error('Check lock error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * Get discussions
+ * GET /api/workspaces/:workspaceId/discussions
+ */
+router.get('/:workspaceId/discussions', auth, workspaceAccess, async (req, res) => {
+  try {
+    const { parentType, parentId } = req.query;
+    const discussions = await workspaceService.getDiscussions(
+      req.params.workspaceId,
+      parentType,
+      parentId
+    );
+
+    res.json({ success: true, data: discussions });
+  } catch (error) {
+    console.error('Get discussions error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * Create discussion
+ * POST /api/workspaces/:workspaceId/discussions
+ */
+router.post('/:workspaceId/discussions', auth, workspaceAccess, async (req, res) => {
+  try {
+    const { parentType, parentId, title, initialMessage } = req.body;
+
+    if (!parentType || !title) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const discussion = await workspaceService.createDiscussion(
+      req.params.workspaceId,
+      req.user._id,
+      parentType,
+      parentId,
+      title,
+      initialMessage
+    );
+
+    res.status(201).json({ success: true, data: discussion });
+  } catch (error) {
+    console.error('Create discussion error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * Add message to discussion
+ * POST /api/workspaces/:workspaceId/discussions/:discussionId/messages
+ */
+router.post('/:workspaceId/discussions/:discussionId/messages', auth, workspaceAccess, async (req, res) => {
+  try {
+    const { text, mentions } = req.body;
+
+    if (!text) {
+      return res.status(400).json({ error: 'Message text is required' });
+    }
+
+    const result = await workspaceService.addDiscussionMessage(
+      req.params.workspaceId,
+      req.user._id,
+      req.params.discussionId,
+      text,
+      mentions
+    );
+
+    res.status(201).json({ success: true, data: result.message });
+  } catch (error) {
+    console.error('Add discussion message error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * Update collaboration settings
+ * PUT /api/workspaces/:workspaceId/collaboration/settings
+ */
+router.put('/:workspaceId/collaboration/settings', auth, requireManager, async (req, res) => {
+  try {
+    const workspace = await Workspace.findById(req.params.workspaceId);
+    if (!workspace) {
+      return res.status(404).json({ error: 'Workspace not found' });
+    }
+
+    Object.assign(workspace.collaborationSettings, req.body);
+    await workspace.save();
+
+    res.json({ success: true, data: workspace.collaborationSettings });
+  } catch (error) {
+    console.error('Update collaboration settings error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;

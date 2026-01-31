@@ -221,6 +221,12 @@ io.on('connection', (socket) => {
   });
 });
 
+// Initialize Collaborative Handler for real-time workspaces
+const CollaborativeHandler = require('./socket/collabHandler');
+const collaborativeHandler = new CollaborativeHandler(io);
+collaborativeHandler.startPeriodicCleanup();
+console.log('Collaboration handler initialized');
+
 // Routes
 app.use('/api/auth', require('./middleware/rateLimiter').authLimiter, authRoutes);
 app.use('/api/currency', require('./routes/currency'));
