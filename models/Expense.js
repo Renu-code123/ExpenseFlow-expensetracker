@@ -77,31 +77,25 @@ const expenseSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
-  // Receipt OCR fields
-  source: {
-    type: String,
-    enum: ['manual', 'receipt_scan', 'receipt_itemized', 'import', 'recurring', 'api'],
-    default: 'manual'
+  version: {
+    type: Number,
+    default: 1
   },
-  receiptId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Receipt',
-    default: null
-  },
-  itemDetails: {
-    quantity: {
-      type: Number,
-      default: 1
-    },
-    unitPrice: {
-      type: Number
-    },
-    receiptItemIndex: {
-      type: Number
-    }
+  lastSyncedAt: {
+    type: Date,
+    default: Date.now
   }
 }, {
   timestamps: true
+});
+
+// Middleware to increment version on save
+expenseSchema.pre('save', function (next) {
+  if (this.isModified()) {
+    this.version += 1;
+    this.lastSyncedAt = Date.now();
+  }
+  next();
 });
 
 // Indexes for performance optimization
