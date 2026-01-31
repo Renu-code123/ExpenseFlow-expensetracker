@@ -20,7 +20,7 @@ const CronJobs = require('./services/cronJobs');
 const { generalLimiter } = require('./middleware/rateLimiter');
 const { sanitizeInput, mongoSanitizeMiddleware } = require('./middleware/sanitization');
 const securityMonitor = require('./services/securityMonitor');
-const protect=require("./middleware/authMiddleware");
+const protect = require("./middleware/authMiddleware");
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
@@ -48,29 +48,29 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
       scriptSrc: [
-  "'self'",
-  "'unsafe-inline'",
-  "https://cdn.socket.io",
-  "https://cdn.jsdelivr.net"
-],
+        "'self'",
+        "'unsafe-inline'",
+        "https://cdn.socket.io",
+        "https://cdn.jsdelivr.net"
+      ],
       scriptSrcAttr: ["'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "https:", "https://res.cloudinary.com"],
       connectSrc: [
-  "'self'",
-  "http://localhost:3000",
-  "ws://localhost:3000",
+        "'self'",
+        "http://localhost:3000",
+        "ws://localhost:3000",
 
-  // APIs
-  "https://api.exchangerate-api.com",
-  "https://api.frankfurter.app",
+        // APIs
+        "https://api.exchangerate-api.com",
+        "https://api.frankfurter.app",
 
-  // Media
-  "https://res.cloudinary.com",
+        // Media
+        "https://res.cloudinary.com",
 
-  // Source maps + CDNs
-  "https://cdn.socket.io",
-  "https://cdn.jsdelivr.net"
-],
+        // Source maps + CDNs
+        "https://cdn.socket.io",
+        "https://cdn.jsdelivr.net"
+      ],
       fontSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com"],
       objectSrc: ["'none'"],
       mediaSrc: ["'self'"],
@@ -153,12 +153,52 @@ mongoose.connect(process.env.MONGODB_URI)
 // Socket.IO authentication
 io.use(socketAuth);
 
+// Initialize settlement service with Socket.IO
+const settlementService = require('./services/settlementService');
+settlementService.setSocketIO(io);
+
 // Socket.IO connection handling
 io.on('connection', (socket) => {
   console.log(`User ${socket.user.name} connected`);
 
   // Join user-specific room
   socket.join(`user_${socket.userId}`);
+
+  // Handle joining group/workspace rooms for real-time settlements
+  socket.on('join_group', (groupId) => {
+    socket.join(`group_${groupId}`);
+    console.log(`User ${socket.user.name} joined group room: ${groupId}`);
+  });
+
+  socket.on('leave_group', (groupId) => {
+    socket.leave(`group_${groupId}`);
+    console.log(`User ${socket.user.name} left group room: ${groupId}`);
+  });
+
+  // Handle settlement events
+  socket.on('settlement_action', async (data) => {
+    try {
+      const { action, settlementId, groupId, paymentDetails, reason } = data;
+      
+      switch (action) {
+        case 'request':
+          await settlementService.requestSettlement(settlementId, socket.userId, paymentDetails);
+          break;
+        case 'confirm':
+          await settlementService.confirmSettlement(settlementId, socket.userId);
+          break;
+        case 'reject':
+          await settlementService.rejectSettlement(settlementId, socket.userId, reason);
+          break;
+        case 'refresh_center':
+          const centerData = await settlementService.getSettlementCenter(groupId, socket.userId);
+          socket.emit('settlement_center_data', centerData);
+          break;
+      }
+    } catch (error) {
+      socket.emit('settlement_error', { error: error.message });
+    }
+  });
 
   // Handle sync requests
   socket.on('sync_request', async (data) => {
@@ -187,7 +227,8 @@ app.use('/api/currency', require('./routes/currency'));
 
 app.use('/api/user', protect, require('./routes/user'));
 app.use('/api/expenses', require('./middleware/rateLimiter').expenseLimiter, protect, expenseRoutes);
-app.use('/api/sync', syncRoutes);
+app.use('/api/sync', protect, syncRoutes);
+app.use('/api/rules', protect, require('./routes/rules'));
 app.use('/api/notifications', protect, require('./routes/notifications'));
 app.use('/api/receipts', require('./middleware/rateLimiter').uploadLimiter, protect, require('./routes/receipts'));
 app.use('/api/budgets', protect, require('./routes/budgets'));
