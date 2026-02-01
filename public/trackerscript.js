@@ -435,28 +435,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       showNotification(`${type.value.charAt(0).toUpperCase() + type.value.slice(1)} added successfully!`, 'success');
     } catch (error) {
-      // Handle offline mode - save to localStorage
-      const transaction = {
-        id: generateID(),
-        text: text.value.trim(),
-        amount: transactionAmount,
-        category: category.value,
-        type: type.value,
-        date: new Date().toISOString(),
-        offline: true
-      };
-
-      transactions.push(transaction);
-      displayTransactions();
-      updateValues();
-      updateLocalStorage();
-
-      text.value = '';
-      amount.value = '';
-      category.value = '';
-      type.value = '';
-
-      showNotification('Saved offline. Will sync when online.', 'warning');
+      console.error('Failed to add transaction:', error);
+      showNotification('Failed to add transaction. Please check your connection.', 'error');
     }
   }
 
@@ -466,26 +446,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!transactionToRemove) return;
 
     try {
-      if (!transactionToRemove.offline) {
-        await deleteExpense(id);
-      }
-
+      await deleteExpense(id);
       transactions = transactions.filter(transaction => transaction.id !== id);
-      updateLocalStorage();
       displayTransactions();
       updateValues();
-
       showNotification('Transaction deleted successfully', 'success');
     } catch (error) {
-      // Mark for deletion when online
-      const transaction = transactions.find(t => t.id === id);
-      if (transaction) {
-        transaction.pendingDelete = true;
-        updateLocalStorage();
-        displayTransactions();
-        updateValues();
-        showNotification('Marked for deletion. Will sync when online.', 'warning');
-      }
+      console.error('Failed to delete transaction:', error);
+      showNotification('Failed to delete transaction. Please check your connection.', 'error');
     }
   }
 
@@ -494,50 +462,18 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const expenses = await fetchExpenses();
       transactions = expenses;
-      updateLocalStorage();
       displayTransactions();
       updateValues();
     } catch (error) {
-      // Load from localStorage if API fails
-      const localTransactions = JSON.parse(localStorage.getItem('transactions') || '[]');
-      transactions = localTransactions;
+      console.error('Failed to load transactions:', error);
+      showNotification('Failed to load transactions. Please check your connection.', 'error');
+      transactions = [];
       displayTransactions();
       updateValues();
-      showNotification('Loaded offline data', 'warning');
     }
   }
 
-  // Sync offline transactions when online
-  async function syncOfflineTransactions() {
-    const offlineTransactions = transactions.filter(t => t.offline || t.pendingDelete);
 
-    for (const transaction of offlineTransactions) {
-      try {
-        if (transaction.pendingDelete) {
-          await deleteExpense(transaction.id);
-          transactions = transactions.filter(t => t.id !== transaction.id);
-        } else if (transaction.offline) {
-          const expense = {
-            description: transaction.text,
-            amount: Math.abs(transaction.amount),
-            category: transaction.category,
-            type: transaction.type
-          };
-
-          const savedExpense = await saveExpense(expense);
-
-          // Update local transaction with server ID
-          transaction.id = savedExpense._id;
-          transaction.offline = false;
-        }
-      } catch (error) {
-        console.error('Sync error:', error);
-      }
-    }
-
-    updateLocalStorage();
-    showNotification('Data synced successfully', 'success');
-  }
 
   /* =====================
      UI FUNCTIONS
@@ -630,9 +566,7 @@ document.addEventListener("DOMContentLoaded", () => {
     moneyMinus.innerHTML = `-${currencySymbol}${expense.toFixed(2)}`;
   }
 
-  function updateLocalStorage() {
-    localStorage.setItem('transactions', JSON.stringify(transactions));
-  }
+
 
   function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
@@ -704,11 +638,6 @@ document.addEventListener("DOMContentLoaded", () => {
   async function Init() {
     await loadTransactions();
     initializeSocket();
-
-    // Sync offline data when online
-    if (navigator.onLine) {
-      await syncOfflineTransactions();
-    }
   }
 
   // Event listeners

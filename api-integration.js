@@ -344,7 +344,6 @@ async function removeTransaction(id) {
     transactions = transactions.filter(transaction => transaction.id !== id);
     displayTransactions();
     updateValues();
-
     showNotification('Transaction deleted successfully', 'success');
   } catch (error) {
     console.error('Delete transaction error:', error);
@@ -353,9 +352,6 @@ async function removeTransaction(id) {
 }
 
 // UI Helpers
-function generateID() {
-  return Math.floor(Math.random() * 1000000000);
-}
 
 function displayTransactions() {
   if (!list) return;
@@ -389,7 +385,7 @@ function addTransactionDOM(transaction) {
         <span class="transaction-category" style="background-color: ${categoryInfo.color}20; color: ${categoryInfo.color};">
           ${categoryInfo.name}
         </span>
-        <div class="transaction-date">${formattedDate}${transaction.offline ? ' (Offline)' : ''}</div>
+        <div class="transaction-date">${formattedDate}</div>
       </div>
     </div>
     <button class="delete-btn" onclick="removeTransaction('${transaction.id}')">
@@ -420,9 +416,7 @@ function updateValues() {
   if (quickExpense) quickExpense.textContent = formatAppCurrency(expense);
 }
 
-function updateLocalStorage() {
-  localStorage.setItem('transactions', JSON.stringify(transactions));
-}
+
 
 // AI Suggestion UI Functions
 function showSuggestions(suggestions) {
@@ -514,41 +508,7 @@ if (!window.showNotification) {
   };
 }
 
-// ========================
-// SYNC LOGIC
-// ========================
 
-async function syncOfflineTransactions() {
-  const offlineTransactions = transactions.filter(t => t.offline || t.pendingDelete);
-  if (offlineTransactions.length === 0) return;
-
-  for (const transaction of offlineTransactions) {
-    try {
-      if (transaction.pendingDelete) {
-        await deleteExpense(transaction.id);
-        transactions = transactions.filter(t => t.id !== transaction.id);
-      } else if (transaction.offline) {
-        const expenseData = {
-          description: transaction.text,
-          amount: Math.abs(transaction.amount),
-          category: transaction.category,
-          type: transaction.type
-        };
-
-        const savedExpense = await saveExpense(expenseData);
-        transaction.id = savedExpense.data ? savedExpense.data._id : savedExpense._id;
-        transaction.offline = false;
-      }
-    } catch (error) {
-      console.error('Sync error:', error);
-    }
-  }
-
-  updateLocalStorage();
-  displayTransactions();
-  updateValues();
-  showNotification('Data synced successfully', 'success');
-}
 
 // ========================
 // INITIALIZATION
@@ -565,15 +525,14 @@ async function initApp() {
       type: expense.type,
       date: expense.date
     }));
+    displayTransactions();
+    updateValues();
   } catch (error) {
-    transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
-  }
-
-  displayTransactions();
-  updateValues();
-
-  if (navigator.onLine) {
-    await syncOfflineTransactions();
+    console.error('Failed to load transactions:', error);
+    showNotification('Failed to load transactions. Please check your connection.', 'error');
+    transactions = [];
+    displayTransactions();
+    updateValues();
   }
 }
 
