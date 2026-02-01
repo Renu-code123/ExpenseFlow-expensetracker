@@ -16,6 +16,9 @@ const expenseRoutes = require('./routes/expenses');
 const syncRoutes = require('./routes/sync');
 const splitsRoutes = require('./routes/splits');
 const groupsRoutes = require('./routes/groups');
+const clientRoutes = require('./routes/clients');
+const invoiceRoutes = require('./routes/invoices');
+const paymentRoutes = require('./routes/payments');
 
 const app = express();
 const server = http.createServer(app);
@@ -161,6 +164,9 @@ app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/currency', require('./routes/currency'));
 app.use('/api/splits', require('./middleware/rateLimiter').expenseLimiter, splitsRoutes);
 app.use('/api/groups', require('./middleware/rateLimiter').expenseLimiter, groupsRoutes);
+app.use('/api/clients', require('./middleware/rateLimiter').expenseLimiter, clientRoutes);
+app.use('/api/invoices', require('./middleware/rateLimiter').expenseLimiter, invoiceRoutes);
+app.use('/api/payments', require('./middleware/rateLimiter').expenseLimiter, paymentRoutes);
 
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
