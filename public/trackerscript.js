@@ -1,3 +1,7 @@
+if (!localStorage.getItem('token')) {
+  window.location.replace('/login.html');
+}
+
 document.addEventListener("DOMContentLoaded", () => {
 
   /* =====================
@@ -107,28 +111,41 @@ document.addEventListener("DOMContentLoaded", () => {
   /* =====================
      API FUNCTIONS
   ====================== */
-  async function fetchExpenses() {
-    try {
-      const response = await fetch(`${API_BASE_URL}/expenses`, {
-        headers: getAuthHeaders()
-      });
-      if (!response.ok) throw new Error('Failed to fetch expenses');
-      const data = await response.json();
-      return data.data.map(expense => ({
-        id: expense._id,
-        text: expense.description,
-        amount: expense.type === 'expense' ? -(expense.displayAmount || expense.amount) : (expense.displayAmount || expense.amount),
-        category: expense.category,
-        type: expense.type,
-        date: expense.date,
-        displayCurrency: expense.displayCurrency || 'INR',
-        approvalStatus: expense.approvalStatus || 'approved' // Default to approved for backward compatibility
-      }));
-    } catch (error) {
-      console.error('Error fetching expenses:', error);
-      throw error; // Let the calling function handle the error
+ async function fetchExpenses() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/expenses`, {
+      headers: getAuthHeaders()
+    });
+
+    if (response.status === 401) {
+      localStorage.clear();
+      window.location.replace('/login.html');
+      return [];
     }
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch expenses');
+    }
+
+    const data = await response.json();
+    return data.data.map(expense => ({
+      id: expense._id,
+      text: expense.description,
+      amount: expense.type === 'expense'
+        ? -(expense.displayAmount || expense.amount)
+        : (expense.displayAmount || expense.amount),
+      category: expense.category,
+      type: expense.type,
+      date: expense.date,
+      displayCurrency: expense.displayCurrency || 'INR',
+      approvalStatus: expense.approvalStatus || 'approved'
+    }));
+  } catch (error) {
+    console.error('Network error, loading offline data:', error);
+    return JSON.parse(localStorage.getItem('transactions') || '[]');
   }
+}
+
 
   async function saveExpense(expense) {
     try {
